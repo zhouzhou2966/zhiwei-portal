@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 430" width="1080" height="430" role="img" aria-label="前端工程专题">
+  <defs>
+    <linearGradient id="b3bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E2C3F"/>
+      <stop offset="0.5" stop-color="#1B4B6B"/>
+      <stop offset="1" stop-color="#2E6E96"/>
+    </linearGradient>
+    <linearGradient id="b3gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EBCB84"/>
+      <stop offset="1" stop-color="#D9A441"/>
+    </linearGradient>
+    <radialGradient id="b3glowA" cx="0.82" cy="0.44" r="0.46">
+      <stop offset="0" stop-color="#D9A441" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#D9A441" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="b3glowB" cx="0.06" cy="1.12" r="0.5">
+      <stop offset="0" stop-color="#2E6E96" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#2E6E96" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1080" height="430" fill="url(#b3bg)"/>
+  <rect width="1080" height="430" fill="url(#b3glowA)"/>
+  <rect width="1080" height="430" fill="url(#b3glowB)"/>
+
+  <g stroke="#FFFFFF" stroke-opacity="0.05" stroke-width="1">
+    <path d="M0 90h1080M0 180h1080M0 270h1080M0 360h1080"/>
+    <path d="M120 0v430M300 0v430M480 0v430M660 0v430M840 0v430M1020 0v430"/>
+  </g>
+
+  <g>
+    <circle cx="866" cy="214" r="152" fill="none" stroke="#E8C577" stroke-opacity="0.16"/>
+    <circle cx="866" cy="214" r="114" fill="none" stroke="#E8C577" stroke-opacity="0.12"/>
+
+    <rect x="652" y="122" width="252" height="160" rx="13" fill="#FFFFFF" fill-opacity="0.12" stroke="#E8C577" stroke-opacity="0.42"/>
+    <rect x="674" y="146" width="120" height="11" rx="5.5" fill="url(#b3gold)"/>
+    <rect x="674" y="176" width="188" height="10" rx="5" fill="#FFFFFF" fill-opacity="0.26"/>
+    <rect x="674" y="200" width="150" height="10" rx="5" fill="#FFFFFF" fill-opacity="0.20"/>
+    <rect x="674" y="224" width="206" height="10" rx="5" fill="#FFFFFF" fill-opacity="0.20"/>
+    <rect x="674" y="248" width="96" height="10" rx="5" fill="#FFFFFF" fill-opacity="0.20"/>
+    <rect x="756" y="282" width="44" height="10" rx="4" fill="#E8C577" fill-opacity="0.55"/>
+    <rect x="722" y="292" width="112" height="9" rx="4.5" fill="#E8C577" fill-opacity="0.42"/>
+
+    <rect x="944" y="150" width="86" height="164" rx="17" fill="#FFFFFF" fill-opacity="0.16" stroke="#E8C577" stroke-opacity="0.58"/>
+    <rect x="974" y="164" width="26" height="5" rx="2.5" fill="#FFFFFF" fill-opacity="0.40"/>
+    <rect x="958" y="184" width="58" height="9" rx="4.5" fill="url(#b3gold)"/>
+    <rect x="958" y="204" width="44" height="8" rx="4" fill="#FFFFFF" fill-opacity="0.28"/>
+    <rect x="958" y="222" width="52" height="8" rx="4" fill="#FFFFFF" fill-opacity="0.22"/>
+    <rect x="958" y="240" width="36" height="8" rx="4" fill="#FFFFFF" fill-opacity="0.22"/>
+    <rect x="958" y="258" width="50" height="8" rx="4" fill="#FFFFFF" fill-opacity="0.22"/>
+
+    <g stroke="#E8C577" stroke-opacity="0.55" stroke-dasharray="5 6">
+      <path d="M910 212h30"/>
+    </g>
+    <circle cx="925" cy="212" r="6" fill="url(#b3gold)"/>
+  </g>
+
+  <g font-family="'PingFang SC','Microsoft YaHei','Hiragino Sans GB','Noto Sans CJK SC',sans-serif">
+    <rect x="72" y="90" width="132" height="38" rx="19" fill="#D9A441" fill-opacity="0.16" stroke="#D9A441" stroke-opacity="0.60"/>
+    <text x="138" y="116" text-anchor="middle" font-size="19" fill="#EBCB84" letter-spacing="1">前端工程</text>
+
+    <text x="72" y="196" font-size="50" font-weight="600" fill="#FFFFFF" letter-spacing="1">跨端开发实战</text>
+    <text x="72" y="258" font-size="50" font-weight="600" fill="#FFFFFF" letter-spacing="1">一套代码多端运行</text>
+
+    <rect x="72" y="286" width="64" height="4" rx="2" fill="url(#b3gold)"/>
+    <text x="72" y="332" font-size="22" fill="#E7EEF3" fill-opacity="0.86" letter-spacing="0.5">把工程化落到日常开发的每一步</text>
+  </g>
+</svg>

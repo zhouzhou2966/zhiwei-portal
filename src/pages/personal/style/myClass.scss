@@ -1,0 +1,377 @@
+// 我的课程样式
+
+// 单行省略，两个页面共用
+.clsEllipsis{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 学习计划弹窗（放在顶层而不是嵌在页面容器里：
+// el-dialog 可能被 teleport 到 body，嵌套在选择器下就匹配不到了）
+.dialogCont{
+  line-height: 40px;
+  padding: 0 10px;
+  span{
+    display: inline-block;
+    min-width: 100px;
+  }
+  .lastTime{
+    border: solid 1px #D9D9D9;
+    width: 100%;
+    padding: 0 10px;
+    border-radius: 4px;
+  }
+}
+.dialogFooter{
+  display: flex;
+  justify-content: flex-end;
+  div{
+    width: 80px;
+    height: 36px;
+    .bt{
+      font-size: 14px;
+      line-height: 36px;
+      border-radius: 4px;
+    }
+    margin-left: 20px;
+  }
+}
+
+// ===================== 我的课程（静态稿：myclass_mockup.html） =====================
+.myClassWrapper{
+
+  // 页头：页内返回/退出 + 标题 + 副标题
+  .pageHead{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    // PageNav 自带 margin-bottom:16px，放进页头后会把按钮顶高、和标题对不齐
+    .pageNav{
+      margin-bottom: 0;
+    }
+    h1{
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 32px;
+    }
+    p{
+      margin-top: 4px;
+      font-size: 13px;
+      line-height: 20px;
+      color: var(--color-font2);
+    }
+  }
+
+  // 卡片外观统一走静态稿：12px 圆角 + 1px 描边 + 极轻投影，区块间距 24px
+  .personalCards{
+    padding: 24px;
+    margin-bottom: 24px;
+    background: #fff;
+    border: 1px solid var(--color-background2);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(26, 29, 33, .04);
+    &:last-child{
+      margin-bottom: 0;
+    }
+  }
+
+  // 区块标题：左侧 3px 主色竖条，右侧放辅助信息
+  .secTitle{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    h2{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 24px;
+      &::before{
+        content: "";
+        width: 3px;
+        height: 15px;
+        border-radius: 2px;
+        background: var(--color-main);
+      }
+    }
+  }
+  .secSide{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-font2);
+    .more{
+      color: var(--color-main);
+      cursor: pointer;
+      transition: color .2s;
+      &:hover{
+        color: var(--color-hover);
+      }
+    }
+  }
+
+  // ---------- 最近学习 ----------
+  .hero{
+    display: flex;
+    align-items: stretch;
+    gap: 24px;
+  }
+  .heroCover{
+    width: 260px;
+    flex: none;
+    align-self: center;
+    aspect-ratio: 236 / 132;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--color-background3);
+    cursor: pointer;
+  }
+  .heroBody{
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .tag{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    line-height: 20px;
+    color: var(--color-main);
+    background: var(--color-main-light);
+    &::before{
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--color-main);
+    }
+  }
+  .heroName{
+    margin-top: 12px;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+    cursor: pointer;
+    transition: color .2s;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    &:hover{
+      color: var(--color-main);
+    }
+  }
+  .heroMeta{
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 22px;
+    color: var(--color-font2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .heroBottom{
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 18px;
+  }
+  .barWrap{
+    flex: 1;
+    min-width: 0;
+  }
+  .barTop{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 7px;
+    font-size: 12px;
+    color: var(--color-font2);
+    b{
+      font-weight: 600;
+      color: var(--color-main);
+    }
+  }
+  .bar{
+    height: 6px;
+    border-radius: 3px;
+    background: var(--color-background2);
+    overflow: hidden;
+    > i{
+      display: block;
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--color-hover), var(--color-main));
+    }
+  }
+  .clsBtn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex: none;
+    height: 40px;
+    padding: 0 24px;
+    border: none;
+    border-radius: 8px;
+    background: var(--color-main);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color .2s, transform .2s;
+    &:hover{
+      background: var(--color-hover);
+    }
+    &:active{
+      transform: translateY(1px);
+    }
+    svg{
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  }
+
+  // ---------- 在学课程（一行 4 门预览） ----------
+  .clsMiniGrid{
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+  // 「· N 门已失效」的补充说明：是统计口径的注脚，不该和主数字抢注意力
+  .expTip{
+    margin-left: 6px;
+    font-style: normal;
+    font-weight: 400;
+    color: var(--color-font2);
+  }
+  // 全部课程都已失效时的提示条（此时卡片区是空的，只剩这一句）
+  .clsExpTip{
+    padding: 22px 24px;
+    font-size: 14px;
+    line-height: 22px;
+    color: var(--color-font2);
+    background: var(--color-background5);
+    border-radius: 10px;
+  }
+  .clsMiniCard{
+    cursor: pointer;
+  }
+  .clsMiniCover{
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--color-background3);
+    img{
+      display: block;
+      width: 100%;
+      // 与课程封面原始比例一致，避免裁掉封面上的课程名
+      aspect-ratio: 236 / 132;
+      object-fit: cover;
+      transition: transform .3s;
+    }
+    // 内侧描边压住图片边缘，浅色封面不会糊到白底上
+    &::after{
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 10px;
+      box-shadow: inset 0 0 0 1px rgba(26, 29, 33, .06);
+    }
+  }
+  .clsMiniCard:hover .clsMiniCover img{
+    transform: scale(1.04);
+  }
+  .clsMiniName{
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color .2s;
+  }
+  .clsMiniCard:hover .clsMiniName{
+    color: var(--color-main);
+  }
+  .clsMiniMeta{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--color-font2);
+  }
+  .clsMiniBar{
+    height: 4px;
+    margin-top: 8px;
+    border-radius: 2px;
+    background: var(--color-background2);
+    overflow: hidden;
+    > i{
+      display: block;
+      height: 100%;
+      border-radius: 2px;
+      background: #9FBACC;
+    }
+  }
+  .clsMiniCard.done .clsMiniBar > i{
+    background: var(--color-main);
+  }
+}
+
+// ===================== 全部课程（独立页面） =====================
+.allClassWrapper{
+  // 与「我的课程」保持同一套卡片外观，否则从预览点「查看全部」进来像换了个站
+  .personalCards{
+    padding: 24px;
+    background: #fff;
+    border: 1px solid var(--color-background2);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(26, 29, 33, .04);
+  }
+  .clsGrid{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+  .clsEmpty{
+    padding: 80px 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--color-font2);
+  }
+  .clsLink{
+    color: var(--color-main);
+    cursor: pointer;
+  }
+  // 「共 N 门」沿用我的课程的辅助文字样式
+  .clsEntryRight{
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .clsEntryCount{
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-font2);
+  }
+}

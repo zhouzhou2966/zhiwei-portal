@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400" role="img" aria-label="课程封面">
+  <defs>
+    <linearGradient id="ccBg1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#12374F"/>
+      <stop offset="0.55" stop-color="#1B4B6B"/>
+      <stop offset="1" stop-color="#2E6E96"/>
+    </linearGradient>
+    <pattern id="ccGrid1" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0v40" fill="none" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="400" fill="url(#ccBg1)"/>
+  <rect width="640" height="400" fill="url(#ccGrid1)"/>
+
+  <!-- 抽象分层架构 -->
+  <g>
+    <rect x="352" y="118" width="212" height="36" rx="9" fill="#FFFFFF" fill-opacity="0.14"/>
+    <rect x="352" y="168" width="212" height="36" rx="9" fill="#FFFFFF" fill-opacity="0.11"/>
+    <rect x="352" y="218" width="212" height="36" rx="9" fill="#FFFFFF" fill-opacity="0.08"/>
+    <circle cx="378" cy="136" r="6" fill="#D9A441"/>
+    <circle cx="378" cy="186" r="6" fill="#D9A441" fill-opacity="0.75"/>
+    <circle cx="378" cy="236" r="6" fill="#D9A441" fill-opacity="0.5"/>
+    <line x1="458" y1="136" x2="458" y2="186" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="2"/>
+    <line x1="458" y1="186" x2="458" y2="236" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2"/>
+  </g>
+
+  <!-- 左侧标题条 -->
+  <rect x="64" y="168" width="8" height="64" rx="4" fill="#D9A441"/>
+  <rect x="94" y="180" width="152" height="14" rx="7" fill="#FFFFFF" fill-opacity="0.85"/>
+  <rect x="94" y="206" width="104" height="12" rx="6" fill="#FFFFFF" fill-opacity="0.5"/>
+</svg>

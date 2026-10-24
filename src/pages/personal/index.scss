@@ -1,0 +1,154 @@
+// 个人中心相关页面样式导入
+@import './style/myClass.scss';
+@import './style/myExam.scss';
+@import './style/myOrder.scss';
+@import './style/myCoupon.scss';
+@import './style/myInterral.scss';
+@import './style/mySet.scss';
+// 个人中心架构页面 样式
+.personalWrapper{
+    // 父级（layoutsWrapper）在个人中心下被锁成 100vh + overflow:hidden，
+    // 这里作为 flex 子项吃掉「顶栏与页脚之间」的剩余高度，min-height:0 是让内部
+    // overflow 真正生效的必要条件（flex 子项默认 min-height:auto 会撑破容器）
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    .personal{
+        flex: 1;
+        min-height: 0;
+        padding: 24px 0;
+        display: flex;
+        // 侧边栏要靠 align-self:flex-start 保持内容高度，内容区则要 stretch 才能有确定高度去滚动
+        align-items: stretch;
+        // 侧边栏与内容区间距 40px（原来是 20px，导航贴着内容区显得很挤）
+        gap: 40px;
+    }
+    // 内容区：整页唯一滚动的容器。左侧导航在它外面，所以滚动时纹丝不动
+    .personalMain{
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        // 滚动条不压住卡片的圆角和投影
+        padding-right: 4px;
+        // 细滚动条，默认的 15px 宽会在 1200 容器里显得很突兀
+        &::-webkit-scrollbar{
+            width: 8px;
+        }
+        &::-webkit-scrollbar-thumb{
+            background: var(--color-background4);
+            border-radius: 4px;
+            &:hover{
+                background: var(--color-font4);
+            }
+        }
+        &::-webkit-scrollbar-track{
+            background: transparent;
+        }
+    }
+    .content{
+        padding: 30px;
+        background-color: #fff;
+        border-radius: 8px;
+    }
+    // 数据少的页面（我的订单 / 优惠券 / 考试 / 积分）白卡只到内容高度，
+    // 下面露一大片雾蓝渐变底，看起来像页面没加载完。让内容区根节点至少撑满一屏，
+    // 白底自然铺到底。
+    .personalMain > *{
+        min-height: 100%;
+        box-sizing: border-box;
+    }
+    // 白底挂在 .personalCards 上的「单卡页面」：再让卡片本身撑满根节点，白底才铺得下去。
+    // 这里逐个列 wrapper 而不是用 :only-of-type —— 优惠券页里 el-dialog 也会占一个兄弟节点，
+    // :only-of-type 匹配不上；而「我的课程」那种一屏多张卡的页面不能拉（卡之间要靠间距分开）。
+    .personalMain > .couponWrapper,
+    .personalMain > .myExamWrapper,
+    .personalMain > .myInterralWrapper,
+    .personalMain > .couponWrapperExplain,
+    .personalMain > .myInterralRankingWrapper{
+        display: flex;
+        flex-direction: column;
+        > .personalCards{
+            flex: 1;
+            // 卡内也要是 flex 列，空状态（.nodata）才能靠 flex:1 撑满剩余高度并居中
+            display: flex;
+            flex-direction: column;
+            // ⚠️ 表格组件的根节点带全局工具类 fx-1（flex:1），在列向 flex 里它会抢走竖向空间，
+            // 把分页条一路推到卡片最底部。这里把它的伸展关掉，让分页仍紧贴表格。
+            > .fx-1{
+                flex: none;
+            }
+        }
+    }
+}
+// 个人中心-公用样式
+.personalCards{
+    background-color: #fff;
+    padding: 20px 30px 30px;
+    margin-bottom: 20px; 
+    border-radius: 8px;
+}
+.pageination{
+    padding-top: 30px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
+.nodata{
+    width: 100%;
+    // 原来写死 height: calc(100vh - 450px)：个人中心改成锁 100vh + 内容区独立滚动之后，
+    // 这个 450 是拍脑袋减出来的，卡一撑满就对不上，空状态会贴在上半截。
+    // 改成在 flex 父级里吃掉剩余高度 + 自己居中；父级不是 flex 时靠 min-height 兜底。
+    flex: 1;
+    min-height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color:var(--color-font2);
+    // 加载中 / 加载失败 的文案（我的订单、优惠券、考试、积分共用）
+    .tipText{
+        font-size: 14px;
+        color: var(--color-font3);
+    }
+    // 请求失败的面板。
+    // 为什么要它：网关对「服务不存在」回的是 HTTP 200 + {code:0,msg:"服务不存在"}，
+    // 页面如果只判 code==200 然后什么都不做，列表会停在空数组上 ——
+    // 用户看到的是「暂无相关订单」，以为真的没订单，其实服务根本没起来。
+    .errBox{
+        text-align: center;
+        padding: 0 20px;
+        .errTitle{
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--color-font1);
+            margin-bottom: 8px;
+        }
+        .errMsg{
+            font-size: 13px;
+            line-height: 20px;
+            color: var(--color-font2);
+            margin-bottom: 16px;
+            word-break: break-all;
+        }
+    }
+}
+.dialog-footer{
+    display: flex;
+    justify-content: flex-end;
+    .bt{
+        width: 80px;
+        height: 36px;
+        line-height: 36px;
+        font-size: 14px;
+        margin-left: 20px;
+        border-radius: 4px;
+    }
+}
+// 子页标题行：返回箭头贴在标题左边（箭头见 components/BackArrow.vue）
+// 用在「优惠券说明 / 考试批阅 / 订单详情」这类不用 CardsTitle 的页面标题上
+.withBack{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}

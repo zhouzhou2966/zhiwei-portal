@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 74 72" width="74" height="72" role="img" aria-label="下一页">
+  <defs>
+    <filter id="paShadow" x="-45%" y="-45%" width="190%" height="190%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1B4B6B" flood-opacity="0.20"/>
+    </filter>
+    <linearGradient id="paBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F1F5F8"/>
+    </linearGradient>
+  </defs>
+  <circle cx="37" cy="36" r="30" fill="url(#paBg)" stroke="#E3E9EF" stroke-width="1" filter="url(#paShadow)"/>
+  <path d="M31 24l13 12-13 12" fill="none" stroke="#1B4B6B" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

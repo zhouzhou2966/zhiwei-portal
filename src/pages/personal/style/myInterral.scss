@@ -1,0 +1,71 @@
+// 个人中心-我的积分
+.myInterralWrapper, .myInterralRankingWrapper{
+    .listCont{
+       .list, .listRt{
+         width: calc(50% - 15px);
+         .tit{
+            margin: 30px 0 15px 0;
+            line-height: 40px;
+            font-weight: 600;
+            .more{
+                font-weight: 400;
+                font-size: 14px;
+                color: var(--color-main);
+            }
+         }
+         .tab{
+            border-top: solid 1px #eeeeee;
+            border-left: solid 1px #eeeeee;
+            .item{
+                border-right: solid 1px #eeeeee;
+                border-bottom: solid 1px #eeeeee;
+                padding: 35px 30px;
+                font-weight: 600;
+                line-height: 32px;
+            }
+            .bt{
+                width: 90px;
+                height: 32px;
+                line-height: 32px;
+                border-radius: 32px;
+                background: var(--color-error);
+                font-size: 14px;
+                font-weight: 400;
+            }
+         }
+       }
+    }
+}
+// 积分榜 - 学霸天梯榜
+.myInterralRankingWrapper{
+    // 「本赛季榜」后面的赛季标签（第12赛季）
+    .seasonTag{
+        display: inline-block;
+        margin-left: 8px;
+        padding: 0 10px;
+        border-radius: 10px;
+        background: var(--color-main-light);
+        color: var(--color-main);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 22px;
+        vertical-align: 2px;
+    }
+    // 赛季下拉拉不到选项时的占位文案（不显示 el-select 的空值 0）
+    .seasonEmpty{
+        font-size: 13px;
+        line-height: 40px;
+        color: var(--color-font2);
+    }
+    .personalCards{
+        // 这里原来是 padding-top: 0px + 给 .breadcrumb 单独补 30px ——
+        // 面包屑改成标题行内的返回箭头之后，那 30px 跟着没了，标题直接贴到卡片顶边。
+        // 恢复成和其他个人中心单卡页一致的上内边距，标题不再顶格。
+        padding-top: 24px;
+        .cardsTitle{
+            border-bottom: solid 1px #eeeeee;
+            padding-bottom: 15px;
+            margin-bottom: 0px;
+        }
+    }
+}
