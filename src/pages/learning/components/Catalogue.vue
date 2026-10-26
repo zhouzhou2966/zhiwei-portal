@@ -1,7 +1,9 @@
 <!-- 学习目录 -->
 <template>
   <div class="catalogueWrapper">
-    <el-collapse accordion v-model="actIndex">
+    <!-- 去掉 accordion：原来一次只能展开一章，点开第二章第一章就自动收起。
+         现在允许多章同时展开，配合下面 actIndex 的初始值 = 全部章节，进页面就是全展开的目录。 -->
+    <el-collapse v-model="actIndex">
       <el-collapse-item :name="item.id" v-for="item in data" :key="item.id">
         <template #title>
           <div class="title"><span class="ft-wt-600">{{item.name}}</span></div>
@@ -22,7 +24,7 @@
   </div>
 </template>
 <script setup>
-import { onMounted, ref, watchEffect, inject } from 'vue'
+import { ref, watch, watchEffect, inject } from 'vue'
 import { dataCacheStore } from "@/store"
 import { ElMessage, ElMessageBox } from "element-plus";
 // 目录右侧的时长标签，统一走这个格式化函数（"4:24" / "1:02:03"）
@@ -58,14 +60,27 @@ const currentPlayData = inject('currentPlayData')
 // 默认打开项
 const playId = ref(props.playId)
 const finished = ref(props.finished)
-const actIndex = ref("")
-onMounted(async () => {
-  for (let c in props.data) {
-    c.sections.forEach(s => {
-      if(s.id == props.playId){actIndex.value = c.id}
-    })
-  }
-})
+
+/**
+ * 展开的章节。
+ *
+ * 去掉 accordion 之后 el-collapse 的 v-model 变成数组（元素是各章 name，也就是 item.id），
+ * 允许多章同时展开。这里初始值给「全部章节」= 进页面目录就是全展开的。
+ *
+ * ⚠️ 必须用 watch 而不是 onMounted：chapters 是父组件异步拉的，
+ * 本组件挂载时 props.data 还是空数组，onMounted 里算出来的必然是空。
+ * （原来那段 onMounted 还有个 bug：`for (let c in props.data)` 里 c 是索引字符串，
+ *   写 c.sections 会抛 undefined，只是因为空数组没进循环才没暴露。）
+ */
+const actIndex = ref([])
+watch(
+  () => props.data,
+  (list) => {
+    actIndex.value = (list || []).map(c => c.id)
+  },
+  { immediate: true }
+)
+
 watchEffect(() => {
   playId.value = currentPlayData.sectionId || props.playId
   if(props.finished){
