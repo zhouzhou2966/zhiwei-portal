@@ -8,15 +8,19 @@
         <template #title>
           <div class="title"><span class="ft-wt-600">{{item.name}}</span></div>
         </template>
-        <div class="subTitle fx-sb" :class="isPlay(item.id, it)"  v-for="it in item.sections" :key="it.id" >
-          <i  @click="play(it, it.type == 2 ? 1 :it.type)" :class="startIcon(it)"></i>
-          <div class="subTit fx-1">
-            <span @click="play(it, it.type == 2 ? 1 : it.type == 2 ? 1 :it.type)" class="marg-rt-10">{{it.name}}</span>
-            <span v-if="it.hasTest" @click="play(it, it.type == 2 ? 2 :it.type)" class="chapter">练习</span>
-            <span v-if="it.trailer" class="trailer-font">试看</span>
-          </div>
-          <div class="dur"> 
-            <span @click="play(it, it.type == 2 ? 1 :it.type)" v-if="it.mediaDuration != 0">{{durationFormat(it.mediaDuration)}}</span>
+        <!-- .row 是整行的内容块（图标 + 标题 + 练习/试看 + 时长），用 inline-flex 让它按内容取宽、
+             再由父级 text-align: center 居中；时间轴虚线挂在 .row 上，所以永远跟着图标走。 -->
+        <div class="subTitle" :class="isPlay(item.id, it)"  v-for="it in item.sections" :key="it.id" >
+          <div class="row">
+            <i  @click="play(it, it.type == 2 ? 1 :it.type)" :class="startIcon(it)"></i>
+            <div class="subTit">
+              <span @click="play(it, it.type == 2 ? 1 : it.type == 2 ? 1 :it.type)" class="marg-rt-10">{{it.name}}</span>
+              <span v-if="it.hasTest" @click="play(it, it.type == 2 ? 2 :it.type)" class="chapter">练习</span>
+              <span v-if="it.trailer" class="trailer-font">试看</span>
+            </div>
+            <div class="dur">
+              <span @click="play(it, it.type == 2 ? 1 :it.type)" v-if="it.mediaDuration != 0">{{durationFormat(it.mediaDuration)}}</span>
+            </div>
           </div>
         </div>
       </el-collapse-item>
@@ -178,6 +182,8 @@ const next = () => {
     flex: 1;
     min-width: 0;
     overflow: hidden;
+    // 章名居中：面板比文字宽得多时，靠左会让整块内容看着偏在一边
+    text-align: center;
 
     span {
       display: block;
@@ -190,25 +196,39 @@ const next = () => {
 
   .subTitle {
     position: relative;
-
-    ::before {
-      position: relative;
-      z-index: 2;
-    }
-
-    ::after {
-      content: '';
-      position: absolute;
-      left: 7px;
-      top: 21px;
-      border-left: 1px dashed #667280;
-      height: calc(100% - 2px);
-    }
+    // 整行居中：内容块 .row 用 inline-flex 按内容取宽，这里靠 text-align 把它摆到中间。
+    // （原来是 flex + space-between，内容永远贴两边）
+    text-align: center;
 
     line-height: 20px;
 
+    .row {
+      display: inline-flex;
+      align-items: center;
+      position: relative;
+      text-align: left;   // 回到块内，标题仍然左对齐
+
+      // 时间轴虚线。原来是 `.subTitle ::after`（带空格 = 后代选择器，实际落在 .subTit 上），
+      // 定位相对 .subTitle 左边 7px —— 整行一居中就和图标脱节了。
+      // 改挂到 .row 上：.row 的左边缘就是图标所在列，虚线自然跟着图标走。
+      &::after {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 21px;
+        height: 18px;
+        border-left: 1px dashed #667280;
+      }
+    }
+
+    // 最后一行不画向下的虚线
+    &:last-child .row::after {
+      display: none;
+    }
+
     i {
       position: relative;
+      z-index: 2;
       top: 1px;
       margin-right: 4px;
     }
@@ -219,15 +239,17 @@ const next = () => {
 
     .subTit {
       // 原来写死 230px、内容又是行内左对齐 ⇒ 标题短的行右边空一大截（时长那列只有 20 多 px）。
-      // 改成 flex：标题撑满剩余宽度，练习/试看贴到右边，和时长对齐成一列。
+      // 现在是整行居中：这个块按内容取自然宽度（不再 flex:1 撑满），标题过长时才收缩出省略号。
       width: auto;
       min-width: 0;
+      flex: 0 1 auto;
       display: flex;
       align-items: center;
       line-height: 20px;
 
       > span:first-child {
-        flex: 1;
+        // 不撑满，按文字自然宽度参与居中；标题特别长时才收缩并出省略号
+        flex: 0 1 auto;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -279,13 +301,13 @@ const next = () => {
   .subTitle:last-child {
     margin-bottom: 0;
 
-    ::after {
+    .row::after {
       display: none;
     }
   }
 
   .playAct {
-    ::after {
+    .row::after {
       border-color: var(--color-main);
     }
 
