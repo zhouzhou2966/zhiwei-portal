@@ -44,8 +44,11 @@ const dynamicComponent = computed(() => {
 });
 </script>
 <style lang="scss" scoped>
-@import '@/style/theme';
-
+// 原来这里有一句 `@import '@/style/theme'`，属于死代码，已删除：
+// theme.scss 输出的是 `:root { --color-* }` 全局 CSS 变量，而本块是 scoped，
+// Vue 会给 `:root` 加上 [data-v-xxx] 属性选择器，永远匹配不到 html，引入等于没引；
+// 而且 theme.scss 已经在 main.js 的全局样式里引入过了。
+// 下面这条空规则保留，留给以后补样式。
 .result {
 
 }

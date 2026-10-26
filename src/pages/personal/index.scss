@@ -1,10 +1,11 @@
 // 个人中心相关页面样式导入
-@import './style/myClass.scss';
-@import './style/myExam.scss';
-@import './style/myOrder.scss';
-@import './style/myCoupon.scss';
-@import './style/myInterral.scss';
-@import './style/mySet.scss';
+// 统一用 @use（Dart Sass 3.0 会移除 @import）；这些文件都只输出纯 CSS，无 sass 变量依赖
+@use './style/myClass.scss';
+@use './style/myExam.scss';
+@use './style/myOrder.scss';
+@use './style/myCoupon.scss';
+@use './style/myInterral.scss';
+@use './style/mySet.scss';
 // 个人中心架构页面 样式
 .personalWrapper{
     // 父级（layoutsWrapper）在个人中心下被锁成 100vh + overflow:hidden，

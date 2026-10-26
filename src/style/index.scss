@@ -1,5 +1,9 @@
-@import './theme.scss';
-@import './element/index.scss';
+// Dart Sass 3.0 会移除 @import，这里统一改成 @use。
+// 本项目所有 scss 都只输出纯 CSS（选择器 + CSS 变量 var(--color-*)），
+// 没有跨文件的 sass 变量 / @mixin / @extend 依赖，所以 @use 的模块作用域不影响任何东西。
+// 附带收益：@use 对同一文件是幂等的，不会像 @import 那样重复输出 CSS。
+@use './theme.scss';
+@use './element/index.scss';
 
 html, body {
     color: var(--color-font1);

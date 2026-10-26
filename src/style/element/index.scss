@@ -1,11 +1,22 @@
-/* 只需要重写你需要的即可 */
-@forward 'element-plus/theme-chalk/src/common/var.scss' with (
-  $colors: (
-    'primary': (
-      'base': #1B4B6B,
-    ),
-  ),
-);
+/* element-plus 主题定制 —— 这一段从来没生效过，已删除。
+
+   原来这里写的是：
+     @forward 'element-plus/theme-chalk/src/common/var.scss' with (
+       $colors: ('primary': ('base': #1B4B6B)),
+     );
+   本意是把主色覆盖成 #1B4B6B，但 main.js 引入的是 element-plus 的**预编译**
+   dist/index.css（后来改成按需的 es/components/组件名/style/css），从来不编译 sass 源码，
+   所以产物里 --el-color-primary 实测一直是默认的 #409eff。
+
+   全站主色 #1B4B6B 实际是靠 theme.scss 的 `--color-main` + 下面这些 .el-* 规则里的
+   !important 硬覆盖实现的，跟这个 @forward 没有关系。
+
+   删掉的好处：element-plus 的 theme-chalk 源码不再参与 sass 编译，
+   构建更快，也不会再刷 mix()/map.get() 那几条 deprecation 警告。
+
+   ⚠️ 哪天真要正经改 element-plus 主题色，正确做法是给 ElementPlusResolver 配
+      importStyle: 'sass' + vite 的 css.preprocessorOptions.scss.additionalData，
+      而不是把这个 @forward 恢复回来。 */
 
 .el-collapse-item__content{
   font-size: 14px;
