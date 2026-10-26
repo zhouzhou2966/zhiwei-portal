@@ -21,6 +21,24 @@
       </div>
       <InlineError title="最近学习加载失败" :msg="nowError" @retry="getLearningData" />
     </div>
+    <!-- 加载中：先占位。
+         三个接口各自独立返回，没有骨架时第一帧就是空态（学习计划尤其明显，
+         因为它初始值是空数组，会先把「还没有学习计划」渲染出来），
+         等数据到了再突然变满，看着像「先错后对」。 -->
+    <div class="personalCards" v-else-if="nowStatus === 'loading'">
+      <div class="secTitle">
+        <h2>最近学习</h2>
+      </div>
+      <div class="heroSk">
+        <div class="sk skHeroCover"></div>
+        <div class="skBody">
+          <div class="sk skLine w15"></div>
+          <div class="sk skLine w45 tall"></div>
+          <div class="sk skLine w70"></div>
+          <div class="sk skLine w100"></div>
+        </div>
+      </div>
+    </div>
     <div class="personalCards" v-else-if="learningData != null && typeof(learningData) != 'string'">
       <div class="secTitle">
         <h2>最近学习</h2>
@@ -62,6 +80,15 @@
       </div>
       <InlineError title="学习计划加载失败" :msg="planError" @retry="getPlanData" />
     </div>
+    <!-- 加载中占位：planData 初始是 null（原来给的是空数组 []，
+         模板条件 `planData && ...` 对空数组为真，于是加载中就把「还没有学习计划」渲染出来了） -->
+    <div class="personalCards" v-else-if="planStatus === 'loading'">
+      <div class="secTitle">
+        <h2>学习计划</h2>
+      </div>
+      <div class="sk skLine w25"></div>
+      <div class="sk skRow" v-for="n in 2" :key="n"></div>
+    </div>
     <div class="personalCards" v-else-if="planData && typeof(planData) != 'string'">
       <div class="secTitle">
         <h2>学习计划</h2>
@@ -86,6 +113,19 @@
         <h2>在学课程</h2>
       </div>
       <InlineError title="课程列表加载失败" :msg="lessonError" @retry="getMyLessonsData" />
+    </div>
+    <!-- 加载中：摆 4 张灰卡占住一行，尺寸和真卡一致，数据到了原地替换不跳版 -->
+    <div class="personalCards" v-else-if="lessonStatus === 'loading'">
+      <div class="secTitle">
+        <h2>在学课程</h2>
+      </div>
+      <div class="clsMiniGrid">
+        <div class="clsMiniCard skCard" v-for="n in 4" :key="n">
+          <div class="sk skMiniCover"></div>
+          <div class="sk skLine w80"></div>
+          <div class="sk skLine w50"></div>
+        </div>
+      </div>
     </div>
     <div class="personalCards" v-else-if="activeCount > 0">
       <div class="secTitle">
@@ -240,7 +280,10 @@ const getLearningData = async () => {
 }
 
 // 学习计划
-const planData = ref([])
+// 初始值必须是 null 而不是 []：模板条件是 `planData && typeof(planData) != 'string'`，
+// 空数组是真值，加载中会先把 PlanTable 的空态「还没有学习计划」渲染出来，
+// 数据到了再跳成有内容的表格 —— 用户看到的是「先错后对」。
+const planData = ref(null)
 const weekFinishedAmount = ref(0)
 const totalPoints = ref(0)
 const weekPlanAmount = ref(0)
@@ -257,7 +300,8 @@ const planParams = {
 const lastLearnText = computed(() => {
   const courseId = learningData.value && learningData.value.courseId
   if (!courseId) return ''
-  const row = planData.value.find(it => it.courseId === courseId)
+  // planData 加载完成前是 null（见上面的定义），这里必须兜一下，否则首次渲染就 NPE
+  const row = (planData.value || []).find(it => it.courseId === courseId)
   return row ? formatLearnTime(row.latestLearnTime) : ''
 })
 

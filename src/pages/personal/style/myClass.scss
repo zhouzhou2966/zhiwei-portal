@@ -116,6 +116,66 @@
     }
   }
 
+  // ---------- 加载骨架 ----------
+  // 三个区块各自异步返回，加载中先占位。
+  // 原来没有骨架，第一帧就是空态（学习计划最明显：planData 初始是空数组，
+  // 模板条件对空数组为真，会先把「还没有学习计划」渲染出来），
+  // 等数据到了再突然变满，用户看到的是「先错后对」。
+  .sk{
+    background: var(--color-background3);
+    border-radius: 6px;
+    animation: skBreath 1.4s ease-in-out infinite;
+  }
+  @keyframes skBreath{
+    0%, 100%{ opacity: .55; }
+    50%     { opacity: 1; }
+  }
+  .skLine{
+    height: 12px;
+    margin-bottom: 12px;
+    &.w15{ width: 15%; }
+    &.w25{ width: 25%; }
+    &.w50{ width: 50%; }
+    &.w80{ width: 80%; }
+    &.w100{ width: 100%; }
+    // 课程名那一行比正文高一档，跟真卡的 .heroName 对上
+    &.tall{ height: 22px; }
+    &:last-child{ margin-bottom: 0; }
+  }
+  // 学习计划表格行的占位
+  .skRow{
+    height: 40px;
+    margin-bottom: 12px;
+    &:last-child{ margin-bottom: 0; }
+  }
+  // 最近学习：尺寸对齐 .hero / .heroCover，数据到了原地替换不跳版
+  .heroSk{
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .skHeroCover{
+    width: 260px;
+    flex: none;
+    aspect-ratio: 236 / 132;
+    border-radius: 10px;
+  }
+  .skBody{
+    flex: 1;
+    min-width: 0;
+  }
+  // 在学课程：灰卡只占位，不能点也不能 hover
+  .skCard{
+    cursor: default;
+    pointer-events: none;
+  }
+  .skMiniCover{
+    width: 100%;
+    aspect-ratio: 236 / 132;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
   // ---------- 最近学习 ----------
   .hero{
     display: flex;
