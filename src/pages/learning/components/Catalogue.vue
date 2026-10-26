@@ -161,7 +161,9 @@ const next = () => {
 </script>
 <style lang="scss" scoped>
 .catalogueWrapper {
-  padding: 0 10px;
+  // 原来左右各 10px：章名前面没有图标，紧贴着面板左边缘，比上面「目录/问答/笔记」
+  // 那排 tab 还靠左，看着像没对齐。左边给到 18px 让章名和 tab 对齐，右边 14px。
+  padding: 0 14px 0 18px;
 
   ::deep(.el-collapse-item__header) {
     background: transparent;
