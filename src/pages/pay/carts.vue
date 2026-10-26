@@ -22,7 +22,7 @@
         >
         <div class="tabItem fx-sb" v-for="item in carts" :key="item.id">
           <div class="checkBox fx">
-            <el-checkbox :label="item.id" :disabled="item.expired">
+            <el-checkbox :value="item.id" :disabled="item.expired">
             <img :src="item.coverUrl" alt="">
             </el-checkbox>
             <span class="name" @click="goDetails(item.courseId)" style="cursor: pointer;">

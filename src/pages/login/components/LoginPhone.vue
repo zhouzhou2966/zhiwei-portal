@@ -17,7 +17,7 @@
       <el-form-item class="marg-b-10">
         <div class="fx-sb">
             <div>
-                <el-checkbox v-model="fromData.rememberMe" label="7天免登录" size="large" />
+                <el-checkbox v-model="fromData.rememberMe" size="large">7天免登录</el-checkbox>
             </div>
             <div>找回密码</div>
         </div>

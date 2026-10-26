@@ -28,29 +28,29 @@
         <!-- 不同的题型展示不同的题 1：单选题，2：多选题，3：不定向选择题，4：判断题，5：主观题 -->
         <div v-if="item.type == 1">
           <el-radio-group v-model="item.answers" class="ml-4">
-            <el-radio :label="ind+1" v-for="(it, ind) in item.options" :key="it" size="large">
+            <el-radio :value="ind+1" v-for="(it, ind) in item.options" :key="it" size="large">
               <div class="fx"><span>{{upperAlpha(ind)}}</span><span v-html="it"></span></div>
             </el-radio>
           </el-radio-group>
         </div>
         <div v-if="item.type == 2">
           <el-checkbox-group v-model="item.answers">
-            <el-checkbox v-for="(it, ind) in item.options" :label="ind+1" :key="it">
+            <el-checkbox v-for="(it, ind) in item.options" :value="ind+1" :key="it">
               <div class="fx"><span>{{upperAlpha(ind)}}</span><span v-html="it"></span></div>
             </el-checkbox>
           </el-checkbox-group>
         </div>
         <div v-if="item.type == 3">
           <el-checkbox-group v-model="item.answers">
-            <el-checkbox v-for="(it, ind) in item.options" :label="ind+1" :key="it">
+            <el-checkbox v-for="(it, ind) in item.options" :value="ind+1" :key="it">
               <div class="fx"> <span>{{upperAlpha(ind)}}</span><span v-html="it"></span></div>
             </el-checkbox>
           </el-checkbox-group>
         </div>
         <div v-if="item.type == 4">
           <el-radio-group v-model="item.answers" class="ml-4">
-            <el-radio :label="true" size="large">A. 正确</el-radio>
-            <el-radio :label="false" size="large">B. 错误</el-radio>
+            <el-radio :value="true" size="large">A. 正确</el-radio>
+            <el-radio :value="false" size="large">B. 错误</el-radio>
           </el-radio-group>
         </div>
         <div v-if="item.type == 5">

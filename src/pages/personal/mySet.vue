@@ -17,8 +17,8 @@
         <div class="item fx">
           <span class="lab">性别：</span>
           <el-radio-group class="radioGroup" v-model="user.gender">
-            <el-radio :label="0">男</el-radio>
-            <el-radio :label="1">女</el-radio>
+            <el-radio :value="0">男</el-radio>
+            <el-radio :value="1">女</el-radio>
           </el-radio-group>
         </div>
         <div class="item fx">
