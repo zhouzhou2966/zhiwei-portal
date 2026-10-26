@@ -39,6 +39,31 @@ export default defineConfig((mode) => {
         resolvers: [ElementPlusResolver({ importStyle: 'css', directives: true })],
       }),
     ],
+    build: {
+      rollupOptions: {
+        output: {
+          // 把 Vue 生态单独拆一个 chunk。
+          // 目的不是减小总体积，而是提升缓存命中：现在 vue 运行时和业务代码混在同一个
+          // 386KB 的 index-*.js 里，业务代码改一行，用户就得把整个 386KB 重新下载一遍。
+          // 拆开之后 vendor-vue 的 hash 不随业务代码变，二次访问只重下业务 chunk。
+          // ⚠️ 刻意不拆 element-plus：它是按需引入的，组件本来就被拆成 el-table-column、
+          //    el-select 等按路由懒加载的小 chunk，强行合并成一个大 vendor 反而会让
+          //    首屏把所有组件都加载一遍。
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return
+            if (
+              id.includes('node_modules/vue/') ||
+              id.includes('node_modules/@vue/') ||
+              id.includes('node_modules/vue-router/') ||
+              id.includes('node_modules/pinia/') ||
+              id.includes('node_modules/pinia-use-persist/')
+            ) {
+              return 'vendor-vue'
+            }
+          },
+        },
+      },
+    },
     server: {
       port: 18082,
       host: '0.0.0.0',
