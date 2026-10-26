@@ -15,7 +15,7 @@
             <span v-if="it.hasTest" @click="play(it, it.type == 2 ? 2 :it.type)" class="chapter">练习</span>
             <span v-if="it.trailer" class="trailer-font">试看</span>
           </div>
-          <div> 
+          <div class="dur"> 
             <span @click="play(it, it.type == 2 ? 1 :it.type)" v-if="it.mediaDuration != 0">{{durationFormat(it.mediaDuration)}}</span>
           </div>
         </div>
@@ -171,12 +171,18 @@ const next = () => {
     font-size: 16px;
     height: 40px;
     line-height: 40px;
-    width: 280px;
+    // 原来写死 280px：目录面板在全宽/窄屏下章名后面会空一大块。
+    // 改成撑满剩余宽度，章名过长时省略（min-width: 0 是 flex 子项能收缩出省略号的前提）
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
 
     span {
-      display: inline-block;
+      display: block;
       height: 40px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
@@ -210,8 +216,26 @@ const next = () => {
     color: #A0A9B2;
 
     .subTit {
-      width: 230px;
+      // 原来写死 230px、内容又是行内左对齐 ⇒ 标题短的行右边空一大截（时长那列只有 20 多 px）。
+      // 改成 flex：标题撑满剩余宽度，练习/试看贴到右边，和时长对齐成一列。
+      width: auto;
+      min-width: 0;
+      display: flex;
+      align-items: center;
       line-height: 20px;
+
+      > span:first-child {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .chapter,
+      .trailer-font {
+        flex: none;
+      }
 
       .chapter {
         display: inline-block;
@@ -235,6 +259,14 @@ const next = () => {
       }
     }
 
+  }
+
+  // 时长列：固定占位 + 右对齐。原来没时长时这块宽度是 0，
+  // 有/没有时长的行右端对不齐，看着像「有的行空有的行不空」。
+  .dur {
+    flex: none;
+    min-width: 46px;
+    text-align: right;
   }
 
   :deep(.el-collapse-item__content) {
