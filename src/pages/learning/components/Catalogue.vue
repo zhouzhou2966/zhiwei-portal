@@ -266,6 +266,7 @@ const next = () => {
   .dur {
     flex: none;
     min-width: 46px;
+    margin-left: 12px;
     text-align: right;
   }
 
