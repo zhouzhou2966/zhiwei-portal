@@ -18,7 +18,7 @@
           <div class="info">
             <div class="tit">{{item.name}}</div>
             <div><em>适用平台：</em>{{item.specific ? '指定课程' : '全部课程'}}</div>
-            <div><em>有效日期：</em> {{item.termDays ? `${item.termDays}天` : moment(item.termEndTime).format('YYYY-MM-DD hh:mm:ss')}}</div>
+            <div><em>有效日期：</em> {{item.termDays ? `${item.termDays}天` : parseDate(item.termEndTime).format('YYYY-MM-DD hh:mm:ss')}}</div>
           </div>
           <div class="butCont fx-ct" v-if="item.received">
             <span  @click="() => $router.push('/search/index')" class="bt">去使用</span>
@@ -43,7 +43,7 @@ import { errMsg } from '@/utils/request'
 
 import { onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
-import moment from 'moment';
+import { parseDate } from '@/utils/date';
 import { getCollectableCoupon, getCoupon,formatRule } from "@/api/class.js";
 import { isLogin } from '@/store'
 // 组件导入

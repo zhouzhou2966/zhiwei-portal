@@ -84,7 +84,7 @@ import { onMounted, ref, computed } from "vue";
 import { ElMessage } from "element-plus";
 import { getCarts, delCarts } from "@/api/order.js";
 import router from "../../router";
-import moment from "moment";
+// moment 曾在此 import 但全文未使用，迁移到 dayjs 时一并清掉
 import { amountConversion } from "@/utils/tool.js"
 import InlineError from "@/components/InlineError.vue"
 

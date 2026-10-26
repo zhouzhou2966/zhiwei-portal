@@ -47,7 +47,7 @@ import { ref, computed, onMounted } from 'vue';
 // errMsg 取业务失败文案；catchMsg 取网络层失败文案
 import { errMsg, catchMsg } from "@/utils/request";
 import { getSignRecords } from "@/api/class.js";
-import moment from 'moment';
+import { dayjs, parseDate } from '@/utils/date';
 import InlineError from "@/components/InlineError.vue";
 // 接收父组件数据
 const props = defineProps({
@@ -60,11 +60,11 @@ const props = defineProps({
 const emit = defineEmits(['pointsSign']);
 const week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 const calendarData = ref([])
-const currentDay = moment().format('YYYY-MM-DD')
+const currentDay = dayjs().format('YYYY-MM-DD')
 // 当前日历展示的年月（日历恒为当月）
-const currentMonth = moment().format('YYYY-MM')
+const currentMonth = dayjs().format('YYYY-MM')
 // 标题直接补全到今天（具体到哪一天）
-const monthTitle = moment().format('YYYY年M月D日')
+const monthTitle = dayjs().format('YYYY年M月D日')
 // 是否属于本月（不属于的只做补位参考）
 const isCurMonth = (date) => date.slice(0, 7) === currentMonth
 // 本月已打卡天数：直接从日历数据里数，打卡后 `pointsSignHandle` 把 isRecords 置 1，这里会自动跟着变
@@ -78,17 +78,25 @@ onMounted(() => {
 function getMounthDay(day){
   const arr = []
   // 计算本月一号 和最后一天 及一号是周几
-  const startDay = moment().startOf('month').format("YYYY-MM-DD") // 本月第一天
-  const startDayWeek = Number(moment(startDay).format('E')) // 第一天是周几
-  const monthDay = moment().daysInMonth() // 
+  const startDay = dayjs().startOf('month').format("YYYY-MM-DD") // 本月第一天
+  // ⚠️ 这里原来是 moment 的 `format('E')`（ISO 星期，周一=1 … 周日=7）。
+  //    dayjs 不支持 'E' 这个 token —— 装了 isoWeek / advancedFormat 也只会输出字面字符 'E'，
+  //    导致 `Number('E')` = NaN、`week[7-NaN]` = undefined，整张日历的星期全部空掉。
+  //    等价写法是 isoWeekday()，同样返回 1-7。下面的 `week[7 - 值]` 依赖这个映射。
+  const startDayWeek = parseDate(startDay).isoWeekday() // 第一天是周几
+  const monthDay = dayjs().daysInMonth() // 
   // 计算当前月份日历的所有展示天总数
   const n = monthDay + (startDayWeek <= 6 ? startDayWeek+1 : 1);
   const calendarDay = n + (n % 7 == 0 ? 0 :7 - n % 7)
   for(let i = 0; i < calendarDay;i++){
-    const date = moment(startDay).subtract(startDayWeek - i , 'd').format('YYYY-MM-DD')
+    const date = parseDate(startDay).subtract(startDayWeek - i , 'd').format('YYYY-MM-DD')
     arr.push({
       date,
-      week: week[7 - Number(moment(date).format('E'))],
+      // ⚠️ 这个 week 字段模板里并没有用到（表头渲染的是上面固定的 week 数组），属于死数据。
+      //    而且这个 `7 - ISO星期` 的映射本身对周一~周六是错的（周一 E=1 → week[6]='周六'），
+      //    只有周日对。本次 moment→dayjs 迁移只做等价替换、不动这个既有 bug，
+      //    真要修应该是 `week[E % 7]`。改它属于行为变更，需单独确认。
+      week: week[7 - parseDate(date).isoWeekday()],
       isRecords: signData.value[i-startDayWeek] // 0是未打卡 1 是已经打卡 99 是没到呢
     })
   }

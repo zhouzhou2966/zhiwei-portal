@@ -138,7 +138,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import moment from 'moment'
+import { parseDate } from '@/utils/date'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   getChatHistory,
@@ -189,7 +189,7 @@ function isActive(session) {
 
 function formatTime(t) {
   // 完整时间：消息时间跨度可能跨天，只显示时分无法区分日期
-  return moment(t).format('YYYY-MM-DD HH:mm:ss')
+  return parseDate(t).format('YYYY-MM-DD HH:mm:ss')
 }
 
 // ---------- 数据加载 ----------
@@ -327,7 +327,7 @@ let nowTimer = null
 
 function canRecall(msg) {
   if (!msg || msg.recalled || msg.senderId !== myUserId.value) return false
-  return nowTick.value - moment(msg.sentAt).valueOf() < RECALL_WINDOW_MS
+  return nowTick.value - parseDate(msg.sentAt).valueOf() < RECALL_WINDOW_MS
 }
 
 // ---------- 消息右键菜单 ----------

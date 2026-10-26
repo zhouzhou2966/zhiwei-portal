@@ -12,13 +12,13 @@
     <div class="info">
         <div class="tit">{{item.name}}</div>
         <div><em>适用平台：</em>{{item.specific  ? '限定分类' : '全部课程'}}</div>
-      <div><em>有效日期：</em> {{item.termDays ? `${item.termDays}天` : moment(item.termEndTime).format('YYYY-MM-DD hh:mm:ss')}}</div>
+      <div><em>有效日期：</em> {{item.termDays ? `${item.termDays}天` : parseDate(item.termEndTime).format('YYYY-MM-DD hh:mm:ss')}}</div>
     </div>
     <div class="butCont fx-ct" v-if="type == 1"><span @click="() => {$router.push({path: '/search/index'})}" class="bt">去使用</span></div>
 </div>
 </template>
 <script setup>
-import moment from 'moment';
+import { parseDate } from '@/utils/date';
 const props = defineProps({
   data:{
     type: Object,

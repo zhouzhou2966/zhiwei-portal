@@ -214,7 +214,7 @@ const getPayStateData = async () => {
   payStateFailCount = 0
   // 不管什么状态都先落到 orderInfo：倒计时组件要拿 payOutTime 来算。
   // 原来只在 status=1 时才赋值，其余状态下 orderInfo 是 undefined，
-  // Countdown 拿到 endTime=undefined，moment(undefined) 等于当前时刻，
+  // Countdown 拿到 endTime=undefined，parseDate(undefined) 等于当前时刻，
   // diff<=0 立刻触发 timeOver —— 表现就是支付页闪一下就被跳走。
   orderInfo.value = data
   if (payStatus.value !== 'error') payStatus.value = 'ok'

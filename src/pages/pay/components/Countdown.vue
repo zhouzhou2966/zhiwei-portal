@@ -12,7 +12,7 @@
 <script setup>
 // 数据引入
 import { onMounted, onUnmounted, reactive, watchEffect } from 'vue';
-import moment from 'moment'
+import { dayjs, parseDate } from '@/utils/date'
 // 接收父级数据
 const props = defineProps({
   endTime:{   
@@ -41,7 +41,7 @@ onMounted(() => {
 })
 // 时间数据处理
 const init = () => {
-   let time = moment(props.endTime).diff(moment())
+   let time = parseDate(props.endTime).diff(dayjs())
     if(time <= 0){
       clearInterval(timeData.timer)
       onOver()

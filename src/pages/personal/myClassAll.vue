@@ -69,7 +69,7 @@ import {ElMessage} from "element-plus";
 // errMsg：统一取后端错误提示（禁止写 res.data.msg —— 业务失败时响应体里没有 data 字段，见 utils/request.js）
 import {errMsg} from '@/utils/request'
 import {getMylessons, creatPlans, delMyClass} from "@/api/class.js";
-import moment from 'moment'
+import { dayjs } from '@/utils/date'
 import CardsTitle from './components/CardsTitle.vue'
 import ClassGridCard from './components/ClassGridCard.vue'
 
@@ -131,7 +131,7 @@ const number = ref(1)
 const lastTime = computed(() => {
   // 每周学 n 节，m = 总节数/n 不足一周按一周算，从今天开始往后延 m*7 天
   const num = Math.ceil(days.value / number.value) * 7
-  return number.value ? moment().add(num, 'days').format("YYYY-MM-DD") : ''
+  return number.value ? dayjs().add(num, 'day').format("YYYY-MM-DD") : ''
 })
 
 // 每周节数限制在 1~50

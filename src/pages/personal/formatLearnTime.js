@@ -1,4 +1,4 @@
-import moment from 'moment'
+import { dayjs, parseDate } from '@/utils/date'
 
 /**
  * 学习时间显示：「今天 01:07 / 昨天 18:20 / 10-20 09:15」。
@@ -9,10 +9,10 @@ import moment from 'moment'
  */
 export function formatLearnTime(value) {
   if (!value) return ''
-  const t = moment(value)
+  const t = parseDate(value)
   if (!t.isValid()) return ''
-  const today = moment().startOf('day')
+  const today = dayjs().startOf('day')
   if (t.isSame(today, 'day')) return '今天 ' + t.format('HH:mm')
-  if (t.isSame(moment(today).subtract(1, 'day'), 'day')) return '昨天 ' + t.format('HH:mm')
+  if (t.isSame(dayjs(today).subtract(1, 'day'), 'day')) return '昨天 ' + t.format('HH:mm')
   return t.format('MM-DD HH:mm')
 }
