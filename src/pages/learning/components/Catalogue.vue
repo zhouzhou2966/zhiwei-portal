@@ -219,17 +219,23 @@ const next = () => {
 
   .subTitle {
     position: relative;
-    // 整行居中：内容块 .row 用 inline-flex 按内容取宽，这里靠 text-align 把它摆到中间。
-    // （原来是 flex + space-between，内容永远贴两边）
+    // 居中只作兜底（.row 自带 margin:0 auto）；真正的对齐交给 .row 的 grid 列宽。
     text-align: center;
 
     line-height: 20px;
 
     .row {
-      display: inline-flex;
+      // 原来是 `inline-flex` + 「按内容取宽」：每行内容宽度都不一样（有的带「试看」、有的没时长），
+      // 整块再靠 text-align 居中 ⇒ 图标一行的位置就一行的位置（实测三列起点 112/140/170），
+      // 看着像时间轴散了。改成固定列宽的 grid：所有行宽度一致，图标 / 标题 / 试看 / 时长各占一列，跨行对齐。
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr) 46px;
       align-items: center;
+      column-gap: 4px;
+      width: 100%;
+      margin: 0 auto;
       position: relative;
-      text-align: left;   // 回到块内，标题仍然左对齐
+      text-align: left;
 
       // 时间轴虚线。原来是 `.subTitle ::after`（带空格 = 后代选择器，实际落在 .subTit 上），
       // 定位相对 .subTitle 左边 7px —— 整行一居中就和图标脱节了。
@@ -253,7 +259,8 @@ const next = () => {
       position: relative;
       z-index: 2;
       top: 1px;
-      margin-right: 4px;
+      // 列间距交给 .row 的 column-gap，这里不再用 margin
+      justify-self: center;
     }
 
     cursor: pointer;
@@ -261,18 +268,16 @@ const next = () => {
     color: #A0A9B2;
 
     .subTit {
-      // 原来写死 230px、内容又是行内左对齐 ⇒ 标题短的行右边空一大截（时长那列只有 20 多 px）。
-      // 现在是整行居中：这个块按内容取自然宽度（不再 flex:1 撑满），标题过长时才收缩出省略号。
-      width: auto;
-      min-width: 0;
-      flex: 0 1 auto;
-      display: flex;
+      // 二级 grid：标题占满剩余宽度，「试看 / 练习」固定 52px 一列。
+      // 关键点：即使某行没有试看，那一列也留着 —— 否则标题宽度随行变化，右端的时长又会对不齐。
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 52px;
       align-items: center;
+      column-gap: 6px;
+      min-width: 0;
       line-height: 20px;
 
       > span:first-child {
-        // 不撑满，按文字自然宽度参与居中；标题特别长时才收缩并出省略号
-        flex: 0 1 auto;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -281,7 +286,7 @@ const next = () => {
 
       .chapter,
       .trailer-font {
-        flex: none;
+        justify-self: start;
       }
 
       .chapter {
@@ -308,12 +313,8 @@ const next = () => {
 
   }
 
-  // 时长列：固定占位 + 右对齐。原来没时长时这块宽度是 0，
-  // 有/没有时长的行右端对不齐，看着像「有的行空有的行不空」。
+  // 时长列：固定 46px 一列、右对齐。grid 里列宽已经固定，这里只负责右对齐。
   .dur {
-    flex: none;
-    min-width: 46px;
-    margin-left: 12px;
     text-align: right;
   }
 
