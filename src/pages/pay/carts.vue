@@ -88,10 +88,21 @@ import router from "../../router";
 import { amountConversion } from "@/utils/tool.js"
 import InlineError from "@/components/InlineError.vue"
 
-import { dataCacheStore } from "@/store"
+import { dataCacheStore, isLogin } from "@/store"
 const store = dataCacheStore()
 let totalAmount = ref(0);
-onMounted(() => {
+onMounted(async () => {
+  // 未登录直接回登录页，且**不发请求**。
+  // 为什么必须拦在发请求之前：/ts/carts 未登录返回业务码 401，拦截器会弹
+  // 「您的账号登录超时或在其他机器登录」（对游客是错误文案），
+  // 而弹窗的「继续浏览」会 router.go(0) 刷新页面 ⇒ 再发请求 ⇒ 再 401 ⇒ 死循环。
+  // 这一层同时兜住「直接输 /pay/carts 地址进来」的情况（Header 的点击判断挡不住它）。
+  if (!(await isLogin())) {
+    // 先给提示再跳：直接静默 replace 到登录页，用户会以为自己点错了
+    ElMessage({ message: '请先登录哦', type: 'warning' })
+    router.replace({ path: '/login', query: { redirect: '/pay/carts' } })
+    return
+  }
   // 获取章节列表 - 下拉选择
   getCartsData()
 })

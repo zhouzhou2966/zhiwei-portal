@@ -41,7 +41,11 @@
         </el-input>
       </div>
       <div class="fx-al-ct pt-rt">
-        <div class="car fx-al-ct font-bt2" v-if="userInfo" @click="() => $router.push('/pay/carts')">
+        <!-- 购物车入口：对游客也显示（购买链路入口，藏掉等于少一条路），
+             但点击时判断登录态 —— 未登录直接去登录页。
+             原来写的是 v-if="userInfo"，而 store 未登录时 getUserInfo 是 {}（truthy），
+             等于「游客也能看到、点进去必然 401」，所以这里不再用 v-if 挡。 -->
+        <div class="car fx-al-ct font-bt2" @click="goCart">
           <i class="iconfont">&#xe6f3;</i> 购物车
         </div>
         <!-- 学习中心 - start -->
@@ -272,6 +276,29 @@ const logoutHandle = () => {
     }
   }).catch(() => {})
 }
+/**
+ * 购物车入口。
+ *
+ * 未登录必须**直接去登录页**，不能放他进 /pay/carts：
+ * 购物车接口 /ts/carts 需要鉴权，未登录会返回业务码 401 ⇒ 拦截器弹
+ * 「您的账号登录超时或在其他机器登录」—— 对游客来说这句文案本身就是错的；
+ * 更糟的是弹窗里点「继续浏览」走 router.go(0) 刷新页面，刷新后又发一次请求、又 401，
+ * 形成关不掉的循环。
+ *
+ * 带 redirect 是为了登录完能回到购物车（原来一律跳首页，用户得自己再点一次）。
+ */
+const goCart = () => {
+  const path = '/pay/carts'
+  if (userInfo.value && userInfo.value.id) {
+    router.push(path)
+  } else {
+    // 跳转前必须给一句提示：直接把人甩到登录页，用户不知道「我只是点了下购物车，
+    // 怎么跳到登录了」。toast 挂在 body 上，路由切换不会把它带走，所以在登录页也看得见。
+    ElMessage({ message: '请先登录哦', type: 'warning' })
+    router.push({ path: '/login', query: { redirect: path } })
+  }
+}
+
 // 搜索事件
 const SearchHandle = () => {
   if (input.value == '') {
@@ -356,6 +383,13 @@ header {
       font-size: 24px;
       margin-right: 6px;
     }
+  }
+
+  // 未登录时「购物车」和「注册 / 登录」原来紧贴在一起（.car 没有右外边距，
+  // .cur-pt 也没有左外边距 ⇒ 间距 0，读起来像「购物车注册」一个词）。
+  // 登录态那两个入口有 .marg-lr-40 撑着，只有未登录这一支漏了。
+  .cur-pt {
+    margin-left: 40px;
   }
 
   .learningCont {

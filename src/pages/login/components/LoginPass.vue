@@ -44,6 +44,18 @@ const store = useUserStore();
 const router = useRouter()
 const route = useRoute()
 
+/**
+ * 登录成功后的落点：带 redirect 就回原页面（例如从购物车被挡下来的），否则回首页。
+ * 原来一律 router.push('/main/index')，用户点购物车 → 登录 → 落到首页，还得自己再点一次购物车。
+ * ⚠️ 只接受站内路径：必须以单个 `/` 开头。`//evil.com` 是协议相对地址，浏览器会当外站跳，
+ *    不挡就是一个开放重定向。
+ */
+const goAfterLogin = () => {
+  const redirect = route.query.redirect
+  const isInnerPath = typeof redirect === 'string' && /^\/(?!\/)/.test(redirect)
+  router.push(isInnerPath ? redirect : '/main/index')
+}
+
 const formRef = ref();
 const checked = ref(false)
 // 登录参数校验
@@ -79,8 +91,8 @@ const submitForm = (formEl) => {
           if (data.code === 200) {
               // 记录到store 并调转到首页
               store.setUserInfo(data.data)
-					    // 跳转到首页
-              router.push('/main/index')
+					    // 登录后落点：有 redirect 回原页面，否则首页
+              goAfterLogin()
           }
 				} else {
           ElMessage({
