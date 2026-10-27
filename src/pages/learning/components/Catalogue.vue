@@ -168,8 +168,32 @@ const next = () => {
   // 左右对称各 16px。之前是 18/14 不对称，整行居中后左右留白差 4px（32 / 28）。
   padding: 0 16px;
 
-  ::deep(.el-collapse-item__header) {
+  /* 把 element-plus collapse 的默认配色压回「深色面板」这一套。
+     原来只写了一条 `::deep(.el-collapse-item__header){background:transparent}`：
+       ① `::deep` 是双冒号，不是 Vue 的 `:deep()` 语法，这条规则编译后根本匹配不到元素；
+       ② 就算写成 `:deep`，也只盖了 header，没盖内容区 `__wrap`。
+     于是 `el-collapse-item__wrap` 用回 element-plus 默认的
+     `background-color: var(--el-collapse-content-bg-color)`（= `--el-fill-color-blank` = #fff），
+     深色面板里就出现一整块白底；再叠加 `.subTitle:hover{color:#fff}` ⇒ 白字白底，整行「消失」。
+     全局兜底写在 src/style/element/index.scss，但按需引入后该组件 CSS 被拆成独立 chunk，
+     由路由懒加载「后插入」，同特异性下后加载者胜 ⇒ 全局覆盖失效。
+     这里用 scoped `:deep()`，编译成 `.catalogueWrapper[data-v-x] .el-collapse-item__wrap`，
+     特异性高于 element-plus 的 (0,1,0)，与加载顺序无关，不会再被反超。 */
+  :deep(.el-collapse) {
+    border-top: none;
+    border-bottom: none;
+  }
+
+  :deep(.el-collapse-item__header) {
     background: transparent;
+    // 章名要浅色：header 默认色是 --el-collapse-header-text-color（#303133），白底上才看得见
+    color: #E6E6E6;
+    border-bottom: none;
+  }
+
+  :deep(.el-collapse-item__wrap) {
+    background: transparent;
+    border-bottom: none;
   }
 
   .title {
@@ -306,11 +330,14 @@ const next = () => {
   }
 
   .playAct {
+    // 「正在播放」这一行。原来用 --color-main（#1B4B6B），在 #1B2127 深底上对比度只有 ~1.9:1，
+    // 基本看不见 —— 之前目录内容区被 element-plus 的默认白底盖住，才「碰巧」读得出来。
+    // 深底恢复后必须换成浅色，用主题里现成的浅主色，保持「蓝 = 当前」的语义，又不至于像纯白（和 hover 撞色）。
     .row::after {
-      border-color: var(--color-main);
+      border-color: var(--color-main-light2);
     }
 
-    color: var(--color-main);
+    color: var(--color-main-light2);
 
     .chapter {
       background: var(--color-main) !important;
