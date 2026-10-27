@@ -182,4 +182,11 @@
         font-size: 13px;
         color: var(--color-font3);
     }
+    // 失败卡不跟着垂直居中：占位高的区块（获取积分 516px）居中会把卡片顶到视口外，
+    // 用户看不见「重新加载」。改成贴顶（距区块标题 24px）—— 占位高度不变、切换不跳，
+    // 但卡片一定在首屏里。
+    > .inlineErr{
+        align-self: flex-start;
+        margin-top: 24px;
+    }
 }
