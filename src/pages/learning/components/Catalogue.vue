@@ -21,7 +21,9 @@
               <span v-if="it.trailer && !purchased" class="trailer-font">试看</span>
             </div>
             <div class="dur">
-              <span @click="play(it, it.type == 2 ? 1 :it.type)" v-if="it.mediaDuration != 0">{{durationFormat(it.mediaDuration)}}</span>
+              <!-- 用 `> 0` 而不是 `!= 0`：media_duration 可能是 null/undefined（没挂媒体的小节），
+                   `null != 0` 是 true，会渲染成 durationFormat(null) = "0:00"，看着像「时长 0 秒」。 -->
+              <span @click="play(it, it.type == 2 ? 1 :it.type)" v-if="it.mediaDuration > 0">{{durationFormat(it.mediaDuration)}}</span>
             </div>
           </div>
         </div>
