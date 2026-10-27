@@ -1,8 +1,10 @@
 <!-- table切换头部 -->
 <template>
   <!-- 打卡记录拉不到时，不要把整月都画成「未打卡」——那是在编数据。
-       直接换成失败提示，日历网格等数据回来再画。 -->
-  <div class="calendar" v-if="status === 'error'">
+       直接换成失败提示，日历网格等数据回来再画。
+       ⚠️ 还要等 errReady：请求 20~80ms 就失败，整张日历立刻塌缩成一张小卡会让页面跳一下，
+       所以骨架先站够 220ms 再换（见 utils/useErrorDelay.js） -->
+  <div class="calendar" v-if="status === 'error' && errReady">
     <div class="calendarTop">
       <div class="titleBox">
         <span class="monthTitle">{{ monthTitle }}</span>
@@ -10,13 +12,10 @@
     </div>
     <InlineError title="打卡记录加载失败" :msg="errorMsg" @retry="getSignRecordsHandel" />
   </div>
-  <!-- 加载中：表头照常画（周几是静态的），日期格子先用灰条占位。
+  <!-- 加载中 / 已失败但骨架还没站够：两种情况的画面完全一样（表头 + 42 个灰格），视觉上零变化。
        没有这个分支时 loading 落进下面的 v-else，而 calendarData 初始是空数组，
-       会先画一个「只有周日~周六表头、格子全空」的日历，等数据到了再突然填满 —— 一帧空白表格。
-       ⚠️ 格子还要再等 showSk（见 utils/useSkeleton）：服务挂掉时请求 20~80ms 就回来了，
-       立刻画 42 个灰格等于让用户看两帧灰格子再被「加载失败」顶掉。
-       表头（年月日 + 图例）留在外面常驻 —— 它是静态的，三个分支都画同一份，不参与延迟。 -->
-  <div class="calendar" v-else-if="status === 'loading'">
+       会先画一个「只有周日~周六表头、格子全空」的日历，等数据到了再突然填满 —— 一帧空白表格。 -->
+  <div class="calendar" v-else-if="status !== 'ok'">
     <div class="calendarTop">
       <div class="titleBox">
         <span class="monthTitle">{{ monthTitle }}</span>
@@ -26,14 +25,12 @@
         <div class="fx"><span class="isRecords"></span>已打卡</div>
       </div>
     </div>
-    <template v-if="showSk">
-      <div class="calendarHead">
-        <span v-for="item in week" :key="item">{{item}}</span>
-      </div>
-      <div class="calendarCont">
-        <div class="day skDay" v-for="n in 42" :key="'sk' + n"><i class="sk"></i></div>
-      </div>
-    </template>
+    <div class="calendarHead">
+      <span v-for="item in week" :key="item">{{item}}</span>
+    </div>
+    <div class="calendarCont">
+      <div class="day skDay" v-for="n in 42" :key="'sk' + n"><i class="sk"></i></div>
+    </div>
   </div>
   <div class="calendar" v-else>
     <div class="calendarTop">
@@ -71,8 +68,8 @@
 import { ref, computed, onMounted } from 'vue';
 // errMsg 取业务失败文案；catchMsg 取网络层失败文案
 import { errMsg, catchMsg } from "@/utils/request";
-// 骨架延迟显示：接口几十毫秒就回来时不让 42 个灰格冒头，见 utils/useSkeleton.js
-import { useSkeleton } from "@/utils/useSkeleton";
+// 错误态延迟显示：让骨架先站够 220ms，避免整张日历塌缩成小卡的跳变，见 utils/useErrorDelay.js
+import { useErrorDelay } from "@/utils/useErrorDelay";
 import { getSignRecords } from "@/api/class.js";
 import { dayjs, parseDate } from '@/utils/date';
 import InlineError from "@/components/InlineError.vue";
@@ -140,7 +137,7 @@ const signData = ref([])
 // loading / ok / error：失败时不能把整月都画成「未打卡」，那是在编数据
 const status = ref('loading')
 const errorMsg = ref('')
-const showSk = useSkeleton(() => status.value === 'loading')
+const errReady = useErrorDelay(status)
 const getSignRecordsHandel = async () => {
   status.value = 'loading'
   try {

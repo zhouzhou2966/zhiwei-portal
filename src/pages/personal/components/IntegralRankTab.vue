@@ -9,13 +9,11 @@
          没有这个分支时，父级只判了 error / 其他，loading 会直接渲染下面的「一条数据也没有」，
          看着像「这榜本来就没数据」，等请求失败再跳成错误卡 —— 一帧假内容。 -->
     <template v-if="loading">
-      <template v-if="skeleton">
-        <div class="item fx-sb" v-for="n in 5" :key="'sk' + n">
-          <span><i class="sk skBar"></i></span>
-          <span class="ct"><i class="sk skBar w60"></i></span>
-          <span><i class="sk skBar"></i></span>
-        </div>
-      </template>
+      <div class="item fx-sb" v-for="n in 5" :key="'sk' + n">
+        <span><i class="sk skBar"></i></span>
+        <span class="ct"><i class="sk skBar w60"></i></span>
+        <span><i class="sk skBar"></i></span>
+      </div>
     </template>
     <template v-else>
       <div class="item myItem fx-sb" v-if="hasMyRow">
@@ -71,22 +69,12 @@ const props = defineProps({
    * 加载中：渲染 5 行灰条占位。
    * 由父级的三态（loading / ok / error）传进来 —— 组件自己不知道请求状态，
    * 也不该靠「data 为空」去猜（空对象既可能是加载中，也可能是真的没人上榜）。
+   * 父级传的是 `status !== 'ok'`：请求已失败但骨架还没站够 220ms 时也保持 true，
+   * 这样从骨架到错误卡的切换是「一下子换掉」，不会先闪一帧「一条数据也没有」。
    */
   loading: {
     type: Boolean,
     default: false
-  },
-  /**
-   * 是否真的把 5 行灰条画出来（配合 utils/useSkeleton 的延迟）。
-   *
-   * loading=true 但 skeleton=false 时，只画表头（排名/姓名/积分）、下面留白：
-   * 服务挂掉时请求 20~80ms 就返回了，这段时间画灰条等于给用户看两帧「闪」，
-   * 紧接着又被「加载失败」卡顶掉。留白则没有任何东西可闪。
-   * 默认 true —— 不传的调用方行为和以前完全一致。
-   */
-  skeleton: {
-    type: Boolean,
-    default: true
   }
 });
 
