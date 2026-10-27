@@ -64,6 +64,7 @@
         <div class="catalogue" v-show="actId == 1" v-infinite-scroll="load" style="overflow: auto">
           <Catalogue :data="chapters" :playId="playId"
                      :finished="finished" :finishedSections="finishedSectionIds"
+                     :purchased="!!(learningClassDetails && learningClassDetails.lessonId)"
                      @playHadle="playHadle" @openCatalogue="openCatalogue"></Catalogue>
         </div>
         <!-- 问答 -->

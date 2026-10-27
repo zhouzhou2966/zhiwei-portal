@@ -16,7 +16,9 @@
             <div class="subTit">
               <span @click="play(it, it.type == 2 ? 1 : it.type == 2 ? 1 :it.type)" class="marg-rt-10">{{it.name}}</span>
               <span v-if="it.hasTest" @click="play(it, it.type == 2 ? 2 :it.type)" class="chapter">练习</span>
-              <span v-if="it.trailer" class="trailer-font">试看</span>
+              <!-- 已购（在学）的课不再显示「试看」：后端 /cs/courses/{id}/catalogs 不管买没买都会带
+                   trailer 标记，只有 lessonId 非空才说明这门课在他的课表里。 -->
+              <span v-if="it.trailer && !purchased" class="trailer-font">试看</span>
             </div>
             <div class="dur">
               <span @click="play(it, it.type == 2 ? 1 :it.type)" v-if="it.mediaDuration != 0">{{durationFormat(it.mediaDuration)}}</span>
@@ -56,6 +58,16 @@ const props = defineProps({
   finishedSections: {
     type: Array,
     default: () => []
+  },
+  /**
+   * 这门课是否已购（在学）。
+   * 判定依据是目录接口的 `lessonId` 非空 —— 说明这门课已经在他课表里了。
+   * 已购用户不该再看到「试看」标记：trailer 是「这一节允许试看」的配置，
+   * 跟「你有没有买」无关，后端也不会因为买了就把 trailer 置 false。
+   */
+  purchased: {
+    type: Boolean,
+    default: false
   }
 })
 
