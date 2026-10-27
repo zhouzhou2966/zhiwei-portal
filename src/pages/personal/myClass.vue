@@ -15,28 +15,22 @@
     <!-- 最近学习：封面在左、信息在右的大卡。
          原来用 ClassCards 的 236×132 封面塞进整行，右边空一大片，
          而且进度、章节、继续学习按钮分散在三处，看不出「学到哪了」 -->
-    <div class="personalCards" v-if="nowStatus === 'error' && nowErrReady">
+    <div class="personalCards" v-if="nowStatus === 'error'">
       <div class="secTitle">
         <h2>最近学习</h2>
       </div>
       <InlineError title="最近学习加载失败" :msg="nowError" @retry="getLearningData" />
     </div>
-    <!-- 加载中 / 已失败但骨架还没站够 220ms：两种情况都画骨架，画面零变化（见 utils/useErrorDelay.js）。
-         三个接口各自独立返回，没有骨架时第一帧就是空态（学习计划尤其明显，
+    <!-- 加载中：区块标题留着（三个分支画的是同一份），数据区留白 + 延迟淡入的小字（见 .blkLoad）。
+         三个接口各自独立返回，没有这个分支时第一帧就是空态（学习计划尤其明显，
          因为它初始值是空数组，会先把「还没有学习计划」渲染出来），
          等数据到了再突然变满，看着像「先错后对」。 -->
-    <div class="personalCards" v-else-if="nowStatus !== 'ok'">
+    <div class="personalCards" v-else-if="nowStatus === 'loading'">
       <div class="secTitle">
         <h2>最近学习</h2>
       </div>
-      <div class="heroSk">
-        <div class="sk skHeroCover"></div>
-        <div class="skBody">
-          <div class="sk skLine w15"></div>
-          <div class="sk skLine w45 tall"></div>
-          <div class="sk skLine w70"></div>
-          <div class="sk skLine w100"></div>
-        </div>
+      <div class="blkLoad">
+        <span class="blkTip fadeInDelay">正在加载…</span>
       </div>
     </div>
     <div class="personalCards" v-else-if="learningData != null && typeof(learningData) != 'string'">
@@ -74,21 +68,21 @@
     </div>
 
     <!-- 学习计划 -->
-    <div class="personalCards" v-if="planStatus === 'error' && planErrReady">
+    <div class="personalCards" v-if="planStatus === 'error'">
       <div class="secTitle">
         <h2>学习计划</h2>
       </div>
       <InlineError title="学习计划加载失败" :msg="planError" @retry="getPlanData" />
     </div>
     <!-- 加载中占位：planData 初始是 null（原来给的是空数组 []，
-         模板条件 `planData && ...` 对空数组为真，于是加载中就把「还没有学习计划」渲染出来了）
-         同样由 `!== 'ok'` 同时兜住 loading 和「已失败但骨架还没站够」 -->
-    <div class="personalCards" v-else-if="planStatus !== 'ok'">
+         模板条件 `planData && ...` 对空数组为真，于是加载中就把「还没有学习计划」渲染出来了） -->
+    <div class="personalCards" v-else-if="planStatus === 'loading'">
       <div class="secTitle">
         <h2>学习计划</h2>
       </div>
-      <div class="sk skLine w25"></div>
-      <div class="sk skRow" v-for="n in 2" :key="n"></div>
+      <div class="blkLoad">
+        <span class="blkTip fadeInDelay">正在加载…</span>
+      </div>
     </div>
     <div class="personalCards" v-else-if="planData && typeof(planData) != 'string'">
       <div class="secTitle">
@@ -109,24 +103,19 @@
          让人以为还有课没上。想看/想删走「查看全部」，那里有「已失效」标签。
          原来这里把全部课程一条条往下堆，课程一多页面就长得没法看，
          而且底部的「查看全部」只是个没有点击事件的 div，点了没反应。 -->
-    <div class="personalCards" v-if="lessonStatus === 'error' && lessonErrReady">
+    <div class="personalCards" v-if="lessonStatus === 'error'">
       <div class="secTitle">
         <h2>在学课程</h2>
       </div>
       <InlineError title="课程列表加载失败" :msg="lessonError" @retry="getMyLessonsData" />
     </div>
-    <!-- 加载中：摆 4 张灰卡占住一行，尺寸和真卡一致，数据到了原地替换不跳版
-         同样由 `!== 'ok'` 同时兜住 loading 和「已失败但骨架还没站够」 -->
-    <div class="personalCards" v-else-if="lessonStatus !== 'ok'">
+    <!-- 加载中：数据区留白 + 延迟淡入的小字（见 .blkLoad） -->
+    <div class="personalCards" v-else-if="lessonStatus === 'loading'">
       <div class="secTitle">
         <h2>在学课程</h2>
       </div>
-      <div class="clsMiniGrid">
-        <div class="clsMiniCard skCard" v-for="n in 4" :key="n">
-          <div class="sk skMiniCover"></div>
-          <div class="sk skLine w80"></div>
-          <div class="sk skLine w50"></div>
-        </div>
+      <div class="blkLoad">
+        <span class="blkTip fadeInDelay">正在加载…</span>
       </div>
     </div>
     <div class="personalCards" v-else-if="activeCount > 0">
@@ -175,8 +164,6 @@ import {computed, onMounted, ref} from "vue";
 // 三个区块的失败一律走区块内的 InlineError，不再弹 ElMessage（3 个请求 = 3 条 toast 叠在顶栏）
 // errMsg：统一取后端错误提示（禁止写 res.data.msg —— 业务失败时响应体里没有 data 字段，见 utils/request.js）
 import {errMsg, catchMsg} from '@/utils/request'
-// 错误态延迟显示：让骨架先站够 220ms，避免三块卡片同时塌缩的跳变，见 utils/useErrorDelay.js
-import {useErrorDelay} from '@/utils/useErrorDelay'
 import {getMylessons, getMyPlan} from "@/api/class.js";
 import {useRouter} from "vue-router";
 import {dataCacheStore} from "@/store"
@@ -238,10 +225,6 @@ const planStatus = ref('loading')
 const planError = ref('')
 const lessonStatus = ref('loading')
 const lessonError = ref('')
-// 错误态延迟显示：服务挂掉时这三个接口 20~80ms 就返回了，骨架立刻换成错误卡会让页面塌缩（见 utils/useErrorDelay）
-const nowErrReady = useErrorDelay(nowStatus)
-const planErrReady = useErrorDelay(planStatus)
-const lessonErrReady = useErrorDelay(lessonStatus)
 const recentPercent = computed(() => percentOf(learningData.value))
 // status: 0-未学习 1-学习中 2-已学完 3-已失效
 const statusText = computed(() => {

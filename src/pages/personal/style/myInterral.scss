@@ -1,6 +1,15 @@
 // 个人中心-我的积分
 .myInterralWrapper, .myInterralRankingWrapper{
+    // 打卡日历：占位高度对齐日历真实高度（表头 41 + 6 行 × 41 ≈ 287），
+    // 数据回来时日历在原位长出来，不会把下面「获取积分 / 天梯榜」整块顶下去。
+    .calendar > .blkLoad{ min-height: 287px; }
     .listCont{
+       // 加载期占位（.blkLoad）的高度要对齐各自区块的真实高度，否则数据回来时整行突然长高，
+       // 把下面的内容顶下去 —— 那也是一种「跳」，只是方向反过来。
+       //   获取积分：5 行 × (32 行高 + 35×2 内边距 + 1 边框) ≈ 515
+       //   天梯榜：  表头 60 + 10 行 × 41 ≈ 470
+       .list > .blkLoad{ min-height: 515px; }
+       .listRt > .blkLoad{ min-height: 470px; }
        .list, .listRt{
          width: calc(50% - 15px);
          .tit{

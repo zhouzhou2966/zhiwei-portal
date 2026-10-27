@@ -154,34 +154,29 @@
     gap: 12px;
 }
 
-/* ---------- 加载骨架 ---------- */
-// 卡片内那些「异步返回的区块」（我的积分 / 学霸天梯榜 / 打卡日历）加载中先占位。
-// 为什么必须有：这些区块原来是两态写法（`v-if error` + `v-else`），loading 必然落进 v-else，
-// 于是加载中会先把 access 的初始值 0/50、或者 IntegralRankTab 的「一条数据也没有」渲染出来，
-// 等请求失败再跳成错误卡 —— 用户看到的就是「先闪一堆假内容，再变成加载失败」。
-// 样式与 myClass.scss 里的骨架同一套（同一个动画、同一个底色），保证全站观感一致。
-.sk{
-    display: block;
-    background: var(--color-background3);
-    border-radius: 4px;
-    animation: skBreath 1.4s ease-in-out infinite;
-}
-@keyframes skBreath{
-    0%, 100%{ opacity: .55; }
-    50%     { opacity: 1; }
-}
-// 宽度修饰符（按文字长度大致取的比例，只求「像一行字」）
-.sk.w30{ width: 30%; }
-.sk.w40{ width: 40%; }
-.sk.w60{ width: 60%; }
-.sk.w80{ width: 80%; }
-// 单行文字骨架
-.skLine{
-    height: 12px;
-    margin-bottom: 12px;
-}
-// 表格行里的骨架条：只定高度，宽度天然撑满所在列（.sk 是 block）；
-// 需要窄一点就叠加 .w40/.w60 —— 那些修饰符特异性更高，不会被这里覆盖
-.skBar{
-    height: 12px;
+/* ---------- 区块内的「加载中」占位 ---------- */
+// 为什么是「空白 + 延迟淡入的小字」，不是骨架屏：
+// 这几个 learning 接口在网关那一步就返回 `{"code":0,"msg":"服务不存在"}`（HTTP 200、20~80ms），
+// 骨架只活 1~3 帧就被错误卡顶掉 —— 一整屏灰条「啪」地缩成三个小方块，
+// 比什么都不显示更晃眼（录屏实测骨架存在 40ms）。
+//
+// 所以加载期只保留静态结构（页面标题、区块标题），数据区空着，
+// 占位文字靠全局 `.fadeInDelay` 延迟 150ms 才淡入：
+//   快返回（<150ms）⇒ 它根本来不及出现，用户看到的就是「空白闪一下 → 结果」；
+//   真的慢（>150ms）⇒ 小字淡入，不会像纯空白那样像卡死。
+// 这和「我的订单 / 我的优惠券 / 我的考试 / 购物车 / 结算 / 支付」是同一套做法。
+//
+// min-height 对齐 InlineError 的高度（28px 上下内边距 + 三行内容 ≈ 132px），
+// 这样「加载中 → 加载失败」是原地换内容，页面高度不动。
+// 各页里比这更高的区块（打卡日历 / 获取积分 / 天梯榜）在 style/myInterral.scss 里
+// 单独把 min-height 调成区块真实高度，否则数据回来时整行会长高、把下面的内容顶下去。
+.blkLoad{
+    min-height: 132px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .blkTip{
+        font-size: 13px;
+        color: var(--color-font3);
+    }
 }

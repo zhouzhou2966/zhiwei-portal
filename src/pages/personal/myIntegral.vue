@@ -11,18 +11,12 @@
         <div class="list">
           <div class="tit">获取积分</div>
           <!-- 拿不到就直说，不要摆一排 0/50 假装今天一分没得。
-               ⚠️ 还要等 pointsErrReady：请求 20~80ms 就失败，骨架立刻换错误卡会让页面塌缩一下，
-               所以骨架先站够 220ms 再换（见 utils/useErrorDelay.js） -->
-          <InlineError v-if="pointsStatus === 'error' && pointsErrReady" title="积分数据加载失败" :msg="pointsError"
+               加载中数据区留白，占位小字靠 .fadeInDelay 延迟 150ms 才淡入（见 .blkLoad）：
+               接口 20~80ms 就返回，画骨架只会让灰条闪一下就消失，比留白更晃眼。 -->
+          <InlineError v-if="pointsStatus === 'error'" title="积分数据加载失败" :msg="pointsError"
                        @retry="getSignRecordsHandle" />
-          <!-- 加载中 / 已失败但骨架还没站够：两种情况的画面都是这 5 行灰条，视觉上零变化。
-               没有这个分支时 loading 落进下面的 v-else，会先把 access 的初始值
-               （课程学习 0/50、每日签到 0/2 …）渲染出来 —— 看着像「今天一分没得」。 -->
-          <div class="tab" v-else-if="pointsStatus !== 'ok'">
-            <div class="item fx-sb" v-for="n in 5" :key="'sk' + n">
-              <i class="sk skBar w40"></i>
-              <i class="sk skBar w30"></i>
-            </div>
+          <div class="blkLoad" v-else-if="pointsStatus === 'loading'">
+            <span class="blkTip fadeInDelay">正在加载…</span>
           </div>
           <div class="tab" v-else>
             <div class="item fx-sb" v-for="item in access" :key="item.type">
@@ -38,9 +32,12 @@
             </div>
             <!-- 榜单拉不到时组件内部会显示「一条数据也没有～」，那是在说「没人上榜」，
                  和服务挂了是两回事，所以这里要单独拦掉 -->
-            <InlineError v-if="rankStatus === 'error' && rankErrReady" title="学霸榜加载失败" :msg="rankError"
+            <InlineError v-if="rankStatus === 'error'" title="学霸榜加载失败" :msg="rankError"
                          @retry="getSeasonsData" />
-            <IntegralRankTab v-else :data="seasonsData" :loading="rankStatus !== 'ok'"></IntegralRankTab>
+            <div class="blkLoad" v-else-if="rankStatus === 'loading'">
+              <span class="blkTip fadeInDelay">正在加载…</span>
+            </div>
+            <IntegralRankTab v-else :data="seasonsData"></IntegralRankTab>
         </div>
       </div>
     </div>
@@ -53,8 +50,6 @@ import { onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 // errMsg 取业务失败文案（禁止写 res.data.msg）；catchMsg 取网络层失败文案
 import { errMsg, catchMsg } from "@/utils/request";
-// 错误态延迟显示：让骨架先站够 220ms，避免「骨架→错误卡」整块塌缩的闪，见 utils/useErrorDelay.js
-import { useErrorDelay } from "@/utils/useErrorDelay";
 import { getSeasons, getTodayPoints, pointsSign } from "@/api/class.js";
 import { useRoute } from "vue-router";
 import { dataCacheStore } from "@/store"
@@ -97,7 +92,6 @@ const seasonsData = ref([])
 // 学霸榜 / 今日积分 各自独立的三态：两块数据互不影响，一个挂了不该拖累另一个
 const rankStatus = ref('loading')
 const rankError = ref('')
-const rankErrReady = useErrorDelay(rankStatus)
 const getSeasonsData = async () => {
   rankStatus.value = 'loading'
   try {
@@ -118,7 +112,6 @@ const getSeasonsData = async () => {
 const toadyPointsData = ref([])
 const pointsStatus = ref('loading')
 const pointsError = ref('')
-const pointsErrReady = useErrorDelay(pointsStatus)
 const getSignRecordsHandle = async () => {
   pointsStatus.value = 'loading'
   try {
