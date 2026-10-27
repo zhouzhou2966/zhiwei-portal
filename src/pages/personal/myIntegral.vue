@@ -23,7 +23,7 @@
         <div class="listRt">
             <div class="tit fx-sb">
               <span>学霸天梯榜</span>
-              <span class="more font-bt" @click="() => $router.push({path: 'myIntegralRanking', query:{rank: seasonsData.rank, points:seasonsData.points}})">更多&gt;</span>
+              <span class="more font-bt" @click="() => $router.push({name: 'myIntegralRanking', query:{rank: seasonsData.rank, points:seasonsData.points}})">更多&gt;</span>
             </div>
             <!-- 榜单拉不到时组件内部会显示「一条数据也没有～」，那是在说「没人上榜」，
                  和服务挂了是两回事，所以这里要单独拦掉 -->

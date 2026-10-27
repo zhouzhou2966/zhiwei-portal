@@ -15,7 +15,7 @@
     <!-- 主导航：图标在左、文字在中，选中态用浅主色底，不再用 border-bottom 分隔 -->
     <nav class="nav">
       <router-link class="navItem" :class="{'on': activeClass(item)}" v-for="item in personalRoute"
-                   :key="item.path" :to="item.path">
+                   :key="item.path" :to="toOf(item)">
         <svg class="i" viewBox="0 0 24 24" v-html="iconOf(item.name)"></svg>
         <span>{{item.meta.title}}</span>
       </router-link>
@@ -75,6 +75,18 @@ const activeKey = computed(() => route.meta.active || route.path.split('/').at(-
 const activeClass = computed(() => item => item.meta.active === activeKey.value)
 
 // 概览卡：常驻，不再限定页面 —— 见 useClassOverview.ensureOverview 的说明
+
+/**
+ * 导航目标一律按 name 解析（绝对定位），不要用 item.path。
+ *
+ * item 是路由记录，path 是**相对路径**（'myExam'，不是 '/personal/main/myExam'）。
+ * vue-router 解析相对路径时会以「当前路由的父级」为基准拼接：
+ *   停在 /personal/main/myExam      → 'myExam' 拼成 /personal/main/myExam      ✅
+ *   停在 /personal/main/myClass/all → 'myExam' 拼成 /personal/main/myClass/myExam ❌
+ * 后者没有对应路由，会落进 router/index.js 的 `/:w+` 兜底被静默重定向到 /result/404。
+ * 「全部课程」是 main 的直接子路由但 path 带斜杠，深度比兄弟节点多一层，所以只有它会踩到。
+ */
+const toOf = item => (item.name ? { name: item.name } : item.path)
 
 /** 导航图标 **/
 // 路由 meta.icon 存的是 iconfont 码位，这里换成线性 SVG：30px 的图标字重和 15px 文字不匹配，
