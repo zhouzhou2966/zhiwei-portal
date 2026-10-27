@@ -1,7 +1,10 @@
 <!-- 首页头部课程分类 -->
 <template>
     <div class="classCategory ft-14" :class="{ classCategoryHeader: type == 'float'}">
-      <div @mouseout="mouseoutHandle()">
+      <!-- mouseleave 而不是 mouseout：mouseout 会从子元素冒泡上来，
+           鼠标在 .items 里从一个分类移到另一个、或者从 .items 移到右侧 .allCategory 时
+           都会先触发一次「离开」，把 isDetails 置 false 让详情面板闪掉。 -->
+      <div @mouseleave="mouseoutHandle()">
         <div class="items">
           <div class="item" v-for="item in data" :key="item.id" @mouseover="mouseoverHandle(item.children)" >
             <!-- 一级分类 -->
@@ -140,7 +143,9 @@ import {ref} from 'vue';
         z-index: -1;
         background-color: #fff;
         top: -6px;
-        left: 44%;
+        // 原来写 left:44%（= 236px 列表的 44% ≈ 104px），那是在面板按整页坐标写死时凑的。
+        // 现在面板挂在「分类」按钮正下方（left:0 对齐图标起点），三角要指回按钮中心 ≈ 28px。
+        left: 28px;
         transform: rotate(45deg);
         box-shadow: 4px 4px 6px 2px rgba(108,112,118,0.3);
         // border:solid 1px #E3E5E9;

@@ -6,14 +6,23 @@
         <router-link to="/"><img src="/logo.svg" alt="知微" /></router-link>
       </div>
       <!-- 头部分类-start -->
-      <div v-if="route.path != '/main/index' && route.path != '/login' " class="courseClass font-bt2"
-           @mouseover="() => isShow = true" @mouseout="() => isShow = false">
-        <i class="iconfont zhy-icon_fenlei_nor"></i> 分类
-      </div>
-      <div v-if="route.path != '/main/index' && route.path != '/login' " class="courseClassList" v-show="isShow"
-           @mouseover="() => isShow = true" @mouseout="() => isShow = false">
-        <div class="firstItems">
-          <ClassCategory :data="courseClass" type="float"></ClassCategory>
+      <!-- 按钮和面板必须包在同一个容器里：
+           原来两个是兄弟节点、各自挂 @mouseover/@mouseout，面板又是 `position:absolute;
+           left:102px; top:50px` 这种**按整页坐标写死**的位置（没有定位祖先，offsetParent=null），
+           于是面板左边缘固定在 102px、按钮却在 284px —— 横向根本不相邻。
+           鼠标从按钮往下必然先经过一段空白，mouseout 立刻把 isShow 置 false、面板 display:none，
+           面板永远进不去 ⇒ 「只有悬停在按钮上时才出现，点不到」。
+           现在：面板挂进容器（容器 position:relative），用 mouseenter/mouseleave
+           （不会被子元素冒泡打断），鼠标从按钮移到面板全程都算「在容器内」，面板不会消失。 -->
+      <div v-if="route.path != '/main/index' && route.path != '/login'" class="courseClassWrap"
+           @mouseenter="() => isShow = true" @mouseleave="() => isShow = false">
+        <div class="courseClass font-bt2">
+          <i class="iconfont zhy-icon_fenlei_nor"></i> 分类
+        </div>
+        <div class="courseClassList" v-show="isShow">
+          <div class="firstItems">
+            <ClassCategory :data="courseClass" type="float"></ClassCategory>
+          </div>
         </div>
       </div>
       <!-- 头部分类-end -->
@@ -136,6 +145,9 @@ const userStore = getToken();
 const dataCache = dataCacheStore();
 const courseClass = ref([]) // 分类数据
 const isShow = ref(false)  // 分类展示
+// 点了分类里的链接会跳路由，但指针还停在面板上（没有 mouseleave）⇒ 面板会一直挂着挡页面。
+// 路由一变就关掉。
+watch(() => route.fullPath, () => { isShow.value = false })
 /**
  * 我真正学习的课程信息 - 学习中心展示。
  * 直接用 nowLesson 模块的共享 ref：Header 和「我的课程」页读的是同一份数据，
@@ -282,10 +294,15 @@ header {
   padding: 11px 0;
   font-size: 14px;
 
-  .courseClass {
+  // 分类按钮 + 下拉面板的定位容器。
+  // 面板要相对「按钮」定位，不能按整页坐标写死（见模板里的注释）。
+  .courseClassWrap {
     position: relative;
-    line-height: 48px;
     margin-left: 26px;
+  }
+
+  .courseClass {
+    line-height: 48px;
     display: flex;
     font-size: 14px;
 
@@ -298,8 +315,10 @@ header {
   .courseClassList {
     position: absolute;
     z-index: 999;
-    top: 50px;
-    left: 102px;
+    // 挂在按钮正下方：left:0 让面板左边缘对齐按钮左边缘（图标起点），
+    // 面板里的小三角再指向按钮中心（见 ClassCategory 的 .classCategoryHeader）。
+    top: 100%;
+    left: 0;
 
     .firstItems {
       background-color: #fff;
