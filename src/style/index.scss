@@ -50,11 +50,11 @@ a{
     }
 }
 // 全局容器
+// 原来写死 1200px：在 1600+ 的窗口上两侧各留 200 多 px 空白，
+// 而首屏的深色背景又是通栏铺满的，一宽一窄看起来非常不协调。
+// 改成流式：最宽 1400，窄屏按「窗口 - 80」收，保证两边始终是同一个页边距。
 .container{
-  // width: 80%;
-  // max-width: 1440px;
-  // min-width: 1220px;
-  width: 1200px;
+  width: min(1400px, calc(100% - 80px));
   margin: 0 auto;
 }
 // @media screen and (max-width: 1300px){

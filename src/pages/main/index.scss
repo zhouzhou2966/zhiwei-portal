@@ -1,66 +1,169 @@
 .mainWrapper {
-  .banner {
-    padding: 20px 0;
-    .categorys {
-      position: relative;
-      width: 236px;
-      height: 388px;
-      border-radius: 8px;
-      z-index: 9;
+
+  /* ===== 首屏 =====
+     深色块收在容器里，跟下面的课程区同宽（原来通栏铺满，内容只有 1200，
+     宽窄不一，看着就是「蓝色横贯整页、内容缩在中间」）。
+     右侧 300px 放两张静态专题卡，替代原来固定 388px 高的分类竖栏。 */
+  .hero {
+    padding: 20px 0 30px;
+  }
+
+  .heroCard {
+    padding: 20px 20px 4px;
+    border-radius: 18px;
+    background:
+      radial-gradient(900px 340px at 80% -10%, rgba(217, 164, 65, .16), rgba(217, 164, 65, 0) 70%),
+      linear-gradient(180deg, #0E2C3F 0%, #12374F 100%);
+  }
+
+  .heroRow {
+    display: flex;
+    gap: 14px;
+  }
+
+  .heroStage {
+    flex: 1;
+    min-width: 0;
+    height: 360px;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .topicCol {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    width: 300px;
+    gap: 14px;
+  }
+
+  /* 分类条：一级 + 二级平铺，替代原来的竖栏。
+     分类只有 2 个一级 + 5 个二级时一行放得下，分类变多会自然换行。 */
+  .catChips {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    min-height: 58px;
+    padding-top: 16px;
+
+    .lb {
+      margin-right: 2px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: #EBCB84;
+    }
+
+    .chip {
+      padding: 5px 13px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, .72);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .07);
+      cursor: pointer;
+      transition: color .18s, background .18s;
+
+      &:hover {
+        color: #12374F;
+        background: #EBCB84;
+      }
+
+      // 一级分类：底色略亮、字更白，跟二级区分开
+      &.main {
+        color: #fff;
+        font-weight: 500;
+        background: rgba(255, 255, 255, .14);
+      }
+    }
+
+    .all {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .6);
+      cursor: pointer;
+      transition: color .18s;
+
+      &:hover {
+        color: #EBCB84;
+      }
     }
   }
-  .globalTopBanner{
-      width: 100%;
-      min-width: 1152px;
-      max-width: 2560px;
-      height: 72px;
-      overflow: hidden;
-      cursor: pointer;
-      position: relative;
-      img{
-        height: 100%;
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-      }
+
+  .arrow {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-top: 1.5px solid currentColor;
+    border-right: 1.5px solid currentColor;
+    transform: rotate(45deg);
   }
-  .dialogHead{
+
+  /* ===== 广告条 =====
+     原来是 2560 宽的通栏图，跟内容宽度对不上；现在收进容器、加圆角，
+     图片按 50% 居中裁切（文案在中间，两侧只是渐变底，裁掉不影响阅读）。 */
+  .globalTopBanner {
+    width: 100%;
+    height: 72px;
+    margin-bottom: 46px;
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+
+    img {
+      height: 100%;
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+
+  /* ===== 兴趣设置弹窗 ===== */
+  .dialogHead {
     border-bottom: solid 2px var(--color-background2);
     padding-bottom: 20px;
-    .titleClass{
+
+    .titleClass {
       font-family: PingFangSC-Semibold;
       font-weight: 600;
       font-size: 28px;
       color: var(--color-font1);
     }
-    .butCont{
+
+    .butCont {
       width: 250px;
     }
   }
-  .floatCont{
+
+  /* ===== 右下角浮动优惠券 =====
+     原来 180×180 还带 80px 的 margin-right，等于贴在屏幕中间偏右，很挡内容。
+     缩到 110 并贴边，只作为轻量入口。 */
+  .floatCont {
     position: fixed;
-    right: 0;
+    right: 16px;
     bottom: 20vh;
-    width: 50px;
-    height: 150px;
-    img{
-      width: 180px;
-      height: 180px;
-      margin-right: 80px;
+    z-index: 20;
+    transition: transform .2s;
+
+    a {
+      display: block;
+      width: 110px;
+      height: 110px;
     }
-    .cont{
-      background: #FFFFFF;
-      box-shadow: 0 0 6px 2px rgba(108,112,118,0.17);
-      border-radius: 8px;
-      margin-right: 14px;
-      img{
-        width: 32px;
-        height: 32px;
-        margin: 10px 9px 6px 9px;
-        display: none;
-      }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    &:hover {
+      transform: translateY(-4px);
     }
   }
 }

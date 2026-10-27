@@ -1,57 +1,82 @@
 <!-- 首页 -->
 <template>
   <div class="mainWrapper">
-    <div class="container banner fx" style="overflow: hidden;">
-      <div class="categorys bg-wt">
-        <!-- 头部分类 -->
-        <ClassCategory :data="classCategorys"></ClassCategory>
+    <!-- 首屏：主视觉 + 热门专题 + 分类 chips
+         深色块收在容器里（不再通栏铺满）：内容宽 1400、背景也 1400，
+         两者同宽才不会出现「蓝色横贯整页、内容缩在中间」的割裂感 -->
+    <section class="hero">
+      <div class="container">
+        <div class="heroCard">
+          <div class="heroRow">
+            <!-- 头部幻灯片 -->
+            <Swiper :data="imags" class="heroStage"></Swiper>
+            <!-- 热门专题（静态，不依赖登录态） -->
+            <div class="topicCol">
+              <TopicCard v-for="t in topics" :key="t.title" :topic="t"></TopicCard>
+            </div>
+          </div>
+
+          <!-- 分类条：一级 + 二级全部平铺。
+               原来左侧是固定 388px 高的分类竖栏，库里只有 2 个一级分类，下面 200 多 px 全是白板。 -->
+          <div class="catChips">
+            <span class="lb">课程分类</span>
+            <template v-for="item in classCategorys" :key="item.id">
+              <span class="chip main" @click="goCat('categoryIdLv1', item.id)">{{ item.name }}</span>
+              <span
+                class="chip"
+                v-for="sub in item.children"
+                :key="sub.id"
+                @click="goCat('categoryIdLv2', sub.id)"
+              >{{ sub.name }}</span>
+            </template>
+            <span class="all" @click="$router.push('/search/index')">全部分类 <i class="arrow"></i></span>
+          </div>
+        </div>
       </div>
-      <!-- 头部幻灯片 -->
-      <Swiper :data="imags"></Swiper>
-    </div>
-    <!-- 兴趣模块  -->
+    </section>
+
+    <!-- 兴趣模块（登录且已设置兴趣才显示） -->
     <div class="container" v-if="interest.size > 0">
       <Interest :data="interest" :key="intKey" @setInterest="setInterest"></Interest>
     </div>
-    <!-- 兴趣模块 -->
-    <!-- 直播公开课 -->
-    <!-- <div class="bg-wt pd-tp-30">
+
+    <!-- 免费好课：接口是 /ss/recommend/free，返回的全是免费课，
+         原标题「新课推荐」和实际数据对不上，改成如实的名字 -->
+    <div class="container">
       <OpenClass
-        title="直播公开课"
-        class="container bg-wt"
-        :data="freeClassData"
-      ></OpenClass>
-    </div> -->
-    <!-- 新课推荐 -->
-    <div class="pd-tp-30 bg-wt">
-      <OpenClass
-        title="新课推荐"
-        class="container"
+        title="免费好课"
+        subtitle="0 元入门，随到随学"
         :data="freeClassData"
       ></OpenClass>
     </div>
-    <!-- 广告位 -->
-    <div class="globalTopBanner" style="display: block;">
-      <img src="@/assets/adv.svg" />
+
+    <!-- 广告位（同样收进容器，跟首屏、课程区对齐） -->
+    <div class="container">
+      <div class="globalTopBanner">
+        <img src="@/assets/adv.svg" alt="新专题上线" />
+      </div>
     </div>
-    <!-- 精品好课 -- start -->
-    <div class="pd-tp-30">
+
+    <!-- 精品好课 -->
+    <div class="container">
       <OpenClass
         title="精品好课"
-        class="container"
+        subtitle="按报名热度精选"
+        badge="top"
         :data="goodClassData"
       ></OpenClass>
     </div>
-    <!-- 精品好课 -- end -->
-    <!-- 精品新课 -- start -->
-    <div class="pd-tp-30">
+
+    <!-- 精品新课 -->
+    <div class="container">
       <OpenClass
-          title="精品新课"
-          class="container"
-          :data="newClassData"
+        title="精品新课"
+        subtitle="最近上架的课程"
+        badge="new"
+        :data="newClassData"
       ></OpenClass>
     </div>
-    <!-- 精品好课 -- end -->
+
     <!-- 兴趣选择设置 -- start -->
     <div class="interest">
       <el-dialog v-model="interestDialog" width="80%" :show-close="false">
@@ -70,13 +95,10 @@
         <CheckInterest :data="classCategorys" :initValue="interest" @setInterestList="setInterestList"></CheckInterest>
       </el-dialog>
     </div>
-    <div class="floatCont fx-fd-col fx-ct">
+    <div class="floatCont">
       <router-link to="/main/coupon">
-        <img src="@/assets/coup.png" coupon alt="" />
+        <img src="@/assets/coup.png" alt="优惠券" />
       </router-link>
-      <div class="cont">
-        <img src="@/assets/btn_backtop.png" alt="" />
-      </div>
     </div>
   </div>
 </template>
@@ -86,22 +108,39 @@ import { errMsg } from '@/utils/request'
 /** 数据导入 **/
 
 import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import { isLogin, dataCacheStore } from "@/store";
 import { ElMessage } from "element-plus";
 import { getClassCategorys, getRecommendClassList, setInterests, getInterests } from "@/api/class.js";
-import ClassCategory from "@/components/ClassCategory.vue";
 import CheckInterest from "./components/CheckInterest.vue";
 import Interest from "./components/Interest.vue";
 import OpenClass from "./components/OpenClass.vue";
 import Swiper from "./components/Swiper.vue";
+import TopicCard from "./components/TopicCard.vue";
 import banner1 from "@/assets/banner1.svg";
 import banner2 from "@/assets/banner2.svg";
 import banner3 from "@/assets/banner3.svg";
 const dataCache = dataCacheStore();
+const router = useRouter();
 // 分类数据
 const classCategorys = ref([]);
 // banner幻灯片图片
 const imags = [banner1, banner2, banner3];
+// 首屏右侧的热门专题：文案取自现有三张 banner 里的两个主题，纯静态，不走接口
+const topics = [
+  {
+    tag: '热门专题',
+    title: '系统架构演进实战',
+    desc: '从单机到分布式，讲透每一次架构取舍',
+    tone: 'navy'
+  },
+  {
+    tag: '热门专题',
+    title: '全链路项目实战',
+    desc: '在完整项目中理解每个技术选型的原因',
+    tone: 'gold'
+  }
+];
 // 精品公开课的数据
 const freeClassData = ref([]);
 // 兴趣弹窗
@@ -125,6 +164,11 @@ onMounted(async () => {
 });
 
 /** 方法定义 **/
+
+// 分类跳转：type 与搜索页约定的取值一致
+const goCat = (type, id) => {
+  router.push({ path: '/search/index', query: { type, id } });
+};
 
 // 获取一、二、三级分类信息
 const getClassCategoryData = async () => {
@@ -157,7 +201,7 @@ const getFreeClassListData = async () => {
   await getRecommendClassList("free")
     .then((res) => {
       if (res.code === 200) {
-        freeClassData.value = res.data;
+        freeClassData.value = Array.isArray(res.data) ? res.data : [];
       } else {
         ElMessage({
           message: errMsg(res),
@@ -177,7 +221,7 @@ const getGoodClassListData = async () => {
   await getRecommendClassList('best')
     .then((res) => {
       if (res.code === 200) {
-        goodClassData.value = res.data;
+        goodClassData.value = Array.isArray(res.data) ? res.data : [];
       } else {
         ElMessage(res.meg);
       }
@@ -191,7 +235,7 @@ const getNewClassListData = async () => {
   await getRecommendClassList('new')
     .then((res) => {
       if (res.code === 200) {
-        newClassData.value = res.data;
+        newClassData.value = Array.isArray(res.data) ? res.data : [];
       } else {
         ElMessage(res.meg);
       }

@@ -1,7 +1,11 @@
 // 结算页面
 .settlementWrapper, .paymenttWrapper, .successWrapper, .cartsWrapper {
   padding: 30px;
-  margin: 30px auto 40px auto;
+  // 水平方向不能写 auto：这几个类是路由页的根元素，外面套的是 .layoutsWrapper（flex 列）。
+  // flex 项在交叉轴上有 auto 外边距时**不会 stretch**，宽度退化成 fit-content，
+  // 而里面的 .container 是 calc(100% - 80px) ⇒ 百分比无参照 ⇒ 整页塌成一条竖条
+  // （购物车「加载失败」那张窄卡片就是这么来的；以前 .container 写死 1200px 才没暴露）。
+  margin: 30px 0 40px 0;
   border-radius: 8px;
   .title{
     font-weight: 600;
