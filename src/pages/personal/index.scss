@@ -166,7 +166,7 @@
 //   真的慢（>150ms）⇒ 小字淡入，不会像纯空白那样像卡死。
 // 这和「我的订单 / 我的优惠券 / 我的考试 / 购物车 / 结算 / 支付」是同一套做法。
 //
-// min-height 对齐 InlineError 的高度（28px 上下内边距 + 三行内容 ≈ 132px），
+// min-height 对齐 InlineError 的高度（实测 140px：28×2 内边距 + 标题 22 + 原因 20 + 按钮 24 + 间距），
 // 这样「加载中 → 加载失败」是原地换内容，页面高度不动。
 // 注意：失败卡也放进 .blkLoad 里居中（而不是让 .inlineErr 自己撑高），
 // 卡片保持紧凑、留白居中，观感和「我的订单」页的 .nodata 一致。
@@ -174,7 +174,7 @@
 // 单独调 min-height 到区块真实高度，三态一样高，切换时下面的内容才不会上下跳；
 // 行数随数据变的区块（天梯榜）不固定，用这里的默认值。
 .blkLoad{
-    min-height: 132px;
+    min-height: 140px;
     display: flex;
     align-items: center;
     justify-content: center;
