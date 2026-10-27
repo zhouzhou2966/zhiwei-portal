@@ -153,3 +153,35 @@
     align-items: center;
     gap: 12px;
 }
+
+/* ---------- 加载骨架 ---------- */
+// 卡片内那些「异步返回的区块」（我的积分 / 学霸天梯榜 / 打卡日历）加载中先占位。
+// 为什么必须有：这些区块原来是两态写法（`v-if error` + `v-else`），loading 必然落进 v-else，
+// 于是加载中会先把 access 的初始值 0/50、或者 IntegralRankTab 的「一条数据也没有」渲染出来，
+// 等请求失败再跳成错误卡 —— 用户看到的就是「先闪一堆假内容，再变成加载失败」。
+// 样式与 myClass.scss 里的骨架同一套（同一个动画、同一个底色），保证全站观感一致。
+.sk{
+    display: block;
+    background: var(--color-background3);
+    border-radius: 4px;
+    animation: skBreath 1.4s ease-in-out infinite;
+}
+@keyframes skBreath{
+    0%, 100%{ opacity: .55; }
+    50%     { opacity: 1; }
+}
+// 宽度修饰符（按文字长度大致取的比例，只求「像一行字」）
+.sk.w30{ width: 30%; }
+.sk.w40{ width: 40%; }
+.sk.w60{ width: 60%; }
+.sk.w80{ width: 80%; }
+// 单行文字骨架
+.skLine{
+    height: 12px;
+    margin-bottom: 12px;
+}
+// 表格行里的骨架条：只定高度，宽度天然撑满所在列（.sk 是 block）；
+// 需要窄一点就叠加 .w40/.w60 —— 那些修饰符特异性更高，不会被这里覆盖
+.skBar{
+    height: 12px;
+}

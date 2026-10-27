@@ -13,7 +13,7 @@
                用户切回来只看到一张空榜，会以为是「本来就没数据」 -->
           <InlineError v-if="curStatus === 'error'" title="本赛季榜加载失败" :msg="curError"
                        @retry="() => getSeasonsData(0)" />
-          <IntegralRankTab v-else :data="currentSeasonsData"></IntegralRankTab>
+          <IntegralRankTab v-else :data="currentSeasonsData" :loading="curStatus === 'loading'"></IntegralRankTab>
         </div>
         <div class="listRt">
           <div class="tit fx-sb">
@@ -30,13 +30,16 @@
                   :value="item.id"
                 />
               </el-select>
-              <!-- 榜单自己已经报错时就不再叠一条「赛季列表加载失败」，避免同一块出现两行错误 -->
-              <span v-else-if="hisStatus !== 'error'" class="seasonEmpty">赛季列表加载失败</span>
+              <!-- 原来写的是 `v-else-if="hisStatus !== 'error'"`：赛季列表和榜单是并行发的，
+                   赛季还没回来时 seasonOptions 是空、hisStatus 还是 'loading'（≠ 'error'），
+                   于是会先闪一句「赛季列表加载失败」，等赛季回来才变成下拉框 ——
+                   服务完全正常时也会闪。现在给赛季列表自己一个三态，loading 期间什么都不显示。 -->
+              <span v-else-if="seasonStatus === 'error'" class="seasonEmpty">赛季列表加载失败</span>
             </div>
           </div>
           <InlineError v-if="hisStatus === 'error'" title="历史榜加载失败" :msg="hisError"
                        @retry="retryHistory" />
-          <IntegralRankTab v-else :data="seasonsData"></IntegralRankTab>
+          <IntegralRankTab v-else :data="seasonsData" :loading="hisStatus === 'loading'"></IntegralRankTab>
         </div>
       </div>
     </div>
@@ -138,7 +141,11 @@ const getSeasonsData = async (season) => {
 // 历史下拉信息查询
 const season = ref(0)
 const seasonOptions = ref([])
+// 赛季下拉自己的三态。原来它没有状态，模板用 `hisStatus !== 'error'` 去推断，
+// 结果 loading 期间（榜单还没回来）就会误报「赛季列表加载失败」。
+const seasonStatus = ref('loading')
 const getHistorySeasonsData = async () => {
+  seasonStatus.value = 'loading'
   try {
     const res = await getSelectOptions()
     // 空数组要挡住：原来直接取 res.data[length-1].id 会在「赛季表为空」时抛 TypeError
@@ -146,10 +153,16 @@ const getHistorySeasonsData = async () => {
       // 最后一个赛季的 id 置 0：后端约定 season=0 就是当前赛季，下拉里必须有这一项
       res.data[res.data.length - 1].id = 0
       seasonOptions.value = res.data
+      seasonStatus.value = 'ok'
+      return
     }
+    // code=200 但赛季表是空的：下拉没法用，仍按「拿不到」处理（与改动前表现一致）
+    seasonOptions.value = []
+    seasonStatus.value = 'error'
   } catch (e) {
     // 赛季下拉拉不到只影响「切历史赛季」，榜单本身还正常显示，不抢榜单的失败态
     seasonOptions.value = []
+    seasonStatus.value = 'error'
   }
 }
 // 历史榜重试：赛季列表和当前榜单一起重拉

@@ -10,6 +10,26 @@
     </div>
     <InlineError title="打卡记录加载失败" :msg="errorMsg" @retry="getSignRecordsHandel" />
   </div>
+  <!-- 加载中：表头照常画（周几是静态的），日期格子先用灰条占位。
+       没有这个分支时 loading 落进下面的 v-else，而 calendarData 初始是空数组，
+       会先画一个「只有周日~周六表头、格子全空」的日历，等数据到了再突然填满 —— 一帧空白表格。 -->
+  <div class="calendar" v-else-if="status === 'loading'">
+    <div class="calendarTop">
+      <div class="titleBox">
+        <span class="monthTitle">{{ monthTitle }}</span>
+      </div>
+      <div class="label">
+        <div class="fx marg-rt-20"><span></span> 未打卡 </div>
+        <div class="fx"><span class="isRecords"></span>已打卡</div>
+      </div>
+    </div>
+    <div class="calendarHead">
+      <span v-for="item in week" :key="item">{{item}}</span>
+    </div>
+    <div class="calendarCont">
+      <div class="day skDay" v-for="n in 42" :key="'sk' + n"><i class="sk"></i></div>
+    </div>
+  </div>
   <div class="calendar" v-else>
     <div class="calendarTop">
       <div class="titleBox">
@@ -250,6 +270,18 @@ const getSignRecordsHandel = async () => {
       }
       .noRecords{
         background: #E8E8E8;
+      }
+      // 加载骨架格子：沿用 .day 的宽高与边框，只在里面塞一条灰条，
+      // 这样数据回来时格子位置完全不动
+      .skDay{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        .sk{
+          width: 100%;
+          height: 10px;
+        }
       }
   }
 }

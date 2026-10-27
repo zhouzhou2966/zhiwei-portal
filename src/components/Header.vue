@@ -88,8 +88,8 @@
   </header>
 </template>
 <script setup>
-// errMsg：统一取后端错误提示（禁止写 res.data.msg —— 业务失败时响应体里没有 data 字段，见 utils/request.js）
-import { errMsg } from '@/utils/request'
+// 注意：这里不再 import errMsg —— 它原来只服务于「分类接口失败弹 toast」那一处，
+// 现在那条已经改成静默（见 getCourseClassHandle）。
 import {computed, onBeforeMount, onMounted, ref, watch, watchEffect} from "vue";
 import {Search, ArrowDown} from "@element-plus/icons-vue";
 import {useUserStore, isLogin, getToken, dataCacheStore} from '@/store'
@@ -224,25 +224,19 @@ const getLearnClassInfoHandle = async () => {
 
 
 // 获取课程分类
+// ⚠️ 失败**不要弹 ElMessage**。分类只是顶栏「分类」下拉的内容，拉不到就让下拉空着。
+// 原来失败会弹一条全局 error toast：Header 是全局组件，只要课程服务一挂，
+// 用户打开**任何页面**都会在顶部闪一下红色「服务不存在」、3 秒后消失 ——
+// 页面主体本来就有常驻的 InlineError 说明情况，这条 toast 纯属噪音。
 const getCourseClassHandle = async () => {
   await getClassCategorys()
       .then((res) => {
         if (res.code == 200) {
           courseClass.value = res.data;
           dataCache.setCourseClassDataes(res.data)
-        } else {
-          ElMessage({
-            message: errMsg(res),
-            type: "error",
-          });
         }
       })
-      .catch(() => {
-        ElMessage({
-          message: "分类请求出错！",
-          type: "error",
-        });
-      });
+      .catch(() => {});
 }
 // 默认头像（onerrorImg / headerIcon 已在文件顶部定义，见「头像加载失败的兜底」注释）
 

@@ -13,6 +13,16 @@
           <!-- 拿不到就直说，不要摆一排 0/50 假装今天一分没得 -->
           <InlineError v-if="pointsStatus === 'error'" title="积分数据加载失败" :msg="pointsError"
                        @retry="getSignRecordsHandle" />
+          <!-- 加载中：5 行灰条占位。
+               没有这个分支时 loading 落进下面的 v-else，会先把 access 的初始值
+               （课程学习 0/50、每日签到 0/2 …）渲染出来 —— 看着像「今天一分没得」，
+               等请求失败再跳成错误卡，中间那一下就是「闪」。 -->
+          <div class="tab" v-else-if="pointsStatus === 'loading'">
+            <div class="item fx-sb" v-for="n in 5" :key="'sk' + n">
+              <i class="sk skBar w40"></i>
+              <i class="sk skBar w30"></i>
+            </div>
+          </div>
           <div class="tab" v-else>
             <div class="item fx-sb" v-for="item in access" :key="item.type">
               <span>{{item.type}}</span>
@@ -29,7 +39,7 @@
                  和服务挂了是两回事，所以这里要单独拦掉 -->
             <InlineError v-if="rankStatus === 'error'" title="学霸榜加载失败" :msg="rankError"
                          @retry="getSeasonsData" />
-            <IntegralRankTab v-else :data="seasonsData"></IntegralRankTab>
+            <IntegralRankTab v-else :data="seasonsData" :loading="rankStatus === 'loading'"></IntegralRankTab>
         </div>
       </div>
     </div>
