@@ -19,7 +19,9 @@
       <div class="secTitle">
         <h2>最近学习</h2>
       </div>
-      <InlineError title="最近学习加载失败" :msg="nowError" @retry="getLearningData" />
+      <div class="blkLoad">
+        <InlineError title="最近学习加载失败" :msg="nowError" @retry="getLearningData" />
+      </div>
     </div>
     <!-- 加载中：区块标题留着（三个分支画的是同一份），数据区留白 + 延迟淡入的小字（见 .blkLoad）。
          三个接口各自独立返回，没有这个分支时第一帧就是空态（学习计划尤其明显，
@@ -72,7 +74,9 @@
       <div class="secTitle">
         <h2>学习计划</h2>
       </div>
-      <InlineError title="学习计划加载失败" :msg="planError" @retry="getPlanData" />
+      <div class="blkLoad">
+        <InlineError title="学习计划加载失败" :msg="planError" @retry="getPlanData" />
+      </div>
     </div>
     <!-- 加载中占位：planData 初始是 null（原来给的是空数组 []，
          模板条件 `planData && ...` 对空数组为真，于是加载中就把「还没有学习计划」渲染出来了） -->
@@ -107,7 +111,9 @@
       <div class="secTitle">
         <h2>在学课程</h2>
       </div>
-      <InlineError title="课程列表加载失败" :msg="lessonError" @retry="getMyLessonsData" />
+      <div class="blkLoad">
+        <InlineError title="课程列表加载失败" :msg="lessonError" @retry="getMyLessonsData" />
+      </div>
     </div>
     <!-- 加载中：数据区留白 + 延迟淡入的小字（见 .blkLoad） -->
     <div class="personalCards" v-else-if="lessonStatus === 'loading'">

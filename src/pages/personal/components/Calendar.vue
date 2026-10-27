@@ -1,14 +1,17 @@
 <!-- table切换头部 -->
 <template>
   <!-- 打卡记录拉不到时，不要把整月都画成「未打卡」——那是在编数据。
-       直接换成失败提示，日历网格等数据回来再画。 -->
+       失败卡放在 .blkLoad 里居中：三态（加载中 / 失败 / 正常）高度一致，
+       切换时下面的内容不会上下跳；卡片本身保持紧凑，不撑成一大块灰面板。 -->
   <div class="calendar" v-if="status === 'error'">
     <div class="calendarTop">
       <div class="titleBox">
         <span class="monthTitle">{{ monthTitle }}</span>
       </div>
     </div>
-    <InlineError title="打卡记录加载失败" :msg="errorMsg" @retry="getSignRecordsHandel" />
+    <div class="blkLoad">
+      <InlineError title="打卡记录加载失败" :msg="errorMsg" @retry="getSignRecordsHandel" />
+    </div>
   </div>
   <!-- 加载中：只留月份标题和图例（静态的，三个分支画的是同一份），网格区留白。
        占位小字靠 .fadeInDelay 延迟 150ms 才淡入（见 .blkLoad）：

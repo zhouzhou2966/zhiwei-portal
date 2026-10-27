@@ -13,8 +13,9 @@
           <!-- 拿不到就直说，不要摆一排 0/50 假装今天一分没得。
                加载中数据区留白，占位小字靠 .fadeInDelay 延迟 150ms 才淡入（见 .blkLoad）：
                接口 20~80ms 就返回，画骨架只会让灰条闪一下就消失，比留白更晃眼。 -->
-          <InlineError v-if="pointsStatus === 'error'" title="积分数据加载失败" :msg="pointsError"
-                       @retry="getSignRecordsHandle" />
+          <div class="blkLoad" v-if="pointsStatus === 'error'">
+            <InlineError title="积分数据加载失败" :msg="pointsError" @retry="getSignRecordsHandle" />
+          </div>
           <div class="blkLoad" v-else-if="pointsStatus === 'loading'">
             <span class="blkTip fadeInDelay">正在加载…</span>
           </div>
@@ -32,8 +33,9 @@
             </div>
             <!-- 榜单拉不到时组件内部会显示「一条数据也没有～」，那是在说「没人上榜」，
                  和服务挂了是两回事，所以这里要单独拦掉 -->
-            <InlineError v-if="rankStatus === 'error'" title="学霸榜加载失败" :msg="rankError"
-                         @retry="getSeasonsData" />
+            <div class="blkLoad" v-if="rankStatus === 'error'">
+              <InlineError title="学霸榜加载失败" :msg="rankError" @retry="getSeasonsData" />
+            </div>
             <div class="blkLoad" v-else-if="rankStatus === 'loading'">
               <span class="blkTip fadeInDelay">正在加载…</span>
             </div>

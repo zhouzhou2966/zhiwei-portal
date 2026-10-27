@@ -13,8 +13,9 @@
                用户切回来只看到一张空榜，会以为是「本来就没数据」。
                加载中不再画骨架：接口 20~80ms 就返回，灰条只活 1~3 帧就被错误卡顶掉，
                反而更晃眼。改成数据区留白 + 延迟淡入的占位小字（见 .blkLoad）。 -->
-          <InlineError v-if="curStatus === 'error'" title="本赛季榜加载失败" :msg="curError"
-                       @retry="() => getSeasonsData(0)" />
+          <div class="blkLoad" v-if="curStatus === 'error'">
+            <InlineError title="本赛季榜加载失败" :msg="curError" @retry="() => getSeasonsData(0)" />
+          </div>
           <div class="blkLoad" v-else-if="curStatus === 'loading'">
             <span class="blkTip fadeInDelay">正在加载…</span>
           </div>
@@ -42,8 +43,9 @@
               <span v-else-if="seasonStatus === 'error'" class="seasonEmpty">赛季列表加载失败</span>
             </div>
           </div>
-          <InlineError v-if="hisStatus === 'error'" title="历史榜加载失败" :msg="hisError"
-                       @retry="retryHistory" />
+          <div class="blkLoad" v-if="hisStatus === 'error'">
+            <InlineError title="历史榜加载失败" :msg="hisError" @retry="retryHistory" />
+          </div>
           <div class="blkLoad" v-else-if="hisStatus === 'loading'">
             <span class="blkTip fadeInDelay">正在加载…</span>
           </div>
