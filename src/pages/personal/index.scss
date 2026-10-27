@@ -168,8 +168,9 @@
 //
 // min-height 对齐 InlineError 的高度（28px 上下内边距 + 三行内容 ≈ 132px），
 // 这样「加载中 → 加载失败」是原地换内容，页面高度不动。
-// 各页里比这更高的区块（打卡日历 / 获取积分 / 天梯榜）在 style/myInterral.scss 里
-// 单独把 min-height 调成区块真实高度，否则数据回来时整行会长高、把下面的内容顶下去。
+// 各页里比这更高的区块（打卡日历 336 / 获取积分 516）在 style/myInterral.scss 里
+// 单独把 min-height 调成区块真实高度，并且连 .inlineErr 一起撑高 —— 三态一样高，
+// 切换时下面的内容才不会上下跳。行数随数据变的区块（天梯榜）不固定，用这里的默认值。
 .blkLoad{
     min-height: 132px;
     display: flex;
