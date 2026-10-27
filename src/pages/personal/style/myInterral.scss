@@ -1,9 +1,10 @@
 // 个人中心-我的积分
 .myInterralWrapper, .myInterralRankingWrapper{
-    // 打卡日历：占位（.blkLoad）和失败卡（.inlineErr）都撑到日历真实高度，
+    // 打卡日历：占位（.blkLoad）和失败卡（.inlineErr）都撑到日历「数据区」的真实高度，
     // 让「加载中 / 加载失败 / 正常」三态高度一致 —— 三态一样高，切换时下面的内容才不会上下跳。
-    // 336 是 6 周月份实测值（表头 41 + 6 行 × 41.7 + 顶部月份行）；5 周的月份会矮 42px，可接受。
-    .calendar > .blkLoad, .calendar > .inlineErr{ min-height: 336px; }
+    // 291 = 表头 41 + 6 周 × 41.7（实测 .calendar 整体 336，其中顶部月份行 + 下边距占 45，
+    // 而占位是挂在月份行下面的，所以要减掉这 45）。5 周的月份会矮 42px，可接受。
+    .calendar > .blkLoad, .calendar > .inlineErr{ min-height: 291px; }
     .listCont{
        // 获取积分：5 行固定 × 103 ≈ 516（实测），三态同高，理由同日历。
        .list > .blkLoad, .list > .inlineErr{ min-height: 516px; }
