@@ -16,12 +16,16 @@
           <!-- 加载中：5 行灰条占位。
                没有这个分支时 loading 落进下面的 v-else，会先把 access 的初始值
                （课程学习 0/50、每日签到 0/2 …）渲染出来 —— 看着像「今天一分没得」，
-               等请求失败再跳成错误卡，中间那一下就是「闪」。 -->
+               等请求失败再跳成错误卡，中间那一下就是「闪」。
+               ⚠️ 灰条本身还要再等 showPointsSk：服务挂掉时请求 20~80ms 就回来了，
+               立刻画灰条等于让用户看 2 帧灰条再被错误卡顶掉，反而更晃眼（见 useSkeleton）。 -->
           <div class="tab" v-else-if="pointsStatus === 'loading'">
-            <div class="item fx-sb" v-for="n in 5" :key="'sk' + n">
-              <i class="sk skBar w40"></i>
-              <i class="sk skBar w30"></i>
-            </div>
+            <template v-if="showPointsSk">
+              <div class="item fx-sb" v-for="n in 5" :key="'sk' + n">
+                <i class="sk skBar w40"></i>
+                <i class="sk skBar w30"></i>
+              </div>
+            </template>
           </div>
           <div class="tab" v-else>
             <div class="item fx-sb" v-for="item in access" :key="item.type">
@@ -39,7 +43,8 @@
                  和服务挂了是两回事，所以这里要单独拦掉 -->
             <InlineError v-if="rankStatus === 'error'" title="学霸榜加载失败" :msg="rankError"
                          @retry="getSeasonsData" />
-            <IntegralRankTab v-else :data="seasonsData" :loading="rankStatus === 'loading'"></IntegralRankTab>
+            <IntegralRankTab v-else :data="seasonsData" :loading="rankStatus === 'loading'"
+                             :skeleton="showRankSk"></IntegralRankTab>
         </div>
       </div>
     </div>
@@ -52,6 +57,8 @@ import { onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 // errMsg 取业务失败文案（禁止写 res.data.msg）；catchMsg 取网络层失败文案
 import { errMsg, catchMsg } from "@/utils/request";
+// 骨架延迟显示：接口几十毫秒就回来时不让骨架冒头，见 utils/useSkeleton.js
+import { useSkeleton } from "@/utils/useSkeleton";
 import { getSeasons, getTodayPoints, pointsSign } from "@/api/class.js";
 import { useRoute } from "vue-router";
 import { dataCacheStore } from "@/store"
@@ -94,6 +101,7 @@ const seasonsData = ref([])
 // 学霸榜 / 今日积分 各自独立的三态：两块数据互不影响，一个挂了不该拖累另一个
 const rankStatus = ref('loading')
 const rankError = ref('')
+const showRankSk = useSkeleton(() => rankStatus.value === 'loading')
 const getSeasonsData = async () => {
   rankStatus.value = 'loading'
   try {
@@ -114,6 +122,7 @@ const getSeasonsData = async () => {
 const toadyPointsData = ref([])
 const pointsStatus = ref('loading')
 const pointsError = ref('')
+const showPointsSk = useSkeleton(() => pointsStatus.value === 'loading')
 const getSignRecordsHandle = async () => {
   pointsStatus.value = 'loading'
   try {

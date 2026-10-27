@@ -9,11 +9,13 @@
          没有这个分支时，父级只判了 error / 其他，loading 会直接渲染下面的「一条数据也没有」，
          看着像「这榜本来就没数据」，等请求失败再跳成错误卡 —— 一帧假内容。 -->
     <template v-if="loading">
-      <div class="item fx-sb" v-for="n in 5" :key="'sk' + n">
-        <span><i class="sk skBar"></i></span>
-        <span class="ct"><i class="sk skBar w60"></i></span>
-        <span><i class="sk skBar"></i></span>
-      </div>
+      <template v-if="skeleton">
+        <div class="item fx-sb" v-for="n in 5" :key="'sk' + n">
+          <span><i class="sk skBar"></i></span>
+          <span class="ct"><i class="sk skBar w60"></i></span>
+          <span><i class="sk skBar"></i></span>
+        </div>
+      </template>
     </template>
     <template v-else>
       <div class="item myItem fx-sb" v-if="hasMyRow">
@@ -73,6 +75,18 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  /**
+   * 是否真的把 5 行灰条画出来（配合 utils/useSkeleton 的延迟）。
+   *
+   * loading=true 但 skeleton=false 时，只画表头（排名/姓名/积分）、下面留白：
+   * 服务挂掉时请求 20~80ms 就返回了，这段时间画灰条等于给用户看两帧「闪」，
+   * 紧接着又被「加载失败」卡顶掉。留白则没有任何东西可闪。
+   * 默认 true —— 不传的调用方行为和以前完全一致。
+   */
+  skeleton: {
+    type: Boolean,
+    default: true
   }
 });
 

@@ -13,7 +13,8 @@
                用户切回来只看到一张空榜，会以为是「本来就没数据」 -->
           <InlineError v-if="curStatus === 'error'" title="本赛季榜加载失败" :msg="curError"
                        @retry="() => getSeasonsData(0)" />
-          <IntegralRankTab v-else :data="currentSeasonsData" :loading="curStatus === 'loading'"></IntegralRankTab>
+          <IntegralRankTab v-else :data="currentSeasonsData" :loading="curStatus === 'loading'"
+                           :skeleton="showCurSk"></IntegralRankTab>
         </div>
         <div class="listRt">
           <div class="tit fx-sb">
@@ -39,7 +40,8 @@
           </div>
           <InlineError v-if="hisStatus === 'error'" title="历史榜加载失败" :msg="hisError"
                        @retry="retryHistory" />
-          <IntegralRankTab v-else :data="seasonsData" :loading="hisStatus === 'loading'"></IntegralRankTab>
+          <IntegralRankTab v-else :data="seasonsData" :loading="hisStatus === 'loading'"
+                           :skeleton="showHisSk"></IntegralRankTab>
         </div>
       </div>
     </div>
@@ -51,6 +53,8 @@
 import { computed, onMounted, ref } from "vue";
 // errMsg / catchMsg：业务失败时响应体没有 data 字段，不能读 res.data.msg（见 utils/request.js）
 import { errMsg, catchMsg } from "@/utils/request";
+// 骨架延迟显示：接口几十毫秒就回来时不让灰条冒头，见 utils/useSkeleton.js
+import { useSkeleton } from "@/utils/useSkeleton";
 import { getSeasons, getSelectOptions } from "@/api/class.js";
 import { useRoute } from "vue-router";
 import { dataCacheStore } from "@/store"
@@ -96,6 +100,9 @@ const curStatus = ref('loading')
 const curError = ref('')
 const hisStatus = ref('loading')
 const hisError = ref('')
+// 骨架延迟显示：服务挂掉时接口 20~80ms 就回来，立刻画灰条只会闪两帧（见 utils/useSkeleton）
+const showCurSk = useSkeleton(() => curStatus.value === 'loading')
+const showHisSk = useSkeleton(() => hisStatus.value === 'loading')
 
 // season == 0 表示「本赛季」，其余是历史榜下拉选中的赛季
 const getSeasonsData = async (season) => {
