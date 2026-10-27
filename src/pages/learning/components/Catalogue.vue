@@ -165,8 +165,11 @@ const next = () => {
 </script>
 <style lang="scss" scoped>
 .catalogueWrapper {
-  // 左右对称各 16px。之前是 18/14 不对称，整行居中后左右留白差 4px（32 / 28）。
-  padding: 0 16px;
+  // 左边 10px、右边 16px。
+  // 为什么左边不是 16：上一层 `.cont` 有 15px、页签那层 `.pd-lr-10` 又有 10px，
+  // 「目录 / 问答 / 笔记」的文字实际落在 25px；这里若也用 16，章名和图标列会落到 31px，
+  // 和页签差 6px，看着像没对齐。改成 10 之后三者共用一条左边线（章名 = 图标列 = 页签）。
+  padding: 0 16px 0 10px;
 
   /* 把 element-plus collapse 的默认配色压回「深色面板」这一套。
      原来只写了一条 `::deep(.el-collapse-item__header){background:transparent}`：
@@ -205,8 +208,10 @@ const next = () => {
     flex: 1;
     min-width: 0;
     overflow: hidden;
-    // 章名居中：面板比文字宽得多时，靠左会让整块内容看着偏在一边
-    text-align: center;
+    // 章名左对齐：原来 text-align:center 是为了配合「整行居中」那版目录，
+    // 现在小节已经按 grid 列宽左对齐了，章名再居中就和下面的图标列错开、看着散。
+    // 左对齐后章名和图标列共用同一条左边线（都是 .catalogueWrapper 的 16px padding）。
+    text-align: left;
 
     span {
       display: block;
