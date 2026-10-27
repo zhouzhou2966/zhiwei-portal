@@ -21,9 +21,13 @@
               <span v-if="it.trailer && !purchased" class="trailer-font">试看</span>
             </div>
             <div class="dur">
-              <!-- 用 `> 0` 而不是 `!= 0`：media_duration 可能是 null/undefined（没挂媒体的小节），
-                   `null != 0` 是 true，会渲染成 durationFormat(null) = "0:00"，看着像「时长 0 秒」。 -->
-              <span @click="play(it, it.type == 2 ? 1 :it.type)" v-if="it.mediaDuration > 0">{{durationFormat(it.mediaDuration)}}</span>
+              <!-- 两个条件缺一不可：
+                   ① type == 2 —— 时长只属于视频节点。type=3 是考试/练习，本身没有视频，
+                      原始 demo 数据里却给它带了 media_id=1 + media_duration=264（假值），
+                      只判 > 0 的话练习行会跟着显示一个「4:24」，看着像这一节有视频。
+                   ② > 0 —— 不能用 `!= 0`：media_duration 可能是 null/undefined（没挂媒体的小节），
+                      `null != 0` 是 true，会渲染成 durationFormat(null) = "0:00"，看着像「时长 0 秒」。 -->
+              <span @click="play(it, it.type == 2 ? 1 :it.type)" v-if="it.type == 2 && it.mediaDuration > 0">{{durationFormat(it.mediaDuration)}}</span>
             </div>
           </div>
         </div>
