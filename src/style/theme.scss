@@ -12,7 +12,8 @@
     --color-error1: #D4715F;
     --color-error2: #A63F30;
     --color-error3: #FBEDE9;
-    --color-background1: #F7F5F0;
+    // v40：页面底改纯白（白底为主，米纸 #F7F5F0 只做区块内凹陷底，见 tokens.scss --paper）
+    --color-background1: #FFFFFF;
     --color-background2: #EFEBE3;
     --color-background3: #E8E2D6;
     --color-background4: #D6CFC1;

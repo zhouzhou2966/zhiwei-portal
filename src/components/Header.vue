@@ -1,219 +1,137 @@
-<!-- 页面头部组件 -->
+<!-- 页面头部 · v40 壳层
+     视觉对照 prototype/redesign.html 的 header：白底毛玻璃 + 下划线导航 + 胶囊搜索。
+     业务逻辑全部保留：登录态探测、搜索直达 /search、购物车登录校验、
+     消息入口、头像下拉（个人设置 / 退出登录）。 -->
 <template>
-  <header class="bg-wt">
-    <div class="container fx">
-      <div class="logo">
-        <router-link to="/"><img src="/logo.svg" alt="知微" /></router-link>
-      </div>
-      <!-- 头部分类-start -->
-      <!-- 按钮和面板必须包在同一个容器里：
-           原来两个是兄弟节点、各自挂 @mouseover/@mouseout，面板又是 `position:absolute;
-           left:102px; top:50px` 这种**按整页坐标写死**的位置（没有定位祖先，offsetParent=null），
-           于是面板左边缘固定在 102px、按钮却在 284px —— 横向根本不相邻。
-           鼠标从按钮往下必然先经过一段空白，mouseout 立刻把 isShow 置 false、面板 display:none，
-           面板永远进不去 ⇒ 「只有悬停在按钮上时才出现，点不到」。
-           现在：面板挂进容器（容器 position:relative），用 mouseenter/mouseleave
-           （不会被子元素冒泡打断），鼠标从按钮移到面板全程都算「在容器内」，面板不会消失。 -->
-      <div v-if="route.path != '/main/index' && route.path != '/login'" class="courseClassWrap"
-           @mouseenter="() => isShow = true" @mouseleave="() => isShow = false">
-        <div class="courseClass font-bt2">
-          <i class="iconfont zhy-icon_fenlei_nor"></i> 分类
-        </div>
-        <div class="courseClassList" v-show="isShow">
-          <div class="firstItems">
-            <ClassCategory :data="courseClass" type="float"></ClassCategory>
-          </div>
-        </div>
-      </div>
-      <!-- 头部分类-end -->
-      <div class="fx-1 fx-ct">
-        <el-input
-            v-model="input"
-            class="headerSearch "
-            size="large"
-            placeholder="请输入关键字"
-            @keyup.enter="SearchHandle"
+  <header class="zwHeader">
+    <div class="wrap hd">
+      <router-link to="/" class="logo">知微<em>ZHIWEI</em></router-link>
 
-        >
-          <template v-slot:prefix>
-            <Search class="search" @click="SearchHandle"/>
-          </template>
-        </el-input>
+      <nav>
+        <span
+          v-for="item in navItems"
+          :key="item.key"
+          :class="{ on: item.active }"
+          @click="goNav(item)"
+        >{{ item.label }}</span>
+      </nav>
+
+      <div class="search">
+        <input
+          v-model="input"
+          type="text"
+          placeholder="搜索课程、知识卡、话题"
+          @keyup.enter="SearchHandle"
+        />
+        <i class="sIcon" @click="SearchHandle"></i>
       </div>
-      <div class="fx-al-ct pt-rt">
-        <!-- 购物车入口：对游客也显示（购买链路入口，藏掉等于少一条路），
-             但点击时判断登录态 —— 未登录直接去登录页。
-             原来写的是 v-if="userInfo"，而 store 未登录时 getUserInfo 是 {}（truthy），
-             等于「游客也能看到、点进去必然 401」，所以这里不再用 v-if 挡。 -->
-        <div class="car fx-al-ct font-bt2" @click="goCart">
-          <i class="iconfont">&#xe6f3;</i> 购物车
-        </div>
-        <!-- 学习中心 - start -->
-        <div v-if="userInfo  && userInfo.name">
-          <span class="marg-lr-40 font-bt2" style="padding:27px 0"
-                @click="() => $router.push('/main/chat')">消息</span>
-          <span class="marg-lr-40 font-bt2" style="padding:27px 0"
-                @click="() => {$router.push('/personal/main/myClass')}" @mouseover="()=> learningShow = true"
-                @mouseout="() => learningShow = false">学习中心</span>
-          <div  class="learningCont" v-show="learningShow && learnClassInfo && learnClassInfo.courseAmount"
-               @mouseover="()=> learningShow = true" @mouseout="() => learningShow = false">
-            <div class="count"><em>{{ learnClassInfo && learnClassInfo.courseAmount }}</em> 门课程</div>
-            <div class="info" v-if="learnClassInfo &&learnClassInfo.courseId">
-              <div class="fx-sb">
-                <span>{{ learnLabel }}：</span>
-                <div class="fx">
-                  <span class="bt"
-                        @click="() => $router.push({path: '/learning/index', query: {id: learnClassInfo.courseId}})">继续学习</span>
-                  <span class="bt bt-grey1" @click="() => $router.push('/personal/main/myClass')">全部课程</span>
-                </div>
-              </div>
-              <div class="tit">{{ learnClassInfo && learnClassInfo.courseName }}</div>
-              <!-- 后端 latestSectionName 为空（从没学过 / 大纲把那一节删了）时给个占位，
-                   否则这里只剩一个「%」，看着像渲染坏了 -->
-              <div class="perc fx-sb"> {{ learnClassInfo && (learnClassInfo.latestSectionName || '—') }}
-                <i>{{ learnPercent }}%</i>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- 登录注册 - start -->
-        <el-dropdown v-if="userInfo && userInfo.name" trigger="click" placement="bottom-end"
-                     popper-class="header-user-dropdown" @command="handleUserCommand">
-          <div class="fx-al-ct userTrigger">
-            <img class="headIcon" :src="headerIcon" @error="onerrorImg" alt="">
-            <div class="userName">{{ userInfo.name }}</div>
-            <el-icon class="userArrow"><ArrowDown/></el-icon>
+
+      <div class="acts">
+        <span class="actLink" @click="goChat">消息</span>
+        <span class="actLink" @click="goCart">购物车</span>
+
+        <el-dropdown
+          v-if="userInfo && userInfo.name"
+          trigger="click"
+          placement="bottom-end"
+          popper-class="header-user-dropdown"
+          @command="handleUserCommand"
+        >
+          <div class="userTrigger">
+            <img class="avatar" :src="headerIcon" @error="onerrorImg" alt="" />
           </div>
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item command="myClass">我的课程</el-dropdown-item>
               <el-dropdown-item command="mySet">个人设置</el-dropdown-item>
               <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <div class="cur-pt" v-else>
-          <span class="font-bt2" @click="() => $router.push({path: '/login', query: {md: 'register'}})">注册 </span><span>/</span>
-          <span class="font-bt2" @click="() => $router.push('/login')"> 登录</span>
+        <div class="auth" v-else>
+          <span @click="() => $router.push({ path: '/login', query: { md: 'register' } })">注册</span>
+          <i>/</i>
+          <span @click="() => $router.push('/login')">登录</span>
         </div>
-
       </div>
     </div>
   </header>
 </template>
 <script setup>
-// 注意：这里不再 import errMsg —— 它原来只服务于「分类接口失败弹 toast」那一处，
-// 现在那条已经改成静默（见 getCourseClassHandle）。
-import {computed, onBeforeMount, onMounted, ref, watch, watchEffect} from "vue";
-import {Search, ArrowDown} from "@element-plus/icons-vue";
-import {useUserStore, isLogin, getToken, dataCacheStore} from '@/store'
-import {getUserInfo, userLogout} from "@/api/user"
-import router from "../router";
-import {useRoute} from "vue-router";
-import {ElMessage} from "element-plus";
-import ClassCategory from "./ClassCategory.vue";
-import {getClassCategorys} from '@/api/class.js'
-// 「最近学习课程」走模块级共享状态：Header 和「我的课程」页原来各发一次同一个请求
-import {loadNowLesson, useNowLesson} from '@/utils/nowLesson'
-import {tryRefreshToken} from '../utils/refreshToken'
-import {hasToken} from '../utils/authToken'
+import { computed, onBeforeMount, ref, watch, watchEffect } from 'vue'
+import { useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { useUserStore, isLogin, getToken, dataCacheStore } from '@/store'
+import { getUserInfo, userLogout } from '@/api/user'
+import router from '../router'
 
 // 默认头像（用户无头像或图片加载失败时使用）
 const defaultImage = '/avatar-default.svg'
 
-const store = useUserStore();
-/**
- * 用户信息必须用 computed 直接绑 store，不能用 `ref()` 存快照。
- * 原来的写法是 `const userInfo = ref()`，在 onBeforeMount 里 `userInfo.value = store.getUserInfo`
- * —— 存的是那一刻的「对象引用」。别处调用 store.setUserInfo(新对象) 之后（例如
- * mySet 上传头像后自动落库），这里的 ref 仍然指向旧对象，表现就是「顶部头像要刷新页面才变」。
- * 用 computed 之后，store 里换对象/改字段都会自动反映到模板。
- */
+const store = useUserStore()
+// 用户信息必须用 computed 直接绑 store（存快照会导致头像上传后不刷新，见旧版注释）
 const userInfo = computed(() => store.getUserInfo)
-/**
- * 头像加载失败时的兜底图。
- * ⚠️ 不能像原来那样写 `userInfo.value.icon = defaultImage`：userInfo 是 computed，
- * 读出来的是 store 里那个对象，这么写等于**直接改 store 的 userInfo** ——
- * 头像地址一旦 404，整个会话里 store 的头像就被永久换成默认图（个人设置页也会跟着显示默认图），
- * 而且这是「渲染副作用」，排查时非常隐蔽。
- * 正确做法：只在 Header 内部记一个覆盖值，store 保持干净。
- */
+
 const brokenIcon = ref('')
 const headerIcon = computed(() => brokenIcon.value || userInfo.value.icon || defaultImage)
-// 用户换头像（store 里的 icon 变了）后要清掉覆盖值，否则新头像会被默认图一直挡住
 watch(() => userInfo.value.icon, () => { brokenIcon.value = '' })
 const onerrorImg = () => { brokenIcon.value = defaultImage }
-const isToken = hasToken()
-const input = ref('');
-const route = useRoute()
-const userStore = getToken();
-const dataCache = dataCacheStore();
-const courseClass = ref([]) // 分类数据
-const isShow = ref(false)  // 分类展示
-// 点了分类里的链接会跳路由，但指针还停在面板上（没有 mouseleave）⇒ 面板会一直挂着挡页面。
-// 路由一变就关掉。
-watch(() => route.fullPath, () => { isShow.value = false })
-/**
- * 我真正学习的课程信息 - 学习中心展示。
- * 直接用 nowLesson 模块的共享 ref：Header 和「我的课程」页读的是同一份数据，
- * 页面刷新后 Header 不必再单独请求一次。
- */
-const {nowLesson: learnClassInfo} = useNowLesson()
-const learningShow = ref(false) // 学习中心hover模块展示
 
-/**
- * 「学习中心」下拉里这一行的前缀。原来写死「正在学习」，两种情况都不对：
- *   · 课程学完了（status=2），标签已经是「已学完」，还说「正在学习」自相矛盾；
- *   · 课程还没开始（status=0），压根没在学。
- * status: 0-未学习 1-学习中 2-已学完 3-已失效
- */
-const learnLabel = computed(() => {
-  const s = Number(learnClassInfo.value && learnClassInfo.value.status)
-  if (s === 2) return '最后学习'
-  if (s === 0) return '还未学习'
-  if (s === 3) return '已失效'
-  return '正在学习'
-})
-/**
- * 进度百分比必须封顶 100：learnedSections 是学习记录条数，课程改过大纲之后会出现
- * 23 / 12 这种自相矛盾的组合（学习记录不随大纲删除而回滚），
- * 不封顶这里会显示 192%。
- */
-const learnPercent = computed(() => {
-  const total = Number(learnClassInfo.value && learnClassInfo.value.sections) || 0
-  const learned = Number(learnClassInfo.value && learnClassInfo.value.learnedSections) || 0
-  if (total <= 0) return 0
-  return Math.min(100, Math.round(learned * 100 / total))
-})
+const input = ref('')
+const route = useRoute()
+const userStore = getToken()
+const dataCache = dataCacheStore()
+
+// 导航：学习 = 个人中心「我的课程」（游客点学习先去登录，与旧版学习中心入口行为一致）
+const navItems = computed(() => [
+  { key: 'home', label: '发现', path: '/main/index', active: route.path === '/main/index' },
+  { key: 'explore', label: '探索', path: '/search/index', active: route.path.startsWith('/search') },
+  {
+    key: 'learn',
+    label: '学习',
+    path: '/personal/main/myClass',
+    active: route.path.startsWith('/personal') || route.path.startsWith('/learning'),
+    needLogin: true
+  },
+  { key: 'chat', label: '交流', path: '/main/chat', active: route.path.startsWith('/main/chat') }
+])
+
+const goNav = (item) => {
+  if (item.needLogin && !(userInfo.value && userInfo.value.id)) {
+    ElMessage({ message: '请先登录哦', type: 'warning' })
+    router.push({ path: '/login', query: { redirect: item.path } })
+    return
+  }
+  router.push(item.path)
+}
+
+const goChat = () => {
+  if (!(userInfo.value && userInfo.value.id)) {
+    ElMessage({ message: '请先登录哦', type: 'warning' })
+    router.push({ path: '/login', query: { redirect: '/main/chat' } })
+    return
+  }
+  router.push('/main/chat')
+}
 
 onBeforeMount(async () => {
-  // 用户信息已经由上面的 computed 直接绑到 store 上，这里只负责「store 里没有真实用户信息时补一次请求」。
-  // 注意：store 未登录时是 {}（truthy），所以不能用 `!userInfo.value` 判断，要看有没有 id。
+  // store 未登录时是 {}（truthy），判断有没有 id
   if (!userInfo.value.id) {
     if (await isLogin()) {
-      let res = await getUserInfo();
+      const res = await getUserInfo()
       if (res.code === 200 && !!res.data) {
-        // 只写 store 即可，computed 会自己反映，不需要再给 userInfo 赋值
-        store.setUserInfo(res.data);
+        store.setUserInfo(res.data)
       }
     } else {
-      userStore.logout();
+      userStore.logout()
     }
-  }
-
-  courseClass.value = dataCache.getCourseClassDataes
-  // 先从store里拿如何没有就请求分类信息获取
-  if (courseClass.value.length === 0) {
-    getCourseClassHandle()
   }
   if (Object.keys(route.query).length > 0) {
     input.value = route.query.key
   }
-  if (await isLogin()) {
-    // 查询我正在学习的课程
-    getLearnClassInfoHandle()
-  }
 })
-// 监听路由 清空搜索框的值
+
+// 离开搜索页清空输入框；回到搜索页回填关键词
 watchEffect(() => {
   if (route.path !== '/search/index') {
     input.value = ''
@@ -221,43 +139,13 @@ watchEffect(() => {
     input.value = dataCache.getSearchKey
   }
 })
-// 学习中心的信息
 
-// 查询我正在学习的课程
-/**
- * ⚠️ 失败一律静默降级，不弹 toast。
- * Header 是全局组件 —— 这里一弹，learning 服务挂掉时用户每切一个页面就弹一条
- * 「学习状态查询出错！」，全站刷屏（和支付页那个 5 秒一条是同一类问题）。
- * 学习中心少一块内容不影响任何操作，把 learnClassInfo 置空让下拉收起来就够了。
- * 401 由 request.js 的拦截器统一处理，这里不用管。
- *
- * 请求本身交给 nowLesson 模块去合并：这里不传 force，5 秒内复用「我的课程」页
- * 刚拉到的数据；页面刷新时由谁先挂载谁发起，另一个直接复用 inFlight。
- */
-const getLearnClassInfoHandle = async () => {
-  await loadNowLesson()
-}
-
-
-// 获取课程分类
-// ⚠️ 失败**不要弹 ElMessage**。分类只是顶栏「分类」下拉的内容，拉不到就让下拉空着。
-// 原来失败会弹一条全局 error toast：Header 是全局组件，只要课程服务一挂，
-// 用户打开**任何页面**都会在顶部闪一下红色「服务不存在」、3 秒后消失 ——
-// 页面主体本来就有常驻的 InlineError 说明情况，这条 toast 纯属噪音。
-const getCourseClassHandle = async () => {
-  await getClassCategorys()
-      .then((res) => {
-        if (res.code == 200) {
-          courseClass.value = res.data;
-          dataCache.setCourseClassDataes(res.data)
-        }
-      })
-      .catch(() => {});
-}
-// 默认头像（onerrorImg / headerIcon 已在文件顶部定义，见「头像加载失败的兜底」注释）
-
-// 头像下拉菜单：分发「个人设置 / 退出登录」
+// 头像下拉：分发「我的课程 / 个人设置 / 退出登录」
 const handleUserCommand = (command) => {
+  if (command === 'myClass') {
+    router.push('/personal/main/myClass')
+    return
+  }
   if (command === 'mySet') {
     router.push('/personal/main/mySet')
     return
@@ -267,7 +155,7 @@ const handleUserCommand = (command) => {
   }
 }
 
-// 退出登录：先通知后端注销，再清本地凭据并回首页（原 LeftNav 的退出逻辑迁到此处）
+// 退出登录：先通知后端注销，再清本地凭据并回首页
 const logoutHandle = () => {
   userLogout().then(res => {
     if (res.code === 200) {
@@ -276,217 +164,206 @@ const logoutHandle = () => {
     }
   }).catch(() => {})
 }
+
 /**
- * 购物车入口。
- *
- * 未登录必须**直接去登录页**，不能放他进 /pay/carts：
- * 购物车接口 /ts/carts 需要鉴权，未登录会返回业务码 401 ⇒ 拦截器弹
- * 「您的账号登录超时或在其他机器登录」—— 对游客来说这句文案本身就是错的；
- * 更糟的是弹窗里点「继续浏览」走 router.go(0) 刷新页面，刷新后又发一次请求、又 401，
- * 形成关不掉的循环。
- *
- * 带 redirect 是为了登录完能回到购物车（原来一律跳首页，用户得自己再点一次）。
+ * 购物车入口：未登录直接去登录页。
+ * /ts/carts 需要鉴权，放游客进去只会 401 循环弹窗（旧版踩过，见旧版注释）。
  */
 const goCart = () => {
   const path = '/pay/carts'
   if (userInfo.value && userInfo.value.id) {
     router.push(path)
   } else {
-    // 跳转前必须给一句提示：直接把人甩到登录页，用户不知道「我只是点了下购物车，
-    // 怎么跳到登录了」。toast 挂在 body 上，路由切换不会把它带走，所以在登录页也看得见。
     ElMessage({ message: '请先登录哦', type: 'warning' })
     router.push({ path: '/login', query: { redirect: path } })
   }
 }
 
-// 搜索事件
+// 搜索事件：写入缓存关键词并跳 /search（探索页的搜索态由 query.key 触发）
 const SearchHandle = () => {
   if (input.value == '') {
-    ElMessage({
-      type: 'error',
-      message: '请输入搜索关键词！'
-    })
+    ElMessage({ type: 'error', message: '请输入搜索关键词！' })
     return false
   }
   dataCache.setSearchKey(input.value)
-  router.push({path: '/search', query: {"key": input.value}})
+  router.push({ path: '/search', query: { key: input.value } })
 }
-
 </script>
 <style lang="scss" scoped>
-header {
-  width: 100%;
-  background-color: var(--color-white);
-  text-align: left;
-  padding: 11px 0;
-  font-size: 14px;
+.zwHeader {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(26, 29, 33, 0.03);
+}
 
-  // 分类按钮 + 下拉面板的定位容器。
-  // 面板要相对「按钮」定位，不能按整页坐标写死（见模板里的注释）。
-  .courseClassWrap {
-    position: relative;
-    margin-left: 26px;
+.wrap {
+  width: min(1280px, calc(100% - 80px));
+  margin: 0 auto;
+}
+
+.hd {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+
+.logo {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--main);
+
+  em {
+    font-family: var(--font-serif);
+    font-size: 10.5px;
+    font-style: normal;
+    letter-spacing: 1.2px;
+    color: var(--ink3);
   }
+}
 
-  .courseClass {
-    line-height: 48px;
-    display: flex;
-    font-size: 14px;
+nav {
+  display: flex;
+  gap: 30px;
 
-    .iconfont {
-      font-size: 24px;
-      margin-right: 5px;
-    }
-  }
-
-  .courseClassList {
-    position: absolute;
-    z-index: 999;
-    // 挂在按钮正下方：left:0 让面板左边缘对齐按钮左边缘（图标起点），
-    // 面板里的小三角再指向按钮中心（见 ClassCategory 的 .classCategoryHeader）。
-    top: 100%;
-    left: 0;
-
-    .firstItems {
-      background-color: #fff;
-    }
-  }
-
-  .headerSearch {
-    width: 427px;
-    height: 40px;
-    background: var(--color-background2);
-    border-radius: 8px;
-
-    :deep(.el-input__wrapper) {
-      background-color: transparent;
-    }
-
-    .search {
-      position: absolute;
-      cursor: pointer;
-      right: 0;
-      width: 15px;
-      height: 15px;
-
-    }
-  }
-
-  .car {
-    img {
-      width: 24px;
-      height: 25px;
-
-    }
-
-    .iconfont {
-      font-size: 24px;
-      margin-right: 6px;
-    }
-  }
-
-  // 未登录时「购物车」和「注册 / 登录」原来紧贴在一起（.car 没有右外边距，
-  // .cur-pt 也没有左外边距 ⇒ 间距 0，读起来像「购物车注册」一个词）。
-  // 登录态那两个入口有 .marg-lr-40 撑着，只有未登录这一支漏了。
-  .cur-pt {
-    margin-left: 40px;
-  }
-
-  .learningCont {
-    position: absolute;
-    z-index: 999;
-    width: 330px;
-    height: 200px;
-    border-radius: 8px;
-    left: -40px;
-    top: 45px;
-    background-color: #fff;
-    box-shadow: 0 4px 6px 2px rgba(108, 112, 118, 0.17);
-
-    &::before {
-      position: absolute;
-      z-index: -1;
-      content: '';
-      top: -5px;
-      left: 43%;
-      display: inline-block;
-      width: 15px;
-      height: 15px;
-      background-color: #fff;
-      transform: rotate(45deg);
-      box-shadow: 0 4px 6px 2px rgba(108, 112, 118, 0.17);
-    }
-
-    .count {
-      background-color: #fff;
-      padding: 20px 20px 20px 20px;
-      line-height: 40px;
-      border-bottom: 1px solid #EEEEEE;
-      display: flex;
-
-      em {
-        color: var(--color-main);
-        font-family: PingFangSC-S0pxibold;
-        font-weight: 600;
-        font-size: 28px;
-        margin-right: 4px;
-        font-style: normal;
-      }
-    }
-
-    .info {
-      padding: 13px 20px 20px 20px;
-      line-height: 28px;
-      color: #80878C;
-
-      .bt {
-        line-height: 28px;
-        height: 28px;
-        font-size: 12px;
-        padding: 0 10px;
-        margin-left: 10px;
-      }
-
-      .tit {
-        font-weight: 600;
-        font-size: 14px;
-        line-height: 28px;
-        color: #19232B;
-      }
-
-      .perc {
-        i {
-          font-style: normal;
-          color: #80878C;
-        }
-      }
-    }
-  }
-
-  .userTrigger {
+  span {
+    font-size: 15px;
+    color: var(--ink2);
     cursor: pointer;
-    padding: 4px 0;
-    outline: none;
+    padding: 6px 0;
+    position: relative;
 
-    .userName {
-      max-width: 96px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    &:hover {
+      color: var(--ink);
     }
 
-    .userArrow {
-      font-size: 12px;
-      margin-left: 4px;
-      color: #80878C;
+    &.on {
+      color: var(--ink);
+      font-weight: 500;
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -2px;
+        height: 2px;
+        background: var(--main);
+        border-radius: 2px;
+      }
+    }
+  }
+}
+
+.search {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 280px;
+  height: 38px;
+  padding: 0 12px 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  transition: border-color 0.18s, background-color 0.18s;
+
+  &:focus-within {
+    border-color: var(--main-light2, #c8d8e2);
+    background: #fff;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 13px;
+    color: var(--ink);
+
+    &::placeholder {
+      color: var(--ink3);
     }
   }
 
-  .headIcon {
-    width: 30px;
-    height: 30px;
-    border-radius: 100%;
-    margin-right: 10px;
+  .sIcon {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    border: 1.6px solid var(--ink3);
+    border-radius: 50%;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      right: -5px;
+      bottom: -1px;
+      width: 7px;
+      height: 1.6px;
+      background: var(--ink3);
+      border-radius: 1px;
+      transform: rotate(45deg);
+    }
+  }
+}
+
+.acts {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: var(--ink2);
+  font-size: 13px;
+
+  .actLink {
+    cursor: pointer;
+    transition: color 0.15s;
+
+    &:hover {
+      color: var(--main);
+    }
+  }
+}
+
+.userTrigger {
+  cursor: pointer;
+  outline: none;
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--line);
+  }
+}
+
+.auth {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  span {
+    cursor: pointer;
+
+    &:hover {
+      color: var(--main);
+    }
+  }
+
+  i {
+    color: var(--ink3);
+    font-style: normal;
   }
 }
 </style>

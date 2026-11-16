@@ -3,6 +3,7 @@
 // 没有跨文件的 sass 变量 / @mixin / @extend 依赖，所以 @use 的模块作用域不影响任何东西。
 // 附带收益：@use 对同一文件是幂等的，不会像 @import 那样重复输出 CSS。
 @use './theme.scss';
+@use './tokens.scss';
 @use './element/index.scss';
 
 html, body {
@@ -54,7 +55,8 @@ a{
 // 而首屏的深色背景又是通栏铺满的，一宽一窄看起来非常不协调。
 // 改成流式：最宽 1400，窄屏按「窗口 - 80」收，保证两边始终是同一个页边距。
 .container{
-  width: min(1400px, calc(100% - 80px));
+  // v40 视觉稿的版心是 1280：四列课程卡每张 ~290px，1400 会把卡拉得偏胖
+  width: min(1280px, calc(100% - 80px));
   margin: 0 auto;
 }
 // @media screen and (max-width: 1300px){

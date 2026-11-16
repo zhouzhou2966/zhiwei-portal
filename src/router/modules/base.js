@@ -33,13 +33,13 @@ export default [
     component: Layout,
     name: 'searchRoot',
     redirect: '/search/index',
-    meta: { title: '课程搜索' },
+    meta: { title: '探索' },
     children: [
       {
         path: 'index',
         name: 'search',
         component: () => import('@/pages/classSearch/index.vue'),
-        meta: { title: '课程搜索' },
+        meta: { title: '探索' },
       }
     ],
   },
