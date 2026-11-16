@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+# 临时产物目录（vite build --outDir dist-xxx）：构建环境不允许 vite 清空 dist 时用这个绕开
+dist-*
 *.local
 
 # Editor directories and files
