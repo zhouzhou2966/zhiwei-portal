@@ -24,12 +24,27 @@
         </div>
       </div>
       <div class="myCouponItems" v-else :class="{'is-empty': myCoupon.length === 0}">
-        <CouponCards v-if="myCoupon.length > 0" :data="myCoupon" :type="actId"></CouponCards>
-        <!-- 一次最多加载 PAGE_SIZE 条（不分页，因为同款多张要在前端聚合）。
-             超过时明确告知，否则用户会以为券就这么多 -->
-        <p class="tipText mt-10" v-if="truncated > 0">
-          券数量较多，当前只加载了 {{ PAGE_SIZE }} 张，还有 {{ truncated }} 张未展示
-        </p>
+        <!-- 用 <template v-if> 包起来，不要再用 v-else 直接配 list：
+             中间只要多插一个 v-if 的元素（比如下面那条「已加载上限」提示），
+             v-else 就会被它截走，结果是「有券」和「空状态」同时显示。 -->
+        <template v-if="myCoupon.length > 0">
+          <CouponCards :data="pagedCoupons" :type="actId"></CouponCards>
+          <!-- 一次最多加载 FETCH_LIMIT 条（不分页请求，因为同款多张要在前端聚合）。
+               超过时明确告知，否则用户会以为券就这么多 -->
+          <p class="tipText couponTruncateTip" v-if="truncated > 0">
+            券数量较多，当前只加载了 {{ FETCH_LIMIT }} 张，还有 {{ truncated }} 张未展示
+          </p>
+          <el-pagination
+              v-if="myCoupon.length > pageSize"
+              background
+              layout="total, prev, pager, next"
+              :total="myCoupon.length"
+              :page-size="pageSize"
+              :current-page="pageNo"
+              class="couponPager"
+              @current-change="p => pageNo = p"
+          />
+        </template>
         <div v-else class="nodata">
           <!-- 首屏还没回来时不要立刻显示「空」，否则会闪一下 -->
           <span v-if="status === 'loading'" class="tipText fadeInDelay">正在加载优惠券…</span>
@@ -151,13 +166,25 @@ const myCoupon = ref([])
 const status = ref('loading')
 const errorMsg = ref('')
 /**
- * 一次拉多少条。列表不分页，靠一个足够大的 pageSize 一次取完 ——
+ * 一次向接口要多少条。列表不做服务端分页，靠一个足够大的上限一次取完 ——
  * 因为「同款多张」要在前端聚合成 ×N，只取一页会算少。
- * 但总得有个上限，超出时下面用 truncated 明确告知，不能让用户以为就这些。
+ * 上限之外的条数用 truncated 明确告知，不能让用户以为就这些。
  */
-const PAGE_SIZE = 1000
-// 超过 PAGE_SIZE 没被拉回来的条数，>0 时页面底部给提示
+const FETCH_LIMIT = 1000
+// 超过 FETCH_LIMIT 没被拉回来的条数，>0 时列表底部给提示
 const truncated = ref(0)
+
+/**
+ * 展示分页：在已聚合的卡片上切片，不发请求。
+ * 为什么不交给后端分页：分页的单位必须是「卡片」而不是 user_coupon 行，
+ * 否则同一张券的 3 张会被拆到两页，×N 角标就算错了。
+ */
+const pageSize = 6
+const pageNo = ref(1)
+const pagedCoupons = computed(() => {
+  const start = (pageNo.value - 1) * pageSize
+  return myCoupon.value.slice(start, start + pageSize)
+})
 
 /** 列表项统一加工：规则去重 + 券名去重，领券页和这里共用同一套 utils */
 const normalizeCouponList = (list) => {
@@ -177,7 +204,7 @@ const normalizeCouponList = (list) => {
  * loading，列表在浮层底下闪六次「正在加载优惠券…」。
  */
 const fetchMyCouponList = async (statusId) => {
-  const res = await getMyCoupon({ status: statusId, pageNo: 1, pageSize: PAGE_SIZE })
+  const res = await getMyCoupon({ status: statusId, pageNo: 1, pageSize: FETCH_LIMIT })
   if (res && res.code == 200 && res.data) {
     const list = res.data.list || []
     return { ok: true, list: normalizeCouponList(list), total: Number(res.data.total) || list.length }
@@ -211,6 +238,9 @@ const applyList = (r) => {
   myCoupon.value = aggregateCoupons(r.list)
   truncated.value = Math.max((r.total || 0) - r.list.length, 0)
   status.value = 'ok'
+  // 数据换了（切 tab / 兑换后刷新）就回到第一页，
+  // 否则可能停在一个已经不存在的页码上，看到一片空白
+  pageNo.value = 1
 }
 
 const getMyCouponData = async () => {

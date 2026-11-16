@@ -268,3 +268,24 @@
         align-self: stretch;
     }
 }
+
+/* ---------- 我的优惠券：列表底部分页 ----------
+   分页单位是「聚合后的券卡」，不是 user_coupon 行 —— 同一张券的 3 张必须落在同一页，
+   否则 ×N 角标会算错。数据本来就是全量拉下来的，翻页只是前端切片，不发请求。 */
+.couponWrapper {
+  .couponPager {
+    /* 父级是 flex-wrap 的卡片容器，分页会被当成一个「内容宽度」的子项放在行首，
+       这时 justify-content:center 只居中它的内部子元素，整块还是贴左。
+       占满一行才能真正居中。 */
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
+    padding: 6px 0 12px;
+  }
+  .couponTruncateTip {
+    margin: 10px 0 0;
+    font-size: 12px;
+    color: var(--color-font3);
+  }
+}
