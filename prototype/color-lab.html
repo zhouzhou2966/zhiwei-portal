@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>知微 · 主题配色 4 选 1</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EFEDE8;color:#1A1D21;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .page{width:1320px;margin:0 auto;padding:36px 0 60px}
+  .ptitle{font-size:24px;font-weight:600;letter-spacing:-.3px}
+  .psub{font-size:13px;color:#6E6A63;margin-top:6px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:26px}
+
+  .col{background:var(--bg);border:1px solid #DED9CE;border-radius:14px;overflow:hidden}
+  .chead{padding:16px 20px 14px;display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--paper2,#eee)}
+  .cname{font-size:16px;font-weight:600}
+  .cnote{font-size:11.5px;color:#8A857C;margin-left:auto}
+  .pals{display:flex;gap:0;height:34px}
+  .pals i{flex:1;position:relative}
+  .pals i span{position:absolute;left:6px;bottom:3px;font-size:8.5px;letter-spacing:.4px;color:#fff;opacity:.85;font-family:ui-monospace,monospace}
+
+  .body{padding:18px 20px 22px;display:flex;flex-direction:column;gap:14px}
+
+  .hero{background:var(--deep);color:var(--onDark,#F3EEE2);border-radius:10px;padding:16px 18px}
+  .k{font-size:9.5px;letter-spacing:1.6px;opacity:.6}
+  .hero h4{font-size:17px;font-weight:600;margin:7px 0 4px;letter-spacing:-.2px}
+  .hero .nx{font-size:11px;opacity:.7}
+  .bar{height:3px;border-radius:2px;background:rgba(255,255,255,.18);margin-top:12px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--accent);border-radius:2px;width:42%}
+  .hrow{display:flex;align-items:center;margin-top:10px;font-size:10.5px;opacity:.62}
+  .btn{margin-left:auto;background:var(--onDark,#F3EEE2);color:var(--deep);font-size:11px;font-weight:500;padding:5px 14px;border-radius:999px;opacity:1}
+
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .c1{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+  .cv{position:relative;aspect-ratio:16/9;background:var(--cvbg);color:var(--cvfg);padding:10px 12px;display:flex;flex-direction:column}
+  .cv .cate{font-size:8.5px;letter-spacing:1.2px;opacity:.7}
+  .cv .sh{flex:1;display:flex;align-items:center;font-size:17px;font-weight:600;letter-spacing:.5px;opacity:.9}
+  .cv .bt{display:flex;align-items:center;gap:6px;font-size:8.5px;opacity:.6}
+  .cv .bt i{flex:1;height:1px;background:currentColor;opacity:.4}
+  .c1 .cb{padding:9px 11px 11px}
+  .c1 h5{font-size:11.5px;font-weight:500;line-height:1.45}
+  .c1 .cm{font-size:9.5px;color:#8A857C;margin-top:5px;display:flex;gap:5px;align-items:center}
+  .c1 .cm em{width:2px;height:2px;border-radius:50%;background:#8A857C;display:block}
+  .c1 .cr{display:flex;align-items:center;margin-top:8px;padding-top:7px;border-top:1px solid var(--line);font-family:Georgia,serif;font-size:12px}
+
+  .k2{border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px 12px 10px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+  .k2 .bd{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--k)}
+  .k2 .kd{font-size:9px;letter-spacing:.8px;color:var(--k)}
+  .k2 h5{font-size:11.5px;font-weight:600;line-height:1.45;margin:7px 0 5px}
+  .k2 p{font-size:9.5px;color:#57534C;line-height:1.7}
+  .k2 .kf{margin-top:auto;padding-top:8px;border-top:1px solid var(--line);font-size:9px;color:#8A857C;display:flex;gap:5px}
+  .k2 .kf span:last-child{margin-left:auto;color:#57534C}
+
+  .ctr{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .chip{font-size:10.5px;padding:4px 11px;border-radius:999px;background:var(--paper);color:#57534C}
+  .chip.on{background:var(--mainSoft);color:var(--main);font-weight:500}
+  .tag{font-size:9.5px;padding:2px 8px;border-radius:999px;color:var(--accent);background:var(--accentSoft)}
+  .sbtn{font-size:10.5px;color:#fff;background:var(--main);padding:6px 16px;border-radius:6px}
+  .ghost{font-size:10.5px;color:#57534C;border:1px solid var(--line);padding:5px 14px;border-radius:6px}
+  .nums{display:flex;gap:20px;margin-left:auto;font-family:Georgia,serif;font-size:15px;color:var(--main)}
+
+  .cat{font-size:11px;color:#8A857C;margin:18px 0 4px;letter-spacing:.5px}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="ptitle">主题配色 · 四个方向</div>
+  <div class="psub">同一套结构，只换颜色。每套给了一整套令牌：主色 / 加深 / 强调 / 纸底 / 浅底 / 卡片主色。<br>看的时候注意三件事：按钮够不够“可点”、深色区够不够“压得住”、知识卡的色带能不能区分五个领域。</div>
+
+  <div class="grid">
+
+    <!-- ============ A ============ -->
+    <div class="col" style="--main:#1B4B6B;--deep:#143A53;--accent:#C8892F;--mainSoft:#E5EDF2;--accentSoft:#F8EED8;--paper:#F7F5F0;--paper2:#EFEBE3;--line:#E6E0D3;--cvbg:#E4ECF1;--cvfg:#1B4B6B;--onDark:#F3EEE2">
+      <div class="chead"><span class="cname">A · 靛蓝米纸</span><span class="cnote">沿用原站，最稳</span></div>
+      <div class="pals">
+        <i style="background:#1B4B6B"><span>1B4B6B</span></i>
+        <i style="background:#143A53"><span>143A53</span></i>
+        <i style="background:#C8892F"><span>C8892F</span></i>
+        <i style="background:#F7F5F0"><span style="color:#8A857C">F7F5F0</span></i>
+        <i style="background:#FFFFFF"><span style="color:#8A857C">FFFFFF</span></i>
+      </div>
+      <div class="body">
+        <div class="hero">
+          <div class="k">继续学习 · 第 3 天</div>
+          <h4>前端工程师 2022 版</h4>
+          <div class="nx">下一节 04 闭包不是函数记住变量</div>
+          <div class="bar"><i></i></div>
+          <div class="hrow"><span>已完成 3 / 8 节</span><span class="btn">继续学习</span></div>
+        </div>
+        <div class="cards">
+          <div class="c1">
+            <div class="cv"><span class="cate">前端开发 · 体系课</span><span class="sh">前端</span><div class="bt"><i></i>8 节 · ￥329</div></div>
+            <div class="cb"><h5>前端工程师 2022 版</h5><div class="cm"><span>王老师</span><em></em><span>5400 人在学</span></div><div class="cr">￥329</div></div>
+          </div>
+          <div class="k2" style="--k:#8A5A2B">
+            <span class="bd"></span><span class="kd">知识卡 · 理财</span>
+            <h5>记账三个月，为什么还是存不下钱</h5>
+            <p>记账只解决「知道钱去哪了」，不解决「钱该去哪」。</p>
+            <div class="kf"><span>3 分钟读完</span><span>读一读 →</span></div>
+          </div>
+        </div>
+        <div class="ctr">
+          <span class="chip on">全部</span><span class="chip">设计</span><span class="chip">职场</span>
+          <span class="tag">今日一识</span><span class="sbtn">立即报名</span><span class="ghost">加入课程表</span>
+          <span class="nums">1280</span>
+        </div>
+        <div class="cat">性格：可信、克制、偏技术。健康与生活类内容会显得“太办公”。</div>
+      </div>
+    </div>
+
+    <!-- ============ B ============ -->
+    <div class="col" style="--main:#1E4238;--deep:#16332B;--accent:#C0703C;--mainSoft:#E2EBE5;--accentSoft:#F8EADF;--paper:#F5F1E7;--paper2:#EDE7DA;--line:#E3DCCC;--cvbg:#DFE9E2;--cvfg:#1E4238;--onDark:#F4EFE3">
+      <div class="chead"><span class="cname">B · 墨绿陶土</span><span class="cnote">最贴“什么都能学”</span></div>
+      <div class="pals">
+        <i style="background:#1E4238"><span>1E4238</span></i>
+        <i style="background:#16332B"><span>16332B</span></i>
+        <i style="background:#C0703C"><span>C0703C</span></i>
+        <i style="background:#F5F1E7"><span style="color:#8A857C">F5F1E7</span></i>
+        <i style="background:#FFFFFF"><span style="color:#8A857C">FFFFFF</span></i>
+      </div>
+      <div class="body">
+        <div class="hero">
+          <div class="k">继续学习 · 第 3 天</div>
+          <h4>前端工程师 2022 版</h4>
+          <div class="nx">下一节 04 闭包不是函数记住变量</div>
+          <div class="bar"><i></i></div>
+          <div class="hrow"><span>已完成 3 / 8 节</span><span class="btn">继续学习</span></div>
+        </div>
+        <div class="cards">
+          <div class="c1">
+            <div class="cv"><span class="cate">前端开发 · 体系课</span><span class="sh">前端</span><div class="bt"><i></i>8 节 · ￥329</div></div>
+            <div class="cb"><h5>前端工程师 2022 版</h5><div class="cm"><span>王老师</span><em></em><span>5400 人在学</span></div><div class="cr">￥329</div></div>
+          </div>
+          <div class="k2" style="--k:#8A5A2B">
+            <span class="bd"></span><span class="kd">知识卡 · 理财</span>
+            <h5>记账三个月，为什么还是存不下钱</h5>
+            <p>记账只解决「知道钱去哪了」，不解决「钱该去哪」。</p>
+            <div class="kf"><span>3 分钟读完</span><span>读一读 →</span></div>
+          </div>
+        </div>
+        <div class="ctr">
+          <span class="chip on">全部</span><span class="chip">设计</span><span class="chip">职场</span>
+          <span class="tag">今日一识</span><span class="sbtn">立即报名</span><span class="ghost">加入课程表</span>
+          <span class="nums">1280</span>
+        </div>
+        <div class="cat">性格：沉静、耐看，绿+陶土是冷暖互补。IT 内容占比高时不够“锐”。</div>
+      </div>
+    </div>
+
+    <!-- ============ C ============ -->
+    <div class="col" style="--main:#1C1B19;--deep:#141311;--accent:#B23A2E;--mainSoft:#EDE9E1;--accentSoft:#F6E3DF;--paper:#F2EDE3;--paper2:#E9E3D6;--line:#DFD8C9;--cvbg:#E8E3D8;--cvfg:#1C1B19;--onDark:#F5EFE2">
+      <div class="chead"><span class="cname">C · 墨黑朱砂</span><span class="cnote">最“编辑”，书卷气</span></div>
+      <div class="pals">
+        <i style="background:#1C1B19"><span>1C1B19</span></i>
+        <i style="background:#141311"><span>141311</span></i>
+        <i style="background:#B23A2E"><span>B23A2E</span></i>
+        <i style="background:#F2EDE3"><span style="color:#8A857C">F2EDE3</span></i>
+        <i style="background:#FFFFFF"><span style="color:#8A857C">FFFFFF</span></i>
+      </div>
+      <div class="body">
+        <div class="hero">
+          <div class="k">继续学习 · 第 3 天</div>
+          <h4>前端工程师 2022 版</h4>
+          <div class="nx">下一节 04 闭包不是函数记住变量</div>
+          <div class="bar"><i></i></div>
+          <div class="hrow"><span>已完成 3 / 8 节</span><span class="btn">继续学习</span></div>
+        </div>
+        <div class="cards">
+          <div class="c1">
+            <div class="cv"><span class="cate">前端开发 · 体系课</span><span class="sh">前端</span><div class="bt"><i></i>8 节 · ￥329</div></div>
+            <div class="cb"><h5>前端工程师 2022 版</h5><div class="cm"><span>王老师</span><em></em><span>5400 人在学</span></div><div class="cr">￥329</div></div>
+          </div>
+          <div class="k2" style="--k:#8A5A2B">
+            <span class="bd"></span><span class="kd">知识卡 · 理财</span>
+            <h5>记账三个月，为什么还是存不下钱</h5>
+            <p>记账只解决「知道钱去哪了」，不解决「钱该去哪」。</p>
+            <div class="kf"><span>3 分钟读完</span><span>读一读 →</span></div>
+          </div>
+        </div>
+        <div class="ctr">
+          <span class="chip on">全部</span><span class="chip">设计</span><span class="chip">职场</span>
+          <span class="tag">今日一识</span><span class="sbtn">立即报名</span><span class="ghost">加入课程表</span>
+          <span class="nums">1280</span>
+        </div>
+        <div class="cat">性格：最像“书”，朱砂就是印章色。但按钮是黑的，行动引导弱于彩色。</div>
+      </div>
+    </div>
+
+    <!-- ============ D ============ -->
+    <div class="col" style="--main:#16324D;--deep:#0F2438;--accent:#D2603F;--mainSoft:#E3ECF3;--accentSoft:#FAE5DE;--paper:#F6F3EC;--paper2:#ECE7DC;--line:#E0DACD;--cvbg:#DFE8EF;--cvfg:#16324D;--onDark:#F2EDE3">
+      <div class="chead"><span class="cname">D · 藏青珊瑚</span><span class="cnote">A 的锐化版</span></div>
+      <div class="pals">
+        <i style="background:#16324D"><span>16324D</span></i>
+        <i style="background:#0F2438"><span>0F2438</span></i>
+        <i style="background:#D2603F"><span>D2603F</span></i>
+        <i style="background:#F6F3EC"><span style="color:#8A857C">F6F3EC</span></i>
+        <i style="background:#FFFFFF"><span style="color:#8A857C">FFFFFF</span></i>
+      </div>
+      <div class="body">
+        <div class="hero">
+          <div class="k">继续学习 · 第 3 天</div>
+          <h4>前端工程师 2022 版</h4>
+          <div class="nx">下一节 04 闭包不是函数记住变量</div>
+          <div class="bar"><i></i></div>
+          <div class="hrow"><span>已完成 3 / 8 节</span><span class="btn">继续学习</span></div>
+        </div>
+        <div class="cards">
+          <div class="c1">
+            <div class="cv"><span class="cate">前端开发 · 体系课</span><span class="sh">前端</span><div class="bt"><i></i>8 节 · ￥329</div></div>
+            <div class="cb"><h5>前端工程师 2022 版</h5><div class="cm"><span>王老师</span><em></em><span>5400 人在学</span></div><div class="cr">￥329</div></div>
+          </div>
+          <div class="k2" style="--k:#8A5A2B">
+            <span class="bd"></span><span class="kd">知识卡 · 理财</span>
+            <h5>记账三个月，为什么还是存不下钱</h5>
+            <p>记账只解决「知道钱去哪了」，不解决「钱该去哪」。</p>
+            <div class="kf"><span>3 分钟读完</span><span>读一读 →</span></div>
+          </div>
+        </div>
+        <div class="ctr">
+          <span class="chip on">全部</span><span class="chip">设计</span><span class="chip">职场</span>
+          <span class="tag">今日一识</span><span class="sbtn">立即报名</span><span class="ghost">加入课程表</span>
+          <span class="nums">1280</span>
+        </div>
+        <div class="cat">性格：比 A 冷、比 A 锐，珊瑚色更有行动感。改造量最小（只换 3 个色值）。</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:26px;padding:18px 22px;background:#fff;border:1px solid #DED9CE;border-radius:12px;font-size:12.5px;color:#57534C;line-height:1.95">
+    <b style="color:#1A1D21">怎么读这四套：</b><br>
+    · 主色决定“这个站像什么行业”。蓝灰 = 技术培训；墨绿 = 通识/生活；墨黑 = 出版/杂志；藏青 = 稍锐的技术产品。<br>
+    · 强调色只承担三件事：积分、打卡、进度。面积超过 5% 就会变成“廉价促销风”。<br>
+    · A 和 D 里知识卡的六个领域色带（靛/棕/绿/紫/砖红/灰蓝）都能拉开；C 的黑色主色会让色带成为唯一的彩色，反而更跳。<br>
+    · 换色的实际成本：只改 <code>theme.scss</code> 的 6 个变量 + <code>tokens.scss</code> 的强调色，一天内可全站生效；但 <code>element</code> 的默认蓝 <code>#409EFF</code> 必须顺手一起覆盖，否则按钮还是亮的。
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="SWib8HDZdqP5hyz38ud4EB"><head data-page-node-id="NE2t9uElfFLUsLTtAZNxrD">
+<meta charset="UTF-8" data-page-node-id="EP7CeNVhRAeJBRjghE0Qnv">
+<title data-page-node-id="PMKMr8pOHN0C0Fw7FBzjAU">知微 · 改版视觉稿 v2.4</title>
+<style data-page-node-id="C9TpBIxcfJrHSEM2KX2CVA">
+  :root{
+    /* 白底为主：页面底 = #fff，米纸只做区块分隔（原站 --color-background1） */
+    --bg:#FFFFFF; --paper:#F7F5F0; --paper2:#EFEBE3;
+    --surface:#FFFFFF; --sunken:#F7F5F0; --tint:#F2EEE4;
+    --line:#E6E0D3; --line-strong:#D3CBBC;
+    --ink:#1A1D21; --ink2:#57534C; --ink3:#8A857C;
+    --main:#1B4B6B; --main-soft:#E5EDF2;
+    --accent:#C8892F; --accent-soft:#F8EED8;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{width:1280px;margin:0 auto}
+  a{color:inherit;text-decoration:none}
+
+  /* ---------- header ---------- */
+  header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);box-shadow:0 1px 2px rgba(26,29,33,.03)}
+  .hd{height:72px;display:flex;align-items:center;gap:36px}
+  .logo{display:flex;align-items:baseline;gap:7px;font-size:22px;font-weight:600;letter-spacing:2px;color:var(--main)}
+  .logo em{font-family:Georgia,serif;font-size:10.5px;font-style:normal;letter-spacing:1.2px;color:var(--ink3)}
+  nav{display:flex;gap:30px}
+  nav span{font-size:15px;color:var(--ink2);cursor:pointer;padding:6px 0;position:relative}
+  nav span:hover{color:var(--ink)}
+  nav span.on{color:var(--ink);font-weight:500}
+  nav span.on:after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--main);border-radius:2px}
+  .search{margin-left:auto;display:flex;align-items:center;gap:10px;width:280px;height:38px;padding:0 8px 0 14px;border:1px solid var(--line);border-radius:999px;color:var(--ink3);font-size:13px;background:var(--paper)}
+  .search span{flex:1}
+  .search kbd{font-size:11px;border:1px solid var(--line-strong);border-radius:4px;padding:2px 6px;color:var(--ink3);line-height:1}
+  .acts{display:flex;align-items:center;gap:20px;color:var(--ink2);font-size:13px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--main-soft);color:var(--main);display:grid;place-items:center;font-size:13px;font-weight:500}
+
+  /* ---------- generic ---------- */
+  .sec{margin-top:56px}
+  .sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+  .sec-l{display:flex;align-items:baseline;gap:12px}
+  .idx{font-family:'Times New Roman',Georgia,serif;font-variant-numeric:lining-nums;font-size:12px;letter-spacing:1.5px;color:var(--ink3)}
+  .sec-title{font-size:21px;font-weight:600;letter-spacing:-.2px}
+  .sec-sub{font-size:13px;color:var(--ink3);margin-top:5px}
+  .more{font-size:13px;color:var(--ink3);cursor:pointer}
+  .more:hover{color:var(--main)}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+
+  /* 米纸通栏：白底页面里唯一的分区手段 */
+  .band{padding:46px 0 8px;margin-top:14px}
+  .band .sec{margin-top:0}
+
+  /* ---------- cover：图片模式（实拍图统一处理） ---------- */
+  .cover{position:relative;overflow:hidden;aspect-ratio:16/9;padding:13px 15px;display:flex;flex-direction:column;background:var(--paper)}
+  .cover .cate{font-size:10.5px;letter-spacing:1.4px;opacity:.7}
+  .cover .mid{flex:1;display:flex;flex-direction:column;justify-content:center;gap:7px;min-height:0}
+  .cover .short{display:flex;align-items:center;font-size:25px;font-weight:600;letter-spacing:.5px;opacity:.9}
+  .cover .sub{font-size:11px;opacity:.6;line-height:1.55;letter-spacing:.2px}
+
+  /* 模式 A：有实拍图 —— 降饱和轻处理，不再压暗（角标已删，无需压底） */
+  .cover.img{padding:0;background:#0B1924}
+  .cover.img>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    filter:saturate(.92) contrast(1.02) brightness(1)}
+  .cover.img .cate{position:absolute;z-index:2;top:11px;left:12px;color:#F3EEE2;opacity:1;background:rgba(11,25,36,.5);border:1px solid rgba(255,255,255,.16);border-radius:5px;padding:2px 8px;font-size:10px;letter-spacing:1px;backdrop-filter:blur(4px)}
+  .cover.img .short{position:relative;z-index:2;color:#F3EEE2;margin-top:auto}
+
+  /* 模式 B：无实拍图 —— 排版封面，四种变体 */
+  .cover.v2{align-items:center;justify-content:center;text-align:center;padding:18px}
+  .cover.v2 .cate{position:absolute;top:13px;left:0;right:0;text-align:center;opacity:.5}
+  .cover.v2 .short{font-size:38px;letter-spacing:3px;opacity:.86;justify-content:center}
+  .cover.v2 .mid{align-items:center;text-align:center;gap:9px}
+  .cover.v2 .sub{letter-spacing:1.6px;opacity:.55}
+  .cover.v2 .bot{display:none}
+
+  .cover.v3 .short{font-size:16px;line-height:1.75;font-weight:500;letter-spacing:.2px;opacity:.9;align-items:center;padding-right:6px}
+  .cover.v3 .short:before{content:"\201C";font-family:Georgia,serif;font-size:32px;line-height:0;vertical-align:-9px;margin-right:5px;opacity:.4}
+
+  .cover.v4 .short{display:none}
+  .cover.v4 ul{list-style:none;flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px;margin-top:8px}
+  .cover.v4 li{font-size:11.5px;opacity:.78;display:flex;gap:8px;line-height:1.5}
+  .cover.v4 li b{font-family:Georgia,serif;font-weight:400;opacity:.55;font-size:10px;flex:none}
+
+  .t0{background:#E4ECF1;color:#1B4B6B}
+  .t1{background:#F4E8D6;color:#8A5A2B}
+  .t2{background:#E2EDE7;color:#2E5A4B}
+  .t3{background:#EDE4EE;color:#5B3A5E}
+  .t4{background:#F6E5DE;color:#9C4A3C}
+  .t5{background:#E6EBEE;color:#31505F}
+
+  /* ---------- hero：浅色过渡区，蓝色只留给按钮与进度 ---------- */
+  .heroband{background:linear-gradient(180deg,#E7EFF3 0%,#F5F8FA 100%);padding:36px 0 30px;border-bottom:1px solid var(--line)}
+  .hero-in{display:grid;grid-template-columns:1fr 380px;gap:44px;align-items:stretch;min-height:212px}
+  .continue{display:flex;gap:32px;align-items:stretch}
+  .continue .info{flex:1;min-width:0;display:flex;flex-direction:column}
+  .kicker{font-size:11px;letter-spacing:2px;color:var(--main);opacity:.85}
+  .continue h1{font-size:30px;font-weight:600;margin:12px 0 8px;letter-spacing:-.4px;color:var(--ink)}
+  .continue .next{font-size:13px;color:var(--ink2)}
+  .bar{height:4px;border-radius:2px;background:rgba(27,75,107,.14);margin-top:auto;overflow:hidden;max-width:520px}
+  .bar i{display:block;height:100%;background:#E8C98A;border-radius:2px}
+  .continue .row{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink3);margin-top:12px}
+  .btn-cream{margin-left:auto;background:var(--main);color:#fff;font-size:13px;font-weight:500;padding:9px 26px;border-radius:999px;cursor:pointer}
+  .btn-cream:hover{background:#17415C}
+  .thumb{width:300px;flex:none;border-radius:12px;overflow:hidden;position:relative;border:1px solid var(--line-strong);align-self:stretch;box-shadow:0 8px 22px rgba(27,75,107,.12)}
+  .thumb img{display:block;width:100%;height:100%;object-fit:cover;filter:saturate(.9)}
+    .thumb .pl{position:absolute;inset:0;display:grid;place-items:center;z-index:2}
+  .thumb .pl i{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.92);position:relative;display:block}
+  .thumb .pl i:after{content:"";position:absolute;left:14px;top:11px;border-left:11px solid #1B4B6B;border-top:8px solid transparent;border-bottom:8px solid transparent}
+
+  /* 今日一识：浅底上的白卡 */
+  .glass{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(26,29,33,.04)}
+  .gtag{display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:1px;color:#A4722B;background:var(--accent-soft);border-radius:999px;padding:3px 11px;align-self:flex-start}
+  .glass h3{font-size:18px;font-weight:600;line-height:1.45;margin:12px 0 8px;color:var(--ink)}
+  .glass p{font-size:12.5px;line-height:1.8;color:var(--ink2)}
+  .glass .gfoot{display:flex;align-items:center;gap:12px;margin-top:auto;padding-top:14px;font-size:11.5px;color:var(--ink3)}
+  .glass .gfoot .sp{margin-left:auto;display:flex;gap:14px;color:var(--main);cursor:pointer}
+
+  /* ---------- topics ---------- */
+  .topics{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .topic{padding:18px 18px 16px;cursor:pointer;transition:.22s cubic-bezier(.22,.61,.36,1);display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .tcover{margin:-18px -18px 14px;height:72px;overflow:hidden;position:relative}
+  /* 三张专题图统一成同一视觉家族：去饱和 + 同一靛蓝罩色 */
+  .tcover img{width:100%;height:100%;object-fit:cover;filter:grayscale(.5) contrast(1.04) brightness(.9);display:block}
+  .tcover:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(27,75,107,.42),rgba(27,75,107,.52))}
+  .topic:hover{transform:translateY(-3px);border-color:var(--line-strong);box-shadow:0 10px 26px rgba(26,29,33,.07)}
+  .topic .no{font-family:'Times New Roman',Georgia,serif;font-variant-numeric:lining-nums;font-size:11px;color:var(--ink3);letter-spacing:1px}
+  .topic h4{font-size:16px;font-weight:600;margin:8px 0 4px}
+  .topic .meta{font-size:12px;color:var(--ink3)}
+  .topic .mix{display:flex;gap:5px;margin-top:10px}
+  .topic .mix b{font-size:10.5px;font-weight:400;color:var(--ink3);border:1px solid var(--line);border-radius:4px;padding:1px 6px}
+  .topic .mix b.hl{color:var(--accent);border-color:#EBD9BB;background:var(--accent-soft)}
+  .pbar{height:3px;background:var(--tint);border-radius:2px;margin-top:16px;overflow:hidden}
+  .pbar i{display:block;height:100%;background:var(--main);border-radius:2px}
+  .pbar.acc i{background:var(--accent)}
+  .topic .pct{font-size:11px;color:var(--ink3);margin-top:7px;display:flex;justify-content:space-between}
+
+  /* ---------- chips / grid ---------- */
+  .chips{display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+  .chip{font-size:13px;color:var(--ink2);background:var(--paper);border:1px solid transparent;border-radius:999px;padding:6px 15px;cursor:pointer}
+  .chip:hover{color:var(--main);background:var(--main-soft)}
+  .chip.on{color:var(--main);background:var(--main-soft);font-weight:500}
+  .chip.ghost{background:transparent;border-color:var(--line)}
+  .chip.ghost.on{color:var(--main);border-color:#C8D8E2;background:transparent}
+
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;align-items:stretch}
+  .course{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:.22s cubic-bezier(.22,.61,.36,1);display:flex;flex-direction:column}
+  .course:hover,.kcard:hover,.tcard:hover{transform:translateY(-3px);border-color:var(--line-strong);box-shadow:0 14px 30px rgba(26,29,33,.08)}
+  .course .cover{border-radius:0}
+  .course .body{padding:13px 15px 15px;display:flex;flex-direction:column;flex:1}
+  .course h4{font-size:14.5px;font-weight:500;line-height:1.5}
+  .course .meta{font-size:12px;color:var(--ink3);display:flex;gap:7px;align-items:center;margin-top:7px}
+  .course .meta i{width:2px;height:2px;border-radius:50%;background:var(--ink3);opacity:.55}
+  .course .row{display:flex;align-items:center;margin-top:auto;padding-top:11px;border-top:1px solid var(--line)}
+  .price{font-family:'Times New Roman',Georgia,serif;font-variant-numeric:lining-nums tabular-nums;font-size:16px;letter-spacing:0}
+  .price em{font-style:normal;font-size:11.5px;color:var(--ink3);margin-right:1px}
+  .buy .p b em{font-style:normal;font-size:17px;font-weight:400;color:var(--ink2);margin-right:3px}
+  .price.free{color:#2E7D6F}
+  .badge{font-size:11px;color:var(--ink3);border:1px solid var(--line);border-radius:4px;padding:1px 6px}
+
+  /* 知识卡 */
+  .kcard{background:linear-gradient(180deg,color-mix(in srgb,var(--k) 9%,#fff) 0%,#fff 44%);border:1px solid color-mix(in srgb,var(--k) 22%,var(--line));border-radius:14px;padding:16px 16px 14px;cursor:pointer;transition:.22s cubic-bezier(.22,.61,.36,1);display:flex;flex-direction:column;min-height:246px;position:relative;overflow:hidden}
+  .kcard .band{position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--k),color-mix(in srgb,var(--k) 45%,#fff))}
+  .kcard .kind{font-size:11px;letter-spacing:1px;color:var(--k);display:flex;align-items:center;gap:7px;background:color-mix(in srgb,var(--k) 11%,#fff);border-radius:999px;padding:3px 11px 3px 8px;align-self:flex-start;font-weight:500}
+  .kcard .kind:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--k)}
+  .kcard h4{font-size:16px;font-weight:600;line-height:1.5;margin:13px 0 8px;letter-spacing:-.1px}
+  .kcard p{font-size:12.5px;color:var(--ink2);line-height:1.8}
+  .kcard ul{list-style:none;margin-top:9px;flex:1}
+  .kcard li{font-size:12px;color:var(--ink3);line-height:1.9;padding-left:11px;position:relative}
+  .kcard li:before{content:"";position:absolute;left:0;top:9px;width:3px;height:3px;border-radius:50%;background:var(--k);opacity:.7}
+  .kcard .foot{margin-top:auto;padding-top:14px;font-size:11.5px;color:var(--ink3);display:flex;align-items:center;gap:6px;border-top:1px solid var(--line)}
+  .kcard .foot .go{margin-left:auto;color:var(--ink2)}
+
+  /* ---------- community + stats ---------- */
+  .split{display:grid;grid-template-columns:1fr 392px;gap:24px}
+  .feed{padding:4px 22px}
+  .post{display:flex;gap:12px;padding:15px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .post:last-child{border-bottom:0}
+  .post:hover .t{color:var(--main)}
+  .post .av{width:30px;height:30px;border-radius:50%;background:var(--tint);display:grid;place-items:center;font-size:11px;color:var(--ink2);flex:none}
+  .post .t{font-size:14px;line-height:1.5;transition:color .18s}
+  .post .m{font-size:12px;color:var(--ink3);margin-top:4px;display:flex;gap:10px}
+  .post .m b{font-weight:400;color:var(--accent)}
+
+  .stat{padding:20px 22px}
+  .weekstat{margin-top:16px}
+  .weekstat .wv{font-family:'Times New Roman',Georgia,serif;font-variant-numeric:lining-nums tabular-nums;font-size:30px;letter-spacing:-.5px;display:flex;align-items:baseline}
+  .weekstat .wv em{font-style:normal;font-family:-apple-system,sans-serif;font-size:13px;color:var(--ink3);letter-spacing:0;margin:0 6px 0 2px}
+  .weekstat .wd{font-size:12.5px;color:var(--ink2);margin-top:7px}
+  .weekstat .wd b{font-weight:500;color:var(--accent)}
+  .weekstat .wgoal{height:4px;border-radius:2px;background:var(--main-soft);margin-top:14px;overflow:hidden}
+  .weekstat .wgoal i{display:block;height:100%;background:var(--main);border-radius:2px}
+  .weekstat .wg{font-size:11.5px;color:var(--ink3);margin-top:8px}
+  .rank{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+  .rank .r{display:flex;align-items:center;gap:10px;font-size:13px;padding:5px 0}
+  .rank .r em{font-family:Georgia,serif;font-style:normal;color:var(--ink3);width:16px}
+  .rank .r b{margin-left:auto;font-weight:400;color:var(--ink2);font-family:'Times New Roman',Georgia,serif;font-variant-numeric:tabular-nums}
+
+  /* ---------- explore ---------- */
+  .ex{display:grid;grid-template-columns:216px 1fr;gap:32px;margin-top:28px}
+  .filter{border-right:1px solid var(--line);padding-right:28px}
+  .filter h5{font-size:11px;letter-spacing:1.2px;color:var(--ink3);margin:0 0 10px;font-weight:400}
+  .filter .grp{margin-bottom:26px}
+  .filter .it{font-size:13.5px;color:var(--ink2);padding:6px 0;cursor:pointer;display:flex}
+  .filter .it:hover{color:var(--main)}
+  .filter .it.on{color:var(--main);font-weight:500}
+  .exhead{display:flex;align-items:flex-end;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .exhead h2{font-size:25px;font-weight:600;letter-spacing:-.3px}
+  .exhead .cnt{font-size:13px;color:var(--ink3);margin-top:5px}
+  .sorts{display:flex;gap:18px;font-size:13px;color:var(--ink3)}
+  .sorts span{cursor:pointer;position:relative;padding:3px 0;transition:color .15s}
+  .sorts span:hover{color:var(--ink2)}
+  .sorts .on{color:var(--main);font-weight:500}
+  .sorts .on:after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--main);border-radius:2px}
+  .picked{display:flex;gap:8px;margin:16px 0 4px;font-size:12px;color:var(--ink3);align-items:center}
+  .picked b{font-weight:400;background:var(--main-soft);color:var(--main);border-radius:4px;padding:2px 8px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:16px}
+  .loadmore{margin-top:28px;text-align:center}
+  .ex.q .loadmore,.ex.searching .loadmore{display:none}
+  .loadmore span{display:inline-block;font-size:13px;color:var(--ink2);border:1px solid var(--line-strong);border-radius:999px;padding:9px 34px;cursor:pointer;background:var(--surface);transition:.15s}
+  .loadmore span:hover{color:var(--main);border-color:#C8D8E2;background:var(--main-soft)}
+
+  /* 搜索态 */
+  .simbar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:14px 0 -10px;font-size:11px;color:var(--ink3)}
+  .simbar>span{flex:none;white-space:nowrap;opacity:.8}
+  .simbar button{font:inherit;font-size:11px;color:var(--ink3);background:transparent;border:1px solid var(--line);border-radius:999px;padding:3px 11px;cursor:pointer}
+  .simbar button:hover{color:var(--main);border-color:#C8D8E2;background:var(--main-soft)}
+  .qbar{display:none;align-items:baseline;gap:10px;padding:22px 0 16px;border-bottom:1px solid var(--line)}
+  .qbar h2{font-size:23px;font-weight:600;letter-spacing:-.3px}
+  .qbar .qn{font-size:13px;color:var(--ink3)}
+  .qfilter{display:none;gap:8px;margin:16px 0 4px;align-items:center}
+  .reslist{display:none}
+  .res{display:flex;gap:16px;padding:17px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .res:hover .res-t{color:var(--main)}
+  .res .rk{font-size:11px;color:var(--ink3);border:1px solid var(--line);border-radius:4px;padding:2px 0;height:fit-content;flex:none;width:46px;text-align:center;margin-top:2px}
+  .res .res-t{font-size:15px;font-weight:500;transition:color .18s}
+  .res .res-d{font-size:13px;color:var(--ink2);margin-top:5px;line-height:1.7}
+  .res .res-m{font-size:12px;color:var(--ink3);margin-top:7px}
+  .resmore{padding:16px 0 4px;text-align:center;font-size:12.5px;color:var(--ink3)}
+  .resmore span{color:var(--main);cursor:pointer}
+
+  .ex.q{grid-template-columns:1fr}
+  .ex.q .filter,.ex.q .exhead,.ex.q .picked,.ex.q .grid3{display:none}
+  .ex.q .qbar,.ex.q .qfilter,.ex.q .reslist{display:flex}
+  .ex.q .reslist{display:block}
+  #v-ex.searching .simbar{display:none}
+
+  /* ---------- detail ---------- */
+  .crumb{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink3);padding:22px 0 0}
+  .crumb .back{cursor:pointer;color:var(--ink2);display:inline-flex;align-items:center;gap:7px}
+  .crumb .back svg{width:15px;height:15px;flex:none;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:transform .18s}
+  .crumb .back:hover{color:var(--main)}
+  .crumb .back:hover svg{transform:translateX(-3px)}
+  .dt-hero{display:grid;grid-template-columns:1fr 348px;gap:40px;padding:26px 0 30px;border-bottom:1px solid var(--line)}
+  .dt-left{display:flex;gap:26px;min-width:0}
+  .dt-cover{width:320px;flex:none;align-self:flex-start;border-radius:14px;overflow:hidden;position:relative;border:1px solid var(--line)}
+  .dt-cover .cover{aspect-ratio:16/9}
+  .play{position:absolute;inset:0;display:grid;place-items:center;background:rgba(11,25,36,.1);cursor:pointer;transition:.2s}
+  .play:hover{background:rgba(11,25,36,.04)}
+  .play i{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.94);position:relative;display:block}
+  .play i:after{content:"";position:absolute;left:19px;top:15px;border-left:13px solid #1B4B6B;border-top:9px solid transparent;border-bottom:9px solid transparent}
+  .dt-info{min-width:0;display:flex;flex-direction:column}
+  .dt-info .cat{font-size:11.5px;letter-spacing:1.2px;color:var(--ink3)}
+  .dt-info h1{font-size:28px;font-weight:600;line-height:1.35;letter-spacing:-.4px;margin:10px 0 12px}
+  .dt-info .desc{font-size:13.5px;color:var(--ink2);line-height:1.85;max-width:520px}
+  .dt-stats{display:flex;align-items:center;gap:22px;margin-top:18px;font-size:12.5px;color:var(--ink3)}
+  .dt-stats b{font-family:'Times New Roman',Georgia,serif;font-variant-numeric:lining-nums tabular-nums;font-weight:400;color:var(--ink);font-size:15px}
+  .dt-teacher{display:flex;align-items:center;gap:10px;margin-top:22px}
+  .dt-teacher .av{width:34px;height:34px;border-radius:50%;background:var(--main-soft);color:var(--main);display:grid;place-items:center;font-size:12px}
+  .dt-teacher .n{font-size:13.5px;font-weight:500}
+  .dt-teacher .r{font-size:12px;color:var(--ink3)}
+
+  .buy{border:1px solid var(--line);border-radius:16px;background:#fff;padding:22px 22px 20px;align-self:start;position:sticky;top:96px;box-shadow:0 10px 30px rgba(26,29,33,.06)}
+  .buy .p{display:flex;align-items:baseline;gap:8px}
+  .buy .p b{font-family:'Times New Roman',Georgia,serif;font-variant-numeric:lining-nums tabular-nums;font-size:32px;font-weight:400;letter-spacing:-.5px}
+  .buy .p b.free{color:#2E7D6F;font-size:26px}
+  .buy .p span{font-size:12px;color:var(--ink3)}
+  .btn-main{display:block;text-align:center;height:44px;line-height:44px;border-radius:10px;background:var(--main);color:#fff;font-size:14px;font-weight:500;cursor:pointer;margin-top:16px}
+  .btn-main:hover{background:#17415C}
+  .btn-sub{display:block;text-align:center;height:42px;line-height:42px;border-radius:10px;border:1px solid #A89D8C;color:var(--ink2);font-size:13.5px;font-weight:500;cursor:pointer;margin-top:10px;background:#fff;transition:.15s}
+  .btn-sub:hover{border-color:var(--main);color:var(--main);background:var(--main-soft)}
+  .buy ul{list-style:none;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+  .buy li{font-size:12.5px;color:var(--ink2);line-height:2;display:flex;gap:8px}
+  .buy li:before{content:"";width:4px;height:4px;border-radius:50%;background:var(--line-strong);margin-top:9px;flex:none}
+
+  .dt-body{padding:26px 0 0}
+  .tabs{display:flex;gap:32px;border-bottom:1px solid var(--line);font-size:15px;color:var(--ink3)}
+  .tabs span{padding:0 0 13px;cursor:pointer;position:relative}
+  .tabs span.on{color:var(--ink);font-weight:500}
+  .tabs span.on:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--main)}
+  .panel{display:none;padding:24px 0 40px;max-width:820px}
+  .panel.on{display:block}
+  .tprofile{display:flex;align-items:center;gap:18px;margin-bottom:16px}
+  .tprofile .bav{width:64px;height:64px;border-radius:16px;background:var(--main-soft);color:var(--main);display:grid;place-items:center;font-size:24px;font-weight:600;flex:none}
+  .tprofile h4{font-size:17px;font-weight:600;margin-bottom:3px}
+  .thead{font-size:12.5px;color:var(--ink3)}
+  .texp{margin-top:16px;border-top:1px solid var(--line);padding-top:14px;list-style:none}
+  .texp li{font-size:13px;color:var(--ink2);line-height:2;padding-left:16px;position:relative}
+  .texp li:before{content:"";position:absolute;left:2px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--main-soft);border:1px solid var(--main)}
+  .rsum{display:flex;align-items:center;gap:16px;margin-bottom:6px}
+  .rsum b{font-family:'Times New Roman',Georgia,serif;font-variant-numeric:lining-nums;font-size:36px;letter-spacing:-1px}
+  .rsum .stars{color:var(--accent);font-size:14px;letter-spacing:3px}
+  .rsum .rs{font-size:12px;color:var(--ink3);margin-top:3px}
+  .review{display:flex;gap:12px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .review:last-child{border-bottom:0}
+  .review .av{width:32px;height:32px;border-radius:50%;background:var(--tint);display:grid;place-items:center;font-size:12px;color:var(--ink2);flex:none}
+  .review .rhead{display:flex;align-items:center;gap:10px}
+  .review .stars{color:var(--accent);font-size:12px;letter-spacing:2px}
+  .review .who{font-size:12px;color:var(--ink3)}
+  .review .like{margin-left:auto;font-size:12px;color:var(--ink3)}
+  .review p{margin-top:5px;font-size:13px;line-height:1.8}
+  .panel h3{font-size:15px;font-weight:600;margin:0 0 10px}
+  .panel p{font-size:13.5px;color:var(--ink2);line-height:1.95}
+  .panel code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;background:var(--tint);color:var(--ink);padding:1px 5px;border-radius:4px}
+  .panel .grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
+  .panel .box{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--paper)}
+  .panel .box h4{font-size:12px;letter-spacing:1px;color:var(--ink3);font-weight:400;margin-bottom:8px}
+  .panel .box p{font-size:13px;line-height:1.85}
+
+  .chapters{margin-top:6px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .ch{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line);font-size:13.5px;cursor:pointer;background:#fff}
+  .ch:last-child{border-bottom:0}
+  .ch:hover{background:var(--paper)}
+  .ch .n{font-family:'Times New Roman',Georgia,serif;font-variant-numeric:lining-nums;font-size:11px;color:var(--ink3);width:20px;flex:none}
+  .ch .t{flex:1}
+  .ch .d{font-size:12px;color:var(--ink3)}
+  .ch .lock{font-size:11px;color:var(--ink3);border:1px solid var(--line);border-radius:4px;padding:1px 6px}
+
+  footer{margin-top:56px;background:#31648A;color:rgba(243,238,226,.85)}
+  .flinks{display:flex;flex-wrap:wrap;gap:6px 30px;padding:30px 0 16px;font-size:13px}
+  .flinks span{cursor:pointer;color:rgba(243,238,226,.78);transition:color .15s}
+  .flinks span:hover{color:#fff}
+  .fmeta{display:flex;align-items:flex-end;justify-content:space-between;padding:16px 0 24px;border-top:1px solid rgba(243,238,226,.18)}
+  .fmeta .info{font-size:12px;color:rgba(243,238,226,.5);line-height:1.9}
+  .fmeta .brand{font-size:18px;font-weight:600;letter-spacing:2px;color:#fff}
+  .fmeta .brand em{font-family:Georgia,serif;font-size:10px;font-style:normal;letter-spacing:1.2px;color:rgba(243,238,226,.55);margin-left:6px}
+
+  .view{display:none}
+  .view.on{display:block}
+</style>
+<style id="__dm_no_drag_style__">* { -webkit-user-drag: none !important; }</style><style id="__dm_bindable_badge_style__">[data-sp-bindable="database"]{outline:1px dashed #0088ff;outline-offset:2px;border-radius:4px;}[data-sp-bindable="database"] *{pointer-events:none !important;transition:none !important;animation:none !important;}[data-sp-bindable="database"]{transition:none !important;animation:none !important;}</style></head>
+<body data-page-node-id="nFcSTEeE4kngwY4hsr4AxF" style="">
+
+<header data-page-node-id="ikxElaA3uVAGBCFdP8nHK6">
+  <div class="wrap hd" data-page-node-id="rvHxCVZnzPsEcvIxIN7kK1">
+    <div class="logo" data-page-node-id="iovZjXLbTodmn5UIGLkOlN">知微<em data-page-node-id="QwuQHTGCPc2uEyqzNl9lkX">ZHIWEI</em></div>
+    <nav data-page-node-id="Rwg1kWZG0Ighd8syV7WdeB">
+      <span class="on" data-v="home" data-page-node-id="WW1D9Be1ItdUaAEFLcx5Rs">发现</span>
+      <span data-v="ex" class="" data-page-node-id="sNuRvIxFNG5I1JvCE7H4F2">探索</span>
+      <span data-page-node-id="9usSzp1c5kP2f2Wwpi3Nv6">学习</span>
+      <span data-page-node-id="4ZrwmL1kXhTWbIwvzWrygr">交流</span>
+    </nav>
+    <div class="search" data-page-node-id="9tqlgHFuqRIQrxcQ99VCCT"><span data-page-node-id="ic1cowhfGI1aBHr1YEZvYX">搜索课程、知识卡、话题</span><kbd data-page-node-id="vtFKqQQGoDO17w8bOfrHRG">⌘K</kbd></div>
+    <div class="acts" data-page-node-id="poSHxeGXlTraLa511GenYN">
+      <span data-page-node-id="RZUavrCSksFB0xydm5Qei7">消息</span>
+      <span data-page-node-id="gob0PjC4fk0h4fvnefHQKE">购物车</span>
+      <div class="avatar" data-page-node-id="cwBtKR487BjZaCFtIi61Vm">周</div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= 发现 ================= -->
+
+
+<!-- ================= 探索（浏览态 / 搜索态） ================= -->
+<div class="view on" id="v-home" data-page-node-id="1RzALWVVj71KfvzBKNjXhF">
+
+  <!-- 深靛蓝通栏 -->
+  <div class="heroband" data-page-node-id="NcBhs369RiJwGc05JesFy3">
+    <div class="wrap hero-in" data-page-node-id="EaNmpJiwLFfswsim9OLCbv">
+      <div class="continue" data-page-node-id="OHYz0VfVDGGouPbJhtpKQv">
+        <div class="info" data-page-node-id="k0pUZJqqcEM179ML929VnX">
+          <div class="kicker" data-page-node-id="jOYX7Lm4fVwartFYAjBeO8">继续学习 · 第 3 天</div>
+          <h1 data-page-node-id="V0ceWGN6wMfyMTDlFffj4C">Java 程序员的前端课程</h1>
+          <div class="next" data-page-node-id="Lx07FFJahFSZ33GCuRCj66">下一节　04 闭包不是函数记住变量　·　剩余 18 分钟</div>
+          <div class="bar" data-page-node-id="daSUpCaEbc4YlBTaCHBQMn"><i style="width:42%" data-page-node-id="T9MOaO5PMEyVWgOuWppqTY"></i></div>
+          <div class="row" data-page-node-id="mGRot0LCkCrN84I7eWbfJn">
+            <span data-page-node-id="i2D4xmVA9FFwvCBNGAKoKh">已完成 3 / 8 节</span>
+            <span data-page-node-id="ssaIXz4UGfxqykAV4NL3b2">·</span>
+            <span data-page-node-id="xCxByGNbZ5EQA7xLTTdfGR">本周累计 3 小时 20 分</span>
+            <span class="btn-cream" onclick="show('detail')" data-page-node-id="XseAQbkjIf6CkFoArialBg">继续学习</span>
+          </div>
+        </div>
+        <div class="thumb" onclick="show('detail')" data-page-node-id="dnAVui3XvNqRK5ojUAHTkH">
+          <img src="img/cover-fe.jpg" alt="" data-page-node-id="QmqbkNpDnqHv6Jlk7cFiA4">
+          <div class="pl" data-page-node-id="xLGgkZBZVRROdVzpFZW4Pd"><i data-page-node-id="7K00pbyTinGDDA0F28la8i"></i></div>
+        </div>
+      </div>
+
+      <div class="glass" data-page-node-id="UuCdOLCBd10YAX4kiAM84y">
+        <span class="gtag" data-page-node-id="cBZ4byqD7llFLxUOClCdJi">今日一识 · 效率</span>
+        <h3 data-page-node-id="wvXqtIx6NitbvYSMAplp1R">番茄钟为什么是 25 分钟</h3>
+        <p data-page-node-id="LdVJz5cQBSjRdVMIE20Mty">25 分钟不是科学常数。它短到大脑不会提前抗拒，又长到足够进入专注状态；真正起作用的是「强制中断」。</p>
+        <div class="gfoot" data-page-node-id="UfqqfI9ojZQ0A8Lxg4eny1">
+          <span data-page-node-id="Swl9Ot0tPDCPvpchmMgmwr">今天先试 2 个 25 分钟</span>
+          <span class="sp" data-page-node-id="OPs9oPqKglqo7cfdaw8Yh6"><span data-page-node-id="iBEiHz9woaoclKoFJHzwBi">收藏</span><span data-page-node-id="RyeXMV5DRFCsCiCVmp5AAh">下一张 →</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 01 专题 -->
+  <div class="band" data-page-node-id="lVJckuFOKe6nb4KqKOlFqx">
+    <div class="wrap" data-page-node-id="bBXk5orGGhkrIBsaEvf8tf">
+      <div class="sec" data-page-node-id="PWtpWXaXAvJ2PmNM0FFpF8">
+        <div class="sec-head" data-page-node-id="AP3HW6y2bRXojAXajby5Hg">
+          <div class="sec-l" data-page-node-id="pUZ6srkrGJZ0XFDAxY7dCn">
+            <span class="idx" data-page-node-id="yCpGBrAXQonFcgVQmZoDvz">01</span>
+            <div data-page-node-id="duLWrfsAD4GUVb3rrEBgTJ">
+              <div class="sec-title" data-page-node-id="tAtYXCDlDTvW7KitNaXmlc">沿着一条线学下去</div>
+              <div class="sec-sub" data-page-node-id="jaI1qZi4dTtjbUjmkPKs9N">课、知识卡、讨论串成一条能走完的线，不是一堆孤立的课</div>
+            </div>
+          </div>
+          <span class="more" data-page-node-id="So9FcsGa3UBJKJoMT7ebQh">全部专题 →</span>
+        </div>
+
+        <div class="topics" data-page-node-id="c1oMNXaxlpM4CK8fDtD2N9">
+          <div class="card topic" data-page-node-id="bW0R7L9rPVJL5CXBrUBesH">
+            <div class="tcover" data-page-node-id="KQKIlMiBxQITnYPrqgcD5s"><img src="img/topic1.jpg" alt="" data-page-node-id="a7KgpAjEbSTT9lhyXv9AQ0"></div>
+            <div class="no" data-page-node-id="3VjM4hn7cKSRbk9krFPSzA">PATH 01</div>
+            <h4 data-page-node-id="L2BF9e4iYvTWpjYMf5bNL7">三周搞懂 Java 并发</h4>
+            <div class="meta" data-page-node-id="vhzV6qemX3YhpWaZ5bWRnK">1 门课 + 6 张知识卡 · 约 6 小时</div>
+            <div class="mix" data-page-node-id="yzrvlNHowTJIKGgiAZbUDd"><b data-page-node-id="iP0QogCwK3au4SzXfOV21D">课 1</b><b data-page-node-id="miW0eoGrsDLSm4BKL3htWZ">知识卡 6</b><b data-page-node-id="jccrpIGWQ2DyESGL1r3hyU">讨论 1</b></div>
+            <div class="pbar" data-page-node-id="patqwzA7fDJfWbdTsDmiCA"><i style="width:29%" data-page-node-id="H5YWadwCweH8rwXy9OHvnx"></i></div>
+            <div class="pct" data-page-node-id="H3woLGP2YoE5ZvprNflxRx"><span data-page-node-id="7NA7znhvEUY1hEe98yhOqo">已完成 2</span><span data-page-node-id="9A6spFLQZnLuTWAZ4m669h">29%</span></div>
+          </div>
+          <div class="card topic" data-page-node-id="x9IctIOD5cqq14QrAQ4lhh">
+            <div class="tcover" data-page-node-id="jPWEKec2d1H3jnJSza4JvH"><img src="img/topic2.jpg" alt="" data-page-node-id="uCCJ1lz7ETm2orOiYHuogk"></div>
+            <div class="no" data-page-node-id="CcThVcx2VdMIDrfphvsHhA">PATH 02</div>
+            <h4 data-page-node-id="bTj8D5Q4ZlKkVriuDTiE2Y">从前端到全栈的第一条线</h4>
+            <div class="meta" data-page-node-id="sTYlHKwxScgYtZGTGsn6CR">2 门课 + 5 张知识卡 · 约 20 小时</div>
+            <div class="mix" data-page-node-id="2r3u3zngrHUkZlQirGRLJL"><b data-page-node-id="Yk8dmlhu0tXnf3EkeS8cgD">课 2</b><b data-page-node-id="WEVASG2dUClQUQ0aFILECu">知识卡 5</b></div>
+            <div class="pbar" data-page-node-id="xvbDkWZQbquLN3kD7trcM6"><i style="width:0" data-page-node-id="Lwbgq9FSx8Pq12qgqsZwgB"></i></div>
+            <div class="pct" data-page-node-id="ZNhzPAcVBdLH4TisY2h9CH"><span data-page-node-id="FYm7nts3dEFk8Hx6ycJ0tj">未开始</span><span data-page-node-id="tSqPz7LiWNOxBd3vRTkqsF">0%</span></div>
+          </div>
+          <div class="card topic" data-page-node-id="XXLZh1CI3bBAUkcZOO9GI3">
+            <div class="tcover" data-page-node-id="D4m6jTMtxk4DVgTJhQnQDt"><img src="img/topic3.jpg" alt="" data-page-node-id="n7ZYHk5LsHjnW2Msh5jfNG"></div>
+            <div class="no" data-page-node-id="G8Rm2sJ4TajccpCnGmGAHf">PATH 03</div>
+            <h4 data-page-node-id="vhkJKYEW8DfJJCjJrQkPwk">技术人的精力管理</h4>
+            <div class="meta" data-page-node-id="8vXMFgb4tAUSZBbmEt4ADg">1 门课 + 6 张跨领域知识卡 · 约 3 小时</div>
+            <div class="mix" data-page-node-id="nijTgSZ2bN0yKxAJ2BaxSK"><b data-page-node-id="TAiHsCFoGGaRx4MkAKBDgM">课 1</b><b class="hl" data-page-node-id="XCd4OFywB2bu0GuY3RiL52">职场 3</b><b class="hl" data-page-node-id="MWrgWyA8wAmpMud6fzbfOM">生活 3</b></div>
+            <div class="pbar acc" data-page-node-id="ue5qOtPcRGQV5ooH4MUx9E"><i style="width:11%" data-page-node-id="L05GmwtqSyaaLt2s3JsbXB"></i></div>
+            <div class="pct" data-page-node-id="E8kiIbBAOwcoZaYCR7RubU"><span data-page-node-id="9dGhAUBjyJ9D9QaBKDXbwa">已完成 1</span><span data-page-node-id="w2VE4E1ZFT7x7xOz9I8UyS">11%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 混排 -->
+  <div class="wrap" data-page-node-id="KKrsAsFlVL2ZQ7gfRfMRUm">
+    <div class="sec" data-page-node-id="1lMKD4AemNb4AS0O2OONXu">
+      <div class="sec-head" data-page-node-id="C8waPOYgfK8QFdBP6zafbS">
+        <div class="sec-l" data-page-node-id="RtRAmw7AiHUQwBsf6qc1WV">
+          <span class="idx" data-page-node-id="AYacyyBrziQLzEJ8MWCxOC">02</span>
+          <div data-page-node-id="HaoJNiU6Wwo1jxbLUsyamF">
+            <div class="sec-title" data-page-node-id="RpFgl3BrvbZA0BtgFHHelP">今天想学点什么</div>
+            <div class="sec-sub" data-page-node-id="rvLHYkOxEkRhdVuQkfyA4p">五个方向，长课和 30 秒知识混排，按你当下的兴趣挑</div>
+          </div>
+        </div>
+        <span class="more" data-page-node-id="KzH9eaPO7NJWvpWqWMmUoq">换一批 ↻</span>
+      </div>
+
+      <div class="chips" data-page-node-id="N39fWvLttMWFlrMZZv74jG">
+        <span class="chip on" data-dom="all" onclick="pickCat(this)" data-page-node-id="JADwXWMXHRAfhkHcmwAed7">全部</span>
+        <span class="chip" data-dom="it" onclick="pickCat(this)" data-page-node-id="11JMkGcTverDdrqKsTdBCG">IT·互联网</span>
+        <span class="chip" data-dom="design" onclick="pickCat(this)" data-page-node-id="qayab7KUT3DvkF6dnG1OPC">设计·创作</span>
+        <span class="chip" data-dom="hobby" onclick="pickCat(this)" data-page-node-id="vZATCGB3axReHmUq3xTOrm">兴趣·生活</span>
+        <span class="chip" data-dom="work" onclick="pickCat(this)" data-page-node-id="ludGJivnIEBJwCddkNAgUz">职场·效率</span>
+        <span class="chip" data-dom="life" onclick="pickCat(this)" data-page-node-id="c505Fu2DZZVkStGxZFWDyu">生活·自我管理</span>
+        <span style="width:14px" data-page-node-id="G5VEpkkuyq1QOOdgR1yrCP"></span>
+        <span class="chip ghost" data-f="free" onclick="pickGhost(this)" data-page-node-id="qEnuDfZY1W1Ccebzaumg4D">免费</span>
+        <span class="chip ghost" data-f="dur" onclick="pickGhost(this)" data-page-node-id="f283C0YxYJ6FDTR3qnZW83">30 分钟内</span>
+        <span class="chip ghost" data-f="trial" onclick="pickGhost(this)" data-page-node-id="Z36NVjBEGfXkmeEvlTAMj2">可试看</span>
+      </div>
+
+      <div class="grid4" id="gridMix" data-page-node-id="cwowu81Ipv14GfOqzcZU2r">
+        <!-- 课程：有实拍图 -->
+        <div class="course" onclick="openDetail(this)" data-dom="it" data-free="0" data-dur="220" data-trial="1" data-page-node-id="wVwggVgmOn3yGkbfGCZ3Q3">
+          <div class="cover img" data-page-node-id="Zn5tSCt4FTgW48yoHu7Yr0">
+            <img src="img/iot.jpg" alt="" data-page-node-id="F6XDxxwcbo6Yfm1LQ7VBHy">
+            <span class="cate" data-page-node-id="CthqbSVglacCQ8Y7iz8ibo">物联网 · 进阶</span>
+          </div>
+          <div class="body" data-page-node-id="paxveVfwCYVF9wbSqGnWwm">
+            <h4 data-page-node-id="AaY4uRC4lCWB73wnsZbAZt">MQTT 物联网实战：从设备接入到消息中台</h4>
+            <div class="meta" data-page-node-id="VhlaixDf20cV6LzcPCkFwK"><span data-page-node-id="OC8lRmhLb75KHnPyHXkhHh">李老师</span><i data-page-node-id="T7yvpW6x7CLrBK6uFRsEjC"></i><span data-page-node-id="n9ZTHBsLhGu2n9xC4BIJcH">3200 人在学</span></div>
+            <div class="row" data-page-node-id="oR2m3uVDD3Ubc9c8MjRi7M"><span class="price" data-page-node-id="Hj6AbbBaMNPnc7KDLNuzgo"><em data-page-node-id="CZwtXIn8qAQ1bDUwJzJ9R4">￥</em>259</span><span class="badge" style="margin-left:auto" data-page-node-id="J4kznw47hzUBLyanqwNdE5">进阶</span></div>
+          </div>
+        </div>
+
+        <div class="kcard" style="--k:#2E5A4B" data-dom="life" data-free="1" data-dur="2" data-trial="1" data-page-node-id="qJ1eNQrSCsEocQUvlFvojp">
+          <span class="band" data-page-node-id="sarbS3VsnyXjT7dlH5FrNJ"></span>
+          <span class="kind" data-page-node-id="QoraC6urgIEh48C1dDg8hD">知识卡 · 生活</span>
+          <h4 data-page-node-id="GqTEiBoonEm9mWkxH5clAO">每天八杯水，其实是个谣言</h4>
+          <p data-page-node-id="mBRfpo7kr9T8uuXcvQq6jj">总量包括了食物里的水，不必按杯数算。</p>
+          <ul data-page-node-id="j1ZuCq86cU7MBqBe9tdu9N"><li data-page-node-id="U0aJhtBB6Rnhflqm0bDy5F">看尿液颜色，浅黄就够</li><li data-page-node-id="4YFlgHER2TDm4hj1DB6czI">运动与高温另算</li><li data-page-node-id="6ktqIx3UAC0rwULUaEnOIv">咖啡和茶也算补水</li></ul>
+          <div class="foot" data-page-node-id="3IgpsTACdisYq24T91kmTj"><span data-page-node-id="74D0GVBglQTqPn7BEzzRCf">90 秒读完</span><span data-page-node-id="7DxLfRkl7siIDaYAQXpQY4">·</span><span data-page-node-id="Eu7Gl0emkMwJgBxOS5hTUQ">1.8 万人收藏</span><span class="go" data-page-node-id="2nrGPUCV0eVYEvZFHad5T1">读一读 →</span></div>
+        </div>
+
+        <!-- 课程：高饱和黄图，被统一处理压住 -->
+        <div class="course" onclick="openDetail(this)" data-dom="it" data-free="0" data-dur="170" data-trial="1" data-page-node-id="vCBXp3ka7faHYJbgml2NkG">
+          <div class="cover img" data-page-node-id="T1gIo70yGjgGk40pPpjhVk">
+            <img src="img/server.jpg" alt="" data-page-node-id="l93A1gm8EhIkJ8EaEPeCUP">
+            <span class="cate" data-page-node-id="spUYDok6QvXodIxDR6Drvj">后台开发 · 进阶</span>
+          </div>
+          <div class="body" data-page-node-id="Kmnl8XyFKxWbTozF5NYCdU">
+            <h4 data-page-node-id="O2WpXP1DmA1AkfjtWi35gR">可能是史上最全的微服务技术栈课程</h4>
+            <div class="meta" data-page-node-id="uekxk31lILlfQ1k0pwStRs"><span data-page-node-id="GAgCMSFVSzsJ68UnlcAhHl">李老师</span><i data-page-node-id="ZC12iSQreOw66lr587qgr2"></i><span data-page-node-id="435YQEmeQC2veDjJVDO73F">8600 人在学</span></div>
+            <div class="row" data-page-node-id="jyC6GgknoDYmf7oRD3pSzd"><span class="price" data-page-node-id="G3HLOcMvDezer063g9g51B"><em data-page-node-id="bDcuZ4ilAbIH3gOxZXKLEB">￥</em>199</span><span class="badge" style="margin-left:auto" data-page-node-id="q1LNUfeTJqU6VpcsujSA2b">进阶</span></div>
+          </div>
+        </div>
+
+        <div class="kcard" style="--k:#8A5A2B" data-dom="life" data-free="1" data-dur="3" data-trial="1" data-page-node-id="GCHPxIVe1u6AcbrS1bbDIN">
+          <span class="band" data-page-node-id="4TrCnpGNDuBLa2o8NO0HWU"></span>
+          <span class="kind" data-page-node-id="ecgOnI7qsuzP2Y3PoNJhb7">知识卡 · 理财</span>
+          <h4 data-page-node-id="ctXNujKyIJBCxRXLfH45Vf">记账三个月，为什么还是存不下钱</h4>
+          <p data-page-node-id="uq2n7UstAmBgvvKzUviuPl">记账只解决「知道钱去哪了」，不解决「钱该去哪」。</p>
+          <ul data-page-node-id="xGGfR9dkAISm3diBz6bMBe"><li data-page-node-id="p1DT5WPQHj13ubftdNF75U">发薪日先固定转出 20%</li><li data-page-node-id="Wk7QgZiy4AhRJhEQBKG1mb">剩余额度再分配给消费</li><li data-page-node-id="2W2Jmzq7iGGIoHEVzm4JIT">顺序反了就没有效果</li></ul>
+          <div class="foot" data-page-node-id="vBDd6ByAjxy5WFH0B2zk4c"><span data-page-node-id="YHfEBHsTFQ1jS905BaAtGo">3 分钟读完</span><span data-page-node-id="s37JwNQYxCJPhWiGwxRYcG">·</span><span data-page-node-id="Fk2KmG7NAP1MiOIFEanNfq">9400 人收藏</span><span class="go" data-page-node-id="futox8eZTKw5SslnGmIhYU">读一读 →</span></div>
+        </div>
+
+        <div class="kcard" style="--k:#9C4A3C" data-dom="hobby" data-free="1" data-dur="2" data-trial="1" data-page-node-id="0YkIfb3sQsCdEaCiDjaYP8">
+          <span class="band" data-page-node-id="45vbDCPh0wpm4RDJ96rDdu"></span>
+          <span class="kind" data-page-node-id="CaWIadfVIuxm9GJL1cBXKe">知识卡 · 兴趣</span>
+          <h4 data-page-node-id="eQlE0BD1PHjDi3ktOc3yPI">相机三个参数，先记这一个就够</h4>
+          <p data-page-node-id="1LkA8LOQsjvFsbTlEFhCxg">新手最容易卡在「怎么调都不对」，其实先固定光圈，只动快门。</p>
+          <ul data-page-node-id="mFqInesHLxrf3EcOLk5BrN"><li data-page-node-id="8oGcLOBb5Z50fsluWkHRKF">人像先用 f/1.8 到 f/2.8</li><li data-page-node-id="SgygDs9GS74Z09vB9cZVOL">快门不低于 1/60 防抖</li><li data-page-node-id="B1GDHuLkezD0R42vvp5HwY">ISO 最后再抬高</li></ul>
+          <div class="foot" data-page-node-id="7nz7H3gZ9kdrxbT3P3mqBq"><span data-page-node-id="EOqvEkRB2aSKIvxtzKF78q">2 分钟读完</span><span data-page-node-id="GyfPS8cJABirPI02EyI07w">·</span><span data-page-node-id="rKowiaJeHtk5LLkkYhKkzO">7300 人收藏</span><span class="go" data-page-node-id="nGuIJyVPseozW7aEtlQF3I">读一读 →</span></div>
+        </div>
+
+        <div class="kcard" style="--k:#31505F" data-dom="work" data-free="1" data-dur="2" data-trial="1" data-page-node-id="tTny0YRv3z68dB5XnxEuMu">
+          <span class="band" data-page-node-id="RDFbe3vp60QeDX2iy1pHml"></span>
+          <span class="kind" data-page-node-id="hPo1EMeVgilzlTBLwKoOs5">知识卡 · 职场</span>
+          <h4 data-page-node-id="1iZ7DutQU2dRkO2vjLqs6b">邮件只需要三句话</h4>
+          <p data-page-node-id="rRTge7ClqHTS6qZh4peki9">收件人只想知道「要我做什么」，铺垫越长越没人回。</p>
+          <ul data-page-node-id="IRZRbChdRyuotGUEENOtJT"><li data-page-node-id="QfMHthUWti22rwWdcgPrO9">第一句说结论</li><li data-page-node-id="zYm9FohNAz8UZm0w1Etq0y">第二句说要对方做什么</li><li data-page-node-id="XiBIaA0lWlsZ8u8ShJq6KB">第三句说期限</li></ul>
+          <div class="foot" data-page-node-id="xjquDK5O1CVCcMAI6VXNLA"><span data-page-node-id="my9xlXyZan5If2CpSTXkpn">90 秒读完</span><span data-page-node-id="Ob3p7PXsKpiKRL4PG1oLti">·</span><span data-page-node-id="DsyX7MdfteKp4G1vwsN0n2">2.4 万人收藏</span><span class="go" data-page-node-id="4FhBxDvkIxJzcJHdpa1LYf">读一读 →</span></div>
+        </div>
+
+        <!-- 课程：橙色图，统一处理后偏棕 -->
+        <div class="course" onclick="openDetail(this)" data-dom="it" data-free="0" data-dur="245" data-trial="1" data-page-node-id="Z08xjRiZjDHwtHoT4dDAi1">
+          <div class="cover img" data-page-node-id="pjwJl6GxYvTdma3wzb6cgw">
+            <img src="img/cover-fe.jpg" alt="" data-page-node-id="FNIdKrMPGwGyUcTcanyN9N">
+            <span class="cate" data-page-node-id="WFuZvFDXmWPNi5IUatoUGH">前端开发 · 入门</span>
+          </div>
+          <div class="body" data-page-node-id="a8GSbtOecbeEcCyIIJhvvb">
+            <h4 data-page-node-id="aSCwzOdbwHUbyAnI96oy7k">Java 程序员的前端课程</h4>
+            <div class="meta" data-page-node-id="nFPELS8WuYcsgTRGQ1CqFA"><span data-page-node-id="6ggBCTF34gt6R1IC4cZM1b">杨老师</span><i data-page-node-id="uUKkNEuIFAyanlT0pAkRee"></i><span data-page-node-id="Vn8dHrx3wzxLvszAicU487">4100 人在学</span></div>
+            <div class="row" data-page-node-id="ZVmdKRop8u7EDC1yJxprBa"><span class="price" data-page-node-id="chlyreJLf8ak35EFqtp61S"><em data-page-node-id="Od2sltptM7Ui1BPg6rrvPM">￥</em>149</span><span class="badge" style="margin-left:auto" data-page-node-id="Zk1m9sMzWmPifg0r4b9UOC">入门</span></div>
+          </div>
+        </div>
+
+        <div class="kcard" style="--k:#5B3A5E" data-dom="design" data-free="1" data-dur="2" data-trial="1" data-page-node-id="UskhIE6YUQI6l0K27LkgWQ">
+          <span class="band" data-page-node-id="awocsKfNOdm7MyTQKfKqyH"></span>
+          <span class="kind" data-page-node-id="wHyfbkIn574bt2PjPdmYSi">知识卡 · 设计</span>
+          <h4 data-page-node-id="Z8B3PnirCHt5qXLJFGxbwm">排版不好看，八成是这四个对齐没做</h4>
+          <p data-page-node-id="1eCFyB8PJMCIv3kcgDNHM3">四种对齐方式，一页里只能选一种为主。</p>
+          <ul data-page-node-id="JJQMpliv5ZJk9AfoHqtj9Z"><li data-page-node-id="qpUpLH9Gw0GMDAZn4oHzMF">正文统一左对齐</li><li data-page-node-id="FDf5ZB9uP8Q3jHBrA4Iqs5">数字统一右对齐</li><li data-page-node-id="uE4hZV81QwmV443E3l99Hk">混用不是创意，是让眼睛找不到起点</li></ul>
+          <div class="foot" data-page-node-id="1GihEdNaJ1udP5ngioKGqU"><span data-page-node-id="C0zvMm9jb1rK32FDr8sizD">2 分钟读完</span><span data-page-node-id="AxhJoXfLnjzgUBCnEq3Qmw">·</span><span data-page-node-id="wDy26JfOZ2VJfkzxqAoqaK">6200 人收藏</span><span class="go" data-page-node-id="djauPv9m0O7VJRDBW4FOwT">读一读 →</span></div>
+        </div>
+      </div>
+      <div id="gridMixEmpty" style="display:none;padding:52px 0;text-align:center;font-size:13.5px;color:var(--ink3)">这个筛选下暂时没有内容，换个条件试试</div>
+    </div>
+  </div>
+
+  <!-- 03 交流 -->
+  <div class="band" data-page-node-id="ur2ndP3y9pZRBDLFLNLSFV">
+    <div class="wrap" data-page-node-id="c8D5EqqA3YNODhrHSnsS8R">
+      <div class="sec" data-page-node-id="YyT8QjFkp3eL3sqbXXnmsb">
+        <div class="sec-head" data-page-node-id="DNXmtCDPXU17X2V6n81pwO">
+          <div class="sec-l" data-page-node-id="TgKKOlzDqll8eTXpqmAZun">
+            <span class="idx" data-page-node-id="o058U1CN9XaqHfb1NIEFJG">03</span>
+            <div data-page-node-id="FcI3nVFrKB0aHVTCpgVhwo">
+              <div class="sec-title" data-page-node-id="tcNU2oeLMJUZtzykir7ZO0">别人在想什么</div>
+              <div class="sec-sub" data-page-node-id="RfjTxdnkx6yUQlmKT66HjF">问答、笔记、经验，都是学习的一部分</div>
+            </div>
+          </div>
+          <span class="more" data-page-node-id="aE37rDVn9ubefMZfYsuHiD">进入交流区 →</span>
+        </div>
+
+        <div class="split" data-page-node-id="oA0Mvh9xckyI0srWYOnLes">
+          <div class="card feed" data-page-node-id="kycXGuUrIEzsaw4C5WVNqM">
+            <div class="post" data-page-node-id="UWKWN4XjXMbFsPtSM4GcEu">
+              <div class="av" data-page-node-id="IWR85MqRp2tivWlq3EhN6N">林</div>
+              <div data-page-node-id="Ve2BxWFNNVm5TzYoUyUr1B">
+                <div class="t" data-page-node-id="nC8ZSCrKbj5w4djQeePNhm">分布式事务到底该选 TCC 还是 Saga？</div>
+                <div class="m" data-page-node-id="RaQZJeR6245zHkAWGNLNXF"><span data-page-node-id="WYptWAhHcpWfE0eBGfmhKJ">课程问答 · Java 微服务</span><span data-page-node-id="NGE8DuHQw0zh0ugUqfytA8">12 条回复</span><b data-page-node-id="ODR9dICjdlIe20EFSQPcF3">精华</b></div>
+              </div>
+            </div>
+            <div class="post" data-page-node-id="suo5M62H6vXX1XHEDsozFw">
+              <div class="av" data-page-node-id="ElYEct7QDruhCUPHEHRG9K">苏</div>
+              <div data-page-node-id="yG97IubVJVD0Cygymrz6Q5">
+                <div class="t" data-page-node-id="0hA8SFPJ3zd0cJOtdGRoae">把配置中心那一章整理成了一张图，欢迎挑错</div>
+                <div class="m" data-page-node-id="4iSLE8FYYukXvYI1oJm5pf"><span data-page-node-id="QfGFtHh6DgwQajjpL3gXw6">学习笔记 · 微服务技术栈</span><span data-page-node-id="RbWOthiyHwmo2CzZa2tdem">8 条回复</span></div>
+              </div>
+            </div>
+            <div class="post" data-page-node-id="4ckLA0Ht8jHjO1fQU6MsiJ">
+              <div class="av" data-page-node-id="VWq2PlhyL9f8HN4hwgHMga">陈</div>
+              <div data-page-node-id="ICuDm2yeUd0FcnW89xvbAt">
+                <div class="t" data-page-node-id="8FFmhUUHDaAicaDCjAdnhA">闭包到底记住了什么？看文档还是没懂</div>
+                <div class="m" data-page-node-id="66040nl0bK4ZDMNz2C96Hj"><span data-page-node-id="Q67LVjl2tlVHwb3hQHa0yL">课程问答 · 前端工程师</span><span data-page-node-id="oL6ZFAqLlWPi9XKZtrYoHQ">6 条回复</span></div>
+              </div>
+            </div>
+            <div class="post" data-page-node-id="oPdeGUxzm6n1pPDAAgTo4y">
+              <div class="av" data-page-node-id="7CEut7VVQuOYlZp7kZnObB">何</div>
+              <div data-page-node-id="aTxa5aXG1RIGGwIP3CP8Pr">
+                <div class="t" data-page-node-id="497cIjtm0xiHIK06rxeNAe">坚持早起背单词 30 天，我踩过的三个坑</div>
+                <div class="m" data-page-node-id="PlVRB2fNYhy94BjtI76gky"><span data-page-node-id="oE4orSVK9hDGYVXvECZEmX">经验分享 · 语言学习</span><span data-page-node-id="2UzbPMcEZUb1EtPNUw9xyF">21 条回复</span><b data-page-node-id="OYeCkOH4yTMfAJd2D50sOF">热门</b></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card stat" data-page-node-id="oSufHxZcOMK0PklpAuAkVn">
+            <div class="sec-l" style="gap:10px" data-page-node-id="1GA1WIMWkPvo5WyP9JcPTr">
+              <span class="sec-title" style="font-size:15px" data-page-node-id="TlfzyDpsDsagfKdgtqGJgb">本周学习</span>
+              <span class="sec-sub" style="margin:0 0 0 auto" data-page-node-id="cS2dW1IBfkrC8W6laJRj7M">3 小时 20 分</span>
+            </div>
+            <div class="weekstat" data-page-node-id="QAuvbFqpSzACUAatEshSHz">
+              <div class="wv" data-page-node-id="qW1week01">3<em data-page-node-id="qW1week02">小时</em>20<em data-page-node-id="qW1week03">分</em></div>
+              <div class="wd" data-page-node-id="qW1week04">比上周多 <b data-page-node-id="qW1week05">40 分钟</b> · 连续打卡 <b data-page-node-id="qW1week06">5 天</b></div>
+              <div class="wgoal" data-page-node-id="qW1week07"><i style="width:82%" data-page-node-id="qW1week08"></i></div>
+              <div class="wg" data-page-node-id="qW1week09">本周目标 4 小时 · 还差 40 分钟</div>
+            </div>
+            <div class="rank" data-page-node-id="P1MAWGfIAcRaca28EGF2WZ">
+              <div class="r" data-page-node-id="FIeFkC40C4Uq8eKPIMCBlW"><em data-page-node-id="NWeF3EobZHAUFD0VEKytYk">1</em><span data-page-node-id="2MfyJKhJRQbmkAqO3UzINT">林一</span><b data-page-node-id="eARy4DTCVS3JpfLGkbPkSk">1280</b></div>
+              <div class="r" data-page-node-id="VsDQ0qZpmRkzspOzMagd4E"><em data-page-node-id="hE4MNWCHh0AYPOgY7FGQKQ">2</em><span data-page-node-id="dCJF26cm5QqKExcz9xi4Tn">周舟</span><b data-page-node-id="z99QrJ3kIP6w3k1KIcq8UH">1156</b></div>
+              <div class="r" data-page-node-id="qC0QxGbG0YLuZydpqeTmli"><em data-page-node-id="4jC7AqvNQ7dEEEZt1P0OAF">3</em><span data-page-node-id="OvcJNiWshrdVVu71c6wKCE">陈默</span><b data-page-node-id="wNEyXEcM6KI8VreCojHKVR">1092</b></div>
+              <div class="r" style="color:var(--main)" data-page-node-id="rHCN0gG4iyxBEolNHPbf1S"><em data-page-node-id="3YVPZLXHMR6DeYFnWUSI37">·</em><span data-page-node-id="k6GDaEfX09uC5JEoEI35XB">我的名次</span><b data-page-node-id="eHVQuaESNQT9rMd2wMwjG6">12</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><div class="view" id="v-ex" data-page-node-id="3ZuixasbIi0mOsoYbEZnIK">
+  <div class="wrap" data-page-node-id="AAC2YYYDHwlaB1Y6qAbXGy">
+    <div class="simbar" data-page-node-id="ITmsT1okiA1x0dCsCshOOn">
+      <span data-page-node-id="prSxsGmGMLGaVesCzDEocX">演示</span>
+      <button onclick="toggleQ()" id="qbtn" data-page-node-id="LPlCdAuDqzDUpI9XN95eHw">切到搜索态：搜「并发」</button>
+    </div>
+
+    <div class="ex" id="exWrap" data-page-node-id="XNaiN5iuDso2bxUT3SAfwS">
+      <aside class="filter" data-page-node-id="Psb3cDIAkPlMaxvHONbukG">
+        <div class="grp" data-page-node-id="yGNBqH2hq3kvxkH7azcQeK">
+          <h5 data-page-node-id="2EGmeSGYaPqbgHBVuovcY0">内容类型</h5>
+          <div class="it on" data-page-node-id="t6HfOg5S4XOonoNHgqQm5S">全部</div>
+          <div class="it" data-page-node-id="qo68pLDmlBvV5n6GWJQ5wK">课程</div>
+          <div class="it" data-page-node-id="EX2B0iuEA9Z5WGBE9Lkbrv">知识卡</div>
+          <div class="it" data-page-node-id="WQ6leqBtUEgmWh9Q39FiY8">问答</div>
+          <div class="it" data-page-node-id="xtbMYXx2xZLyAZeAOy1ijd">专题</div>
+        </div>
+        <div class="grp" data-page-node-id="bHUCN0yf9VMc6NUCAqH0yr">
+          <h5 data-page-node-id="ttmqM1Qv8HEzEH2A5VAFsJ">领域</h5>
+          <div class="it on" data-page-node-id="0FcbAUWc9fWT4FsVTr4au5">IT·互联网</div>
+          <div class="it" data-page-node-id="rWNFjALlCLMuTHWgF9M78O">设计·创作</div>
+          <div class="it" data-page-node-id="HULxwJTgZQAgXXfxDHIgt9">兴趣·生活</div>
+          <div class="it" data-page-node-id="P8dV95LwRYVA0TGIupg5ir">职场·效率</div>
+          <div class="it" data-page-node-id="nKoEJOei6vKMKLnmn5kcQz">生活·自我管理</div>
+        </div>
+        <div class="grp" data-page-node-id="vUWsCcVcp3qVjksWOwh3Fo">
+          <h5 data-page-node-id="XWWnPMHmWxhCHmpwmFOOCS">长度</h5>
+          <div class="it" data-page-node-id="tHDDK95HQ8XdOtORt9u2F6">30 秒以内</div>
+          <div class="it" data-page-node-id="1khraQKYRuhAD1dQXtP3Pb">30 分钟以内</div>
+          <div class="it" data-page-node-id="vh0C3CYdzzXbLnD0KIQ8Xo">系统学完</div>
+        </div>
+      </aside>
+
+      <section data-page-node-id="qxalkbqvCml7ahe55nt1Qu">
+        <div class="qbar" data-page-node-id="fOE6L5bANbIo7yt5OdMlX3">
+          <h2 data-page-node-id="ypXCtedIKELQ7PnF7iMKol">“并发”的搜索结果</h2>
+          <span class="qn" data-page-node-id="AxbIS7Gpp8HaIJkQIllRjG">共 9 条 · 课程 2 · 知识卡 5 · 问答 2</span>
+        </div>
+        <div class="qfilter" data-page-node-id="euYtBSiUMT61x5WsduZqhh">
+          <span class="chip on" data-page-node-id="tezV2MN43Z8mAbBbPIHvaa">全部 9</span>
+          <span class="chip" data-page-node-id="RSLBCAqSyuQ54Hu31Fkxxv">课程 2</span>
+          <span class="chip" data-page-node-id="fDFQwi8PbfmxDvBkRxtlNG">知识卡 5</span>
+          <span class="chip" data-page-node-id="g2uPcP9sl5swMAmKR5Z2Fk">问答 2</span>
+          <span class="more" style="margin-left:auto" onclick="toggleQ()" data-page-node-id="hRqUftkKpJtd62Lv3JunRV">退出搜索</span>
+        </div>
+        <div class="reslist" data-page-node-id="MuleP47pAaAVXuOqFcrO3o">
+          <div class="res" onclick="openDetail(this)" data-page-node-id="5IiClyEzHwQDsAMHHVylzS">
+            <span class="rk" data-page-node-id="jXyyzYdzwsdjwKTCIWyDgk">课程</span>
+            <div data-page-node-id="XkJIA2KoYFrFp5FnFqh3T2">
+              <div class="res-t" data-page-node-id="aptaw6mAfhTppxWTEnFm4Z">前端工程师 2022 版</div>
+              <div class="res-d" data-page-node-id="v2ylfBSTCxN7ClMyRaE6Q6">第 5 节讲事件循环与并发请求：为什么 await 写在循环里会串行。</div>
+              <div class="res-m" data-page-node-id="fyuZj6BbOaSUQxHoyBj8L4">IT·互联网 · 8 节 · ￥329 · 5400 人在学</div>
+            </div>
+          </div>
+          <div class="res" data-page-node-id="dUWE0Wradj8jsSRgAf19ZR">
+            <span class="rk" data-page-node-id="ZoTSPk7sEI4nEqW0gAubHw">知识卡</span>
+            <div data-page-node-id="kX5Xp0cnC6sIi5Tgqxj2vg">
+              <div class="res-t" data-page-node-id="MbrMYNBty9Loz1DxcrnFm4">并发不是线程多，是共享多</div>
+              <div class="res-d" data-page-node-id="cmRFbDqVRLnAIZAY7NXsci">把共享状态减到零，锁就不需要了。无状态服务比任何锁优化都有效。</div>
+              <div class="res-m" data-page-node-id="BB6rnrDk1B6T6rT2ySSzWt">IT·互联网 · 2 分钟读完</div>
+            </div>
+          </div>
+          <div class="res" data-page-node-id="yP4CYS035tfA2u7CSAS9fG">
+            <span class="rk" data-page-node-id="5xDvmwP09lTVi1GAIxJEWP">知识卡</span>
+            <div data-page-node-id="LykQcXnqNYPtNFveaFLCsf">
+              <div class="res-t" data-page-node-id="DHOzYmocSslf8iNJrHz1Hz">线程池的七个参数，只有两个需要调</div>
+              <div class="res-d" data-page-node-id="6O6tAJGdLeIumsJxklQ8ST">核心线程数和队列长度决定行为，其余保持默认通常更安全。</div>
+              <div class="res-m" data-page-node-id="sYUuwCBiosjxZYq4vKYzbq">IT·互联网 · 3 分钟读完</div>
+            </div>
+          </div>
+          <div class="res" data-page-node-id="DrT1Mq0TRf3IN62GVKbFzd">
+            <span class="rk" data-page-node-id="VC0Ns4t5ntNRj56vmBd6ND">问答</span>
+            <div data-page-node-id="uSdNRX7tmodSe7AVxUIp9z">
+              <div class="res-t" data-page-node-id="4PwQs8PjqaRWCY0zUxcR29">synchronized 和 ReentrantLock 到底怎么选？</div>
+              <div class="res-d" data-page-node-id="OourJwVGspdY3aOovhATj2">6 条回复 · 已被采纳 · 昨天更新</div>
+              <div class="res-m" data-page-node-id="kxkLHF5SLZHJECww1lN7Yu">IT·互联网</div>
+            </div>
+          </div>
+          <div class="res" data-page-node-id="BjeiUJd8m9nVxcnvwfDRH4">
+            <span class="rk" data-page-node-id="DiQDXLSzcXDCQBrE0rHDIh">课程</span>
+            <div data-page-node-id="lufhAUAfZUohNEwR19FuFC">
+              <div class="res-t" data-page-node-id="oYEL3M7SE6OHGE4Pz89GRF">可能是史上最全的微服务技术栈课程</div>
+              <div class="res-d" data-page-node-id="EV7A2OqKu5U7nHPRT8weES">第 3 节讲服务雪崩与并发上限，和并发那一章互为补充。</div>
+              <div class="res-m" data-page-node-id="Q8D13hh8gyHGaBEijbm1yV">IT·互联网 · 5 节 · ￥199</div>
+            </div>
+          </div>
+          <div class="resmore" data-page-node-id="resmore01">共 9 条结果，仅展示前 5 条 · <span data-page-node-id="resmore02">查看全部 →</span></div>
+        </div>
+
+        <div class="exhead" data-page-node-id="Mdu8GMjGIdOkzmjIiRYwRq">
+          <div data-page-node-id="lHPZE1tI1ubdSkONtLl5Qj">
+            <h2 data-page-node-id="5AUvtplMQDf8FRdvHqXnFO">IT·互联网</h2>
+            <div class="cnt" data-page-node-id="SnaDPGu7CNy39CFlqVdIKL">共 32 条 · 课程 14 门 · 知识卡 18 张</div>
+          </div>
+          <div class="sorts" data-page-node-id="TS0hpjlm0iYYownSyKSaBV"><span class="on" data-page-node-id="tcAnhRpGu0Na55EAnmaLMO">综合</span><span data-page-node-id="SAfVjz2j0qRKQUFeifEpCd">最新</span><span data-page-node-id="jJyWPgPt9oQOBfakaRMzcq">最热</span><span data-page-node-id="qGzEBNleDnYuF41cO4EpL8">时长</span></div>
+        </div>
+
+        <div class="picked" data-page-node-id="TNb3seHmURBMiw32gOKWQw">已选：<b data-page-node-id="nROaq6BJ7jV9s4CF0cOAzv">全部类型</b><b data-page-node-id="A4mm3k7ekcVhHR5Bc3ZCxK">IT·互联网</b><span style="cursor:pointer" data-page-node-id="H62HcqrF7B5JxTWv7miSFu">清除</span></div>
+
+        <div class="grid3" data-page-node-id="MpcLlGNZZ7lwIBhWEGJGuV">
+          <div class="course" onclick="openDetail(this)" data-page-node-id="bozLrpO22G12Og9pTGFy67">
+            <div class="cover img" data-page-node-id="QQypOllsQFVF4ic1wh6cSI">
+              <img src="img/laptop.jpg" alt="" data-page-node-id="aGH5aPn4VGZWLfFOCPY40c">
+              <span class="cate" data-page-node-id="8F74CXngGYC4H04m6xcEaC">前端开发</span>
+            </div>
+            <div class="body" data-page-node-id="KX0BA8CkxRdOLnv8GMkdhj">
+              <h4 data-page-node-id="HpTUbO6fh4WSclFau1sn4X">前端工程师 2022 版</h4>
+              <div class="meta" data-page-node-id="8VYJmuCjjoH1ONoZpOaVSg"><span data-page-node-id="lJ0TuWdVFHvFRVpUUlcBk5">王老师</span><i data-page-node-id="SLJZ2w8E4FiUa8qhzrbzsW"></i><span data-page-node-id="362B40sELzaJ5xv4d0c9kn">5400 人在学</span></div>
+              <div class="row" data-page-node-id="fe2022-row"><span class="price" data-page-node-id="fe2022-p"><em>￥</em>329</span><span class="badge" style="margin-left:auto" data-page-node-id="fe2022-b">体系课</span></div>
+            </div>
+          </div>
+
+          <div class="kcard" style="--k:#1B4B6B" data-page-node-id="DDnCOirQLXlXVcWGTx8FA8">
+            <span class="band" data-page-node-id="6cyN4WtsUMaFfcnO7wBuen"></span>
+            <span class="kind" data-page-node-id="oxq1AIJiVJYtYMsYyrrL6G">知识卡 · 编程</span>
+            <h4 data-page-node-id="dE2XDjpLW3QkcuKLimcZen">为什么 String 是不可变的</h4>
+            <p data-page-node-id="tyCiIwuR9hgJIz4u7aQDKZ">不是「设计者喜欢」，而是为了三件事同时能成立。</p>
+            <ul data-page-node-id="nlCYikyhiOKfbdyGusbXay"><li data-page-node-id="AlwKUGBM1TvmLsoe3cUHF6">不可变才能被安全共享</li><li data-page-node-id="tREnpthOUIyp9d6EIrcdEa">hashCode 可以缓存</li><li data-page-node-id="4Dr92J9P7KPCbmN3CxSYnU">字符串常量池才成立</li></ul>
+            <div class="foot" data-page-node-id="O5F6X7QKxSGBodGqURFamn"><span data-page-node-id="rvj6Nvqv1SKSGpi1EsZEKI">2 分钟读完</span><span data-page-node-id="dCkGj2KjpmLjOiwwFKXfOQ">·</span><span data-page-node-id="k41h7352awDmLCXNTWo8r3">1.5 万人收藏</span><span class="go" data-page-node-id="wyYFSmY7cF5QLMuyF0M7Y9">读一读 →</span></div>
+          </div>
+
+          <!-- 无实拍图：走排版封面（模式 B） -->
+          <div class="course" onclick="openDetail(this)" data-page-node-id="35gLlV6W0BrAQprYhvLhnn">
+            <div class="cover img" data-page-node-id="PDpvRTKtR4lOheJ4hggpwy">
+              <img src="img/code.jpg" alt="" data-page-node-id="EosCbvkkcIIazxNRkpCMBl">
+              <span class="cate" data-page-node-id="59cP5SggGyDOMx1KatFG7H">JAVA 开发 · 入门</span>
+            </div>
+            <div class="body" data-page-node-id="zHqxBL3A4xG8qsV6XAYPRW">
+              <h4 data-page-node-id="BhYLcaKVXJbF9knYGTEryi">Java 泛型：从通配符到类型擦除</h4>
+              <div class="meta" data-page-node-id="rRXaDaHl1pTvS5bMp1GraN"><span data-page-node-id="Sk4zE9GtUpbDA77phVbLso">陈老师</span><i data-page-node-id="vs9xgLJQbDKMieKWJAm4Md"></i><span data-page-node-id="ektAkxAZQWkpbEM1hlXnof">1.2 万人在学</span></div>
+              <div class="row" data-page-node-id="generic-row"><span class="price free" data-page-node-id="generic-p">免费</span><span class="badge" style="margin-left:auto" data-page-node-id="generic-b">入门</span></div>
+            </div>
+          </div>
+
+          <div class="kcard" style="--k:#31505F" data-page-node-id="huxGH4OihUU9JQm1EZn94O">
+            <span class="band" data-page-node-id="G02pUjjpVAmPRUDSGdpCbQ"></span>
+            <span class="kind" data-page-node-id="St3b2eh5TLGEg5i5ecivMg">知识卡 · 编程</span>
+            <h4 data-page-node-id="HWlDD96Qj4EIraYjzwPo24">索引失效的六种写法，你至少中过两种</h4>
+            <p data-page-node-id="qgC8gZNEOixRKn2hu7ZqAW">函数包字段、隐式类型转换、前导模糊匹配、OR 混用、联合索引不最左、范围查询后面用不上。</p>
+            <div class="foot" data-page-node-id="QWg7mRr9VfL9WQQNPaaf6j"><span data-page-node-id="v2tpGIMsnVW8rQDYkkEYyt">3 分钟读完</span><span data-page-node-id="CCSwmLD7igibKH97SieEMZ">·</span><span data-page-node-id="npCvjy5kZSAGJAbu6MCDTs">2.1 万人收藏</span><span class="go" data-page-node-id="kZwssB1Gq4QUaXCLi82IUc">读一读 →</span></div>
+          </div>
+
+          <div class="course" onclick="openDetail(this)" data-page-node-id="4QAk4E6QgRvB0hjHOeCxQ2">
+            <div class="cover img" data-page-node-id="iHgA873cgdREyETV5WS9aQ">
+              <img src="img/server.jpg" alt="" data-page-node-id="DjZOkpDwjQ5TCW1cEMeHRP">
+              <span class="cate" data-page-node-id="Inm4VBEWQBUvp41HrjBqIV">后台开发</span>
+            </div>
+            <div class="body" data-page-node-id="hMY3CSn50vPpTUAkZAg4Wb">
+              <h4 data-page-node-id="rdDH8SmPgAKzVXolb7pAqD">可能是史上最全的微服务技术栈课程</h4>
+              <div class="meta" data-page-node-id="tYIEC1kOxo1S2B383siHsZ"><span data-page-node-id="fUCGrETXr11IhFOhGFXf57">李老师</span><i data-page-node-id="bLAHG69uLZrtJJAF2NSvND"></i><span data-page-node-id="TtJECx9aQVoWJSSUAqReSC">8600 人在学</span></div>
+            </div>
+          </div>
+
+          <div class="kcard" style="--k:#2E5A4B" data-page-node-id="YnqGnHvbh2tQ2sHnOTxA2T">
+            <span class="band" data-page-node-id="MAjuU2Q29iOJNRwBfCYyO3"></span>
+            <span class="kind" data-page-node-id="0gfRxvD51jsL9gw4aqh8o1">问答 · 已解决</span>
+            <h4 data-page-node-id="gyVFCDrY87rVSKYX3HZCNI">为什么我的 useEffect 总是执行两次</h4>
+            <p data-page-node-id="r9X3rLE2FZhe356wLz82Jx">开发模式下 StrictMode 会故意双调用，用来暴露副作用没清理干净的问题。生产构建不会。</p>
+            <div class="foot" data-page-node-id="Il5GXlArDPJYFCKxVG87zI"><span data-page-node-id="adS7FbpkFUfK63cOPM9MH7">12 条回复</span><span data-page-node-id="A7MVUAIscgCbiT5Pkw1rkh">·</span><span data-page-node-id="Wy3o9eepdarVupz5KmhuPy">昨天更新</span><span class="go" data-page-node-id="Tz7EnEbusCJAXu5JuFFFRS">看讨论 →</span></div>
+          </div>
+
+          <!-- 第三行 -->
+          <div class="course" onclick="openDetail(this)" data-page-node-id="ex-row3a">
+            <div class="cover img" data-page-node-id="ex-row3a1">
+              <img src="img/charts.jpg" alt="" data-page-node-id="ex-row3a2">
+              <span class="cate" data-page-node-id="ex-row3a3">数据库 · 进阶</span>
+            </div>
+            <div class="body" data-page-node-id="ex-row3a6">
+              <h4 data-page-node-id="ex-row3a7">MySQL 索引与慢查询排查</h4>
+              <div class="meta" data-page-node-id="ex-row3a8"><span data-page-node-id="ex-row3a9">陈老师</span><i data-page-node-id="ex-row3a10"></i><span data-page-node-id="ex-row3a11">6800 人在学</span></div>
+              <div class="row" data-page-node-id="ex-row3a12"><span class="price" data-page-node-id="ex-row3a13"><em>￥</em>129</span><span class="badge" style="margin-left:auto">进阶</span></div>
+            </div>
+          </div>
+
+          <div class="kcard" style="--k:#1B4B6B" data-page-node-id="ex-row3b">
+            <span class="band" data-page-node-id="ex-row3b1"></span>
+            <span class="kind" data-page-node-id="ex-row3b2">知识卡 · 编程</span>
+            <h4 data-page-node-id="ex-row3b3">Git 提交信息，一行写清楚为什么</h4>
+            <p data-page-node-id="ex-row3b4">改了什么 diff 自己会说话，动机才需要写出来。</p>
+            <ul data-page-node-id="ex-row3b5"><li>第一行不超过 50 字</li><li>正文解释为什么改，而不是改了什么</li><li>结尾关联 issue 编号</li></ul>
+            <div class="foot" data-page-node-id="ex-row3b6"><span>90 秒读完</span><span>·</span><span>8600 人收藏</span><span class="go">读一读 →</span></div>
+          </div>
+
+          <div class="course" onclick="openDetail(this)" data-page-node-id="ex-row3c">
+            <div class="cover img" data-page-node-id="ex-row3c1">
+              <img src="img/editor.jpg" alt="" data-page-node-id="ex-row3c2">
+              <span class="cate" data-page-node-id="ex-row3c3">运维 · 入门</span>
+            </div>
+            <div class="body" data-page-node-id="ex-row3c6">
+              <h4 data-page-node-id="ex-row3c7">Docker 从部署到排障</h4>
+              <div class="meta" data-page-node-id="ex-row3c8"><span data-page-node-id="ex-row3c9">周老师</span><i data-page-node-id="ex-row3c10"></i><span data-page-node-id="ex-row3c11">9200 人在学</span></div>
+              <div class="row" data-page-node-id="ex-row3c12"><span class="price free" data-page-node-id="ex-row3c13">免费</span><span class="badge" style="margin-left:auto">入门</span></div>
+            </div>
+          </div>
+
+          <!-- 第四行 -->
+          <div class="kcard" style="--k:#31505F" data-page-node-id="ex-row4a">
+            <span class="band" data-page-node-id="ex-row4a1"></span>
+            <span class="kind" data-page-node-id="ex-row4a2">知识卡 · 编程</span>
+            <h4 data-page-node-id="ex-row4a3">HTTP 缓存就两条路：强缓存与协商缓存</h4>
+            <p data-page-node-id="ex-row4a4">浏览器先看过期时间，没过期直接用；过期了再问服务器资源变没变。</p>
+            <ul data-page-node-id="ex-row4a5"><li>强缓存靠 Cache-Control，不走服务器</li><li>协商缓存靠 ETag，返回 304 就用本地</li><li>HTML 入口永远用协商缓存</li></ul>
+            <div class="foot" data-page-node-id="ex-row4a6"><span>2 分钟读完</span><span>·</span><span>1.1 万人收藏</span><span class="go">读一读 →</span></div>
+          </div>
+
+          <div class="kcard" style="--k:#2E5A4B" data-page-node-id="ex-row4b">
+            <span class="band" data-page-node-id="ex-row4b1"></span>
+            <span class="kind" data-page-node-id="ex-row4b2">问答 · 已解决</span>
+            <h4 data-page-node-id="ex-row4b3">TypeScript 的 any 到底能不能用</h4>
+            <p data-page-node-id="ex-row4b4">能用，但只允许出现在边界上：第三方库没类型、快速验证的原型。业务代码里出现 any 就是欠账。</p>
+            <div class="foot" data-page-node-id="ex-row4b5"><span>9 条回复</span><span>·</span><span>前天更新</span><span class="go">看讨论 →</span></div>
+          </div>
+
+          <div class="kcard" style="--k:#8A5A2B" data-page-node-id="ex-row4c">
+            <span class="band" data-page-node-id="ex-row4c1"></span>
+            <span class="kind" data-page-node-id="ex-row4c2">知识卡 · 职场</span>
+            <h4 data-page-node-id="ex-row4c3">日志不是打得越多越好</h4>
+            <p data-page-node-id="ex-row4c4">日志的价值在排查时能串起一条时间线，不在行数多。</p>
+            <ul data-page-node-id="ex-row4c5"><li>入口和出口必打，带上耗时</li><li>错误必打，带上上下文 ID</li><li>循环里打日志先想清楚检索场景</li></ul>
+            <div class="foot" data-page-node-id="ex-row4c6"><span>2 分钟读完</span><span>·</span><span>6800 人收藏</span><span class="go">读一读 →</span></div>
+          </div>
+        </div>
+
+        <div class="loadmore" data-page-node-id="ex-loadmore"><span data-page-node-id="ex-loadmore1">加载更多内容 ↓</span></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 课程详情 ================= -->
+<div class="view" id="v-detail" data-page-node-id="NoBG8i0W0eYOQVq4GXqTX7">
+  <div class="wrap" data-page-node-id="YlonmVHU5A3XBmFH4ZtqXO">
+    <div class="crumb" data-page-node-id="YXcNIY6b1oaYA4Hnex424t">
+      <span class="back" onclick="show('home')" data-page-node-id="WAuNjm2z18vtxct0A2Ox2a"><svg viewBox="0 0 16 16"><path d="M9.5 3 4.5 8l5 5M4.5 8H14"/></svg>返回</span>
+      <span data-page-node-id="vrEVcEWcHq0k0lR6W7VTKx">/</span><span data-page-node-id="8X0YngbBQJzst9DUOpOnXL" id="dt-crumb-dir">前端开发</span>
+    </div>
+
+    <div class="dt-hero" data-page-node-id="bh0wh6Sh95J7dqxOZqRZWh">
+      <div class="dt-left" data-page-node-id="byrlfdKasjh0oU5HkWdvnl">
+        <div class="dt-cover" data-page-node-id="wVonJVJohIGwhCMYP5OWzf">
+          <div class="cover img" data-page-node-id="3dz6RcLeihV8W2b2mlxIx8">
+            <img src="img/cover-fe.jpg" alt="" id="dt-img" data-page-node-id="rO0P9Of5PZPl3MYvpTSkP6">
+            <span class="cate" id="dt-cate" data-page-node-id="EXPEZDjHVaFojVTyvsbrFO">前端开发 · 体系课</span>
+          </div>
+          <div class="play" data-page-node-id="IBDNnWpNW9uxOYwbRA1jrF"><i data-page-node-id="tnGoPVZ3YUdqYQ17VkNDNs"></i></div>
+        </div>
+        <div class="dt-info" data-page-node-id="jTZKxegHNLLgh4G34UmEYv">
+          <div class="cat" id="dt-cat" data-page-node-id="On6yeuYQuBLzFAqmMpHfTs">IT·互联网 · 前端开发 · 入门课</div>
+          <h1 id="dt-title" data-page-node-id="gUOHGgL68PFnpp0QJuUTCw">Java 程序员的前端课程</h1>
+          <p class="desc" id="dt-desc" data-page-node-id="AnusUCuZhDp1uI7Q8yHaBN">十节课，从盒模型走到上线部署。不背 API，每一节都落在同一个项目上——学完你的站点已经能跑。</p>
+          <div class="dt-stats" data-page-node-id="Ocu6ngjTxpIKL4ZKbNmpJy">
+            <span data-page-node-id="jARzWogWPhLGiMrZlWLnRq"><b id="dt-rating" data-page-node-id="HAkJDUedCYzFowkDkHnYYG">4.9</b> 评分</span>
+            <span data-page-node-id="L86u8aScfVkqtxAkaLRqy2"><b id="dt-learners" data-page-node-id="Jw16TELaUFuJ8uU0oigJDq">4100</b> 人在学</span>
+            <span id="dt-stat" data-page-node-id="XO9f1GKzOFIAsnEI2nqA6y">10 节 · 4 小时 05 分</span>
+          </div>
+          <div class="dt-teacher" data-page-node-id="8dxSSJ2sIJdG9Sm7DuGkRy">
+            <div class="av" id="dt-av" data-page-node-id="JvcNVHbcGc9hZPgcR1yvrp">王</div>
+            <div data-page-node-id="6gMK4zeZYyqARrliGHGdhP">
+              <div class="n" id="dt-teacher" data-page-node-id="4ADEhuLZW1uGWePVrfr381">杨老师</div>
+              <div class="r" id="dt-teacher-r" data-page-node-id="ANPbjy7ajswKBHENlL6K57">前阿里 Java 工程师 · 前端自学转行，懂后端视角</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="buy" data-page-node-id="vUFlGECE6ji1A8JL2n3ADo">
+        <div class="p" data-page-node-id="uZkLZAAdhUNRRzttvEiRUv"><b id="dt-price" data-page-node-id="z3YPOJv7Je6XBxGl2uKPFk"><em data-page-node-id="cDPCVs4u0ebjQNDJG50oY5">￥</em>149</b><span id="dt-cards" data-page-node-id="AnTWuUY1tlzXiu9GNs2idG">含 18 张配套知识卡</span></div>
+        <div class="btn-main" data-page-node-id="TmuE1o0pKXB86q9F6C7aZT">立即报名</div>
+        <div class="btn-sub" data-page-node-id="gYAVCdM1UcEiw4otR4r1Nz">加入课程表</div>
+        <ul data-page-node-id="bJe2vwOji6SzFweXW6XoK3">
+          <li data-page-node-id="cxlyV3N6xhF8oL5PlZ3cN2">永久有效，可反复观看</li>
+          <li data-page-node-id="LVUXD9rq8vYG3Ss3UyQWNd">配套 18 张知识卡</li>
+          <li data-page-node-id="sYLtxZ3FwPUCHnO9jSocaC">课程问答区随时提问</li>
+          <li data-page-node-id="dwKSfhQnYGThZ2ibrhmsFc">学完可参加阶段考试</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="dt-body" data-page-node-id="HgxBsBiYdQprSbxdWRTG8q">
+      <div class="tabs" data-page-node-id="fCHVdy7b0tFX4DGiO25eyC">
+        <span class="on" data-k="intro" onclick="dtTab('intro')" data-page-node-id="hMmUTLDn6gm5sBodwYi9zx">简介</span><span data-k="syl" onclick="dtTab('syl')" data-page-node-id="LNB8VW9l35mvCR8DvS2fOu">大纲</span><span data-k="teacher" onclick="dtTab('teacher')" data-page-node-id="Fxrb53alVo4jpsxZFth4T4">讲师</span><span data-k="reviews" onclick="dtTab('reviews')" data-page-node-id="ulSYDY6z7C2ApxlPCJHTE2">评价</span>
+      </div>
+
+      <div class="panel on" id="dtp-intro" data-page-node-id="uGnoSsW0HFZxUmsG40sVRl">
+        <h3 data-page-node-id="abxHOw0TqDpqSvHWMZOzdF">这门课讲什么</h3>
+        <p id="dt-p1" data-page-node-id="3dZQplZu3qgbSw6cZZlSNv">前端知识的碎片化程度是所有方向里最高的：CSS 有一百种居中写法，JS 有一堆「看起来能用但不知道为什么能用」的写法。这门课不铺知识点，而是围绕一个真实项目往下推，每节课解决项目里真实出现的一个问题。</p>
+        <p id="dt-p2" data-page-node-id="nHPil4vquGcZJemjPaLSbg">前半段打基础：盒模型、布局、闭包、事件循环，都从「为什么这样写会坏」讲起。后半段做工程化：构建流程、组件化、状态管理、部署与性能。十节课走完，你会有一个能上线的站点，而不是十个互不相干的 demo。</p>
+
+        <div class="grid2" data-page-node-id="3gZGhuchi2FxiV60lFASWm">
+          <div class="box" data-page-node-id="rvQAqPzzZYQ37FxwgmwCJS">
+            <h4 data-page-node-id="lrJlvVmRZJujX4I0FBYNft">适合谁</h4>
+            <p id="dt-fit" data-page-node-id="YstsqgFNwZxvLK5aLcqEqu">会写一点 HTML/CSS，但页面一到复杂布局就靠试错的人。有后端基础转前端的也适合。</p>
+          </div>
+          <div class="box" data-page-node-id="TG9PNNBBjlGSrVJQ8oOlUr">
+            <h4 data-page-node-id="qOqfF7nXJwyilSAnxKbjR4">学完能做到</h4>
+            <p id="dt-out" data-page-node-id="ByQaO4GNJwA4r9XtDW52X1">独立完成一个响应式多页站点并部署上线，看懂主流框架的构建配置，调试时知道问题出在哪一层。</p>
+          </div>
+        </div>
+
+        </div>
+
+        <div class="panel" id="dtp-syl">
+        <div class="chapters" id="dt-chapters" data-page-node-id="mruNA84GtNGSjBU6sLjCwN">
+          <div class="ch" data-page-node-id="2hEBEWEyZuw8s7AKZA7Hhr"><span class="n" data-page-node-id="D2GuGe8JuYADXKmctyedbZ">01</span><span class="t" data-page-node-id="90fQHxwIJbbTsR1XBabtkD">从盒模型开始重学 CSS</span><span class="d" data-page-node-id="6aRaIB4azADwAiYaTWiQXC">22 分钟</span><span class="lock" data-page-node-id="LAn9IQ3wjD1r8QpsNdPtWx">试看</span></div>
+          <div class="ch" data-page-node-id="WOj6BBzAFAddTz000TKvFD"><span class="n" data-page-node-id="K7vVWxqQtohcKlMJU93MOE">02</span><span class="t" data-page-node-id="QFUpoBRbr5zOisL6S6FSSH">Flex 与 Grid，什么时候用哪个</span><span class="d" data-page-node-id="O1Hroy0bfvOeHn1zxcmyeo">28 分钟</span></div>
+          <div class="ch" data-page-node-id="bHvSXeJ1xHLzE3QMjnIpAC"><span class="n" data-page-node-id="2pJE2il71z5V1gRjdDIkAq">03</span><span class="t" data-page-node-id="cb9EDNcHbuGLgVCYVXwqSH">JS 里最容易搞错的三件事</span><span class="d" data-page-node-id="3n6QXgDswuvKx7I1uIoTis">25 分钟</span></div>
+          <div class="ch" data-page-node-id="X2X5197vI3FBcGkHYKfSg1"><span class="n" data-page-node-id="Hlev4FbYpo03wrIGCQlhym">04</span><span class="t" data-page-node-id="3qrlE3ghWWSuVELxhhtlSV">闭包不是函数记住变量</span><span class="d" data-page-node-id="eLtBLktKCOtUTrMhqW7YHX">18 分钟</span></div>
+          <div class="ch" data-page-node-id="xvCrErDNndNmfn7NTYmSqB"><span class="n" data-page-node-id="ns3kDzgDd5xZlfNEpbm6lK">05</span><span class="t" data-page-node-id="onBrPKeJqSguUdFhud1ObN">事件循环：宏任务与微任务</span><span class="d" data-page-node-id="sFLEdsDtnP2XaXBJHmjgWz">26 分钟</span></div>
+          <div class="ch" data-page-node-id="MXpvf2IjsXauYBS3KwVUB9"><span class="n" data-page-node-id="TvUeRTUBiE5YjZaIwHlYTd">06</span><span class="t" data-page-node-id="wZgOG5fv5e9CEMhPq5TjBu">从零搭一套构建流程</span><span class="d" data-page-node-id="GiBvyu4MFvFEkQuU8jGXbl">32 分钟</span></div>
+          <div class="ch" data-page-node-id="haXg1nxvRAwIYHmsVXuWjq"><span class="n" data-page-node-id="zqPSROI96CbOOVn2a5AEbQ">07</span><span class="t" data-page-node-id="XkCvGLwhh13vLMiFH0idUa">组件化与状态管理</span><span class="d" data-page-node-id="AN5qAshuVwNGbdn19N5BlN">30 分钟</span></div>
+          <div class="ch" data-page-node-id="7eIvN0HkjNC3XDZ99BOKoG"><span class="n" data-page-node-id="u0PAj354pXTdJ2L2MHGilK">08</span><span class="t" data-page-node-id="nXWiEZPh6HVeBudD4p5U08">部署上线与性能优化</span><span class="d" data-page-node-id="70gs1rbPKokxIohkJEqkQ3">24 分钟</span></div>
+          <div class="ch" data-page-node-id="PArRHammGIhOUx7vkXgVbC"><span class="n" data-page-node-id="4vmWkZBkBfFa7urEsypSbT">09</span><span class="t" data-page-node-id="Z2czGpCOFAkg5csP7VtFrC">给后端同学的前端调试指南</span><span class="d" data-page-node-id="dom2yY1LaDcjCtXEwnlk9c">26 分钟</span></div>
+          <div class="ch" data-page-node-id="rnOb7RsAxGe6BdYyriLeob"><span class="n" data-page-node-id="SdXrANCO5VpX0lMH6NEFNF">10</span><span class="t" data-page-node-id="am9Bx1uJBPPp81Et36I0XG">项目复盘：从 0 到上线走一遍</span><span class="d" data-page-node-id="zwvl8jaFpyWxjY1fIGB5XR">21 分钟</span></div>
+        </div>
+        <p id="dt-note" style="font-size:12.5px;color:var(--ink3);margin-top:12px" data-page-node-id="xcNhZMTJkGfuQ2SS4Kas7H">本课共 10 节。视频资源尚未上传完整，目前可查看讲义与配套知识卡，报名后可收到更新提醒。</p>
+      </div>
+
+      <div class="panel" id="dtp-teacher">
+        <div class="tprofile">
+          <div class="bav" id="dt-t-av">杨</div>
+          <div>
+            <h4 id="dt-t-name">杨老师</h4>
+            <div class="thead" id="dt-t-head">前阿里 Java 工程师 · 现独立开发者</div>
+          </div>
+        </div>
+        <p id="dt-t-intro">…</p>
+        <ul class="texp" id="dt-t-exp"></ul>
+      </div>
+
+      <div class="panel" id="dtp-reviews">
+        <div class="rsum">
+          <b id="dt-r-score">4.9</b>
+          <div>
+            <div class="stars" id="dt-r-stars">★★★★★</div>
+            <div class="rs"><span id="dt-r-count">328 条评价</span> · <span id="dt-r-rate">好评率 98%</span></div>
+          </div>
+        </div>
+        <div id="dt-r-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer data-page-node-id="t7gB5PpdYehqKEJFTvt9jG">
+  <div class="wrap" data-page-node-id="AEfRCdphDZbah2JA8qSOvq">
+    <div class="flinks" data-page-node-id="ZvWiDvO4t1Emnelgd4mU9t">
+      <span data-page-node-id="BPEcDJAzZ5tLTeVhVbDoun">课程库</span><span data-page-node-id="dvBExSbKoKNuLXlszqlzy1">知识卡</span><span data-page-node-id="KZLDaJ2oA1YbhUoqHTXsVq">专题路径</span><span data-page-node-id="FFKhvxbKvb9LgiX1msWe3O">我的学习</span><span data-page-node-id="Uc5AQHXHh91ojhbfm6rTGV">学习计划</span><span data-page-node-id="JX6lLQnzeis91nQ9jaCclV">打卡与积分</span><span data-page-node-id="RpXA9zTrY3FzM3LCJ7w2FJ">关于我们</span><span data-page-node-id="eogFIBCZav2MHncHORKICo">合作讲师</span><span data-page-node-id="0asCLxzAWSpMtueOMzLl4m">帮助文档</span>
+    </div>
+    <div class="fmeta" data-page-node-id="Dzv0qWt5fP1HZK2FPwncyA">
+      <div class="info" data-page-node-id="A7UUWfujG4X2DnLvRwpTHa">
+        <p data-page-node-id="CfyZWDE9uMmx2mOtfoWpcr">让每一次学习都见微知著。课程、知识、讨论，都在同一个地方。</p>
+        <p data-page-node-id="afDu2FWnGkW4NWHjkMwDf4">© 2026 知微 ZHIWEI ACADEMY 保留所有权利</p>
+      </div>
+      <div class="brand" data-page-node-id="YcUcLZaQT7qmdKgkWyon9R">知微<em data-page-node-id="YyR5GofwO5kHW6gEqrC3l1">ZHIWEI</em></div>
+    </div>
+  </div>
+</footer>
+
+<script data-page-node-id="IJAa1SUDtrxhk4Clc2IHtn">
+  function show(v) {
+    document.querySelectorAll('nav span').forEach(function (s) { s.classList.remove('on') })
+    var n = document.querySelector('nav span[data-v="' + v + '"]')
+    if (n) n.classList.add('on')
+    document.querySelectorAll('.view').forEach(function (x) { x.classList.remove('on') })
+    var el = document.getElementById('v-' + v)
+    if (el) el.classList.add('on')
+    window.scrollTo(0, 0)
+  }
+
+  /* 详情页动态填充：点哪门课，进哪门课的详情（简介、大纲全部对应） */
+  var COURSES = {
+    'Java 程序员的前端课程': {
+      crumb: '前端开发', cate: '前端开发 · 体系课', cat: 'IT·互联网 · 前端开发 · 入门课', img: 'img/cover-fe.jpg',
+      teacher: '杨老师', av: '杨', intro: '前阿里 Java 工程师 · 前端自学转行，懂后端视角',
+      learners: '4100', stat: '10 节 · 4 小时 05 分', cnt: 10, price: ['149'], rating: '4.9', cards: '含 18 张配套知识卡',
+      desc: '十节课，从盒模型走到上线部署。不背 API，每一节都落在同一个项目上——学完你的站点已经能跑。',
+      p1: '前端知识的碎片化程度是所有方向里最高的：CSS 有一百种居中写法，JS 有一堆「看起来能用但不知道为什么能用」的写法。这门课不铺知识点，而是围绕一个真实项目往下推，每节课解决项目里真实出现的一个问题。',
+      p2: '前半段打基础：盒模型、布局、闭包、事件循环，都从「为什么这样写会坏」讲起。后半段做工程化：构建流程、组件化、状态管理、部署与性能。十节课走完，你会有一个能上线的站点，而不是十个互不相干的 demo。',
+      fit: '会写一点 HTML/CSS，但页面一到复杂布局就靠试错的人。有后端基础转前端的也适合。',
+      out: '独立完成一个响应式多页站点并部署上线，看懂主流框架的构建配置，调试时知道问题出在哪一层。',
+      chapters: [['从盒模型开始重学 CSS','22 分钟'],['Flex 与 Grid，什么时候用哪个','28 分钟'],['JS 里最容易搞错的三件事','25 分钟'],['闭包不是函数记住变量','18 分钟'],['事件循环：宏任务与微任务','26 分钟'],['从零搭一套构建流程','32 分钟'],['组件化与状态管理','30 分钟'],['部署上线与性能优化','24 分钟'],['给后端同学的前端调试指南','26 分钟'],['项目复盘：从 0 到上线走一遍','21 分钟']]
+    },
+    'MQTT 物联网实战：从设备接入到消息中台': {
+      crumb: '物联网', cate: '物联网 · 进阶', cat: 'IT·互联网 · 物联网 · 进阶课', img: 'img/iot.jpg',
+      teacher: '李老师', av: '李', intro: '十年 IoT 平台开发 · 带过三个百万级设备接入项目',
+      learners: '3200', stat: '8 节 · 3 小时 40 分', cnt: 8, price: ['259'], rating: '4.8', cards: '含 6 张配套知识卡',
+      desc: '从一台真设备开始，把 MQTT 的主题设计、QoS 取舍、掉线重连讲到消息中台搭建。学完你能独立负责一条设备接入链路。',
+      p1: '物联网开发看起来门槛高：协议、硬件、网络，样样都要懂一点。这门课把它们收敛成一条主线——从一台真设备连上来开始，每节课解决接入链路上的一个真实问题。',
+      p2: '前半段讲接入：MQTT 协议核心、主题设计、QoS 取舍、掉线重连。后半段讲平台：消息中台、规则引擎、数据落库与告警。八节课走完，你会有一条跑得稳的设备接入链路，而不是一堆孤立的 demo。',
+      fit: '会一门后端语言、想往 IoT 方向走的人；做过单片机但没搭过完整接入链路的硬件工程师也适合。',
+      out: '独立设计一套 MQTT 主题与 QoS 方案，搭起消息中台并完成设备数据落库，接入出问题时知道先查哪一层。',
+      chapters: [['MQTT 协议就三件事：连接、订阅、发布','26 分钟'],['主题怎么设计才不会乱','24 分钟'],['QoS 0/1/2 的取舍与重连风暴','28 分钟'],['设备鉴权与安全接入','25 分钟'],['消息中台：从 broker 到业务','30 分钟'],['规则引擎与数据落库','27 分钟'],['离线消息与告警链路','30 分钟'],['项目复盘：一条设备接入链路走一遍','30 分钟']]
+    },
+    '可能是史上最全的微服务技术栈课程': {
+      crumb: '后台开发', cate: '后台开发 · 进阶', cat: 'IT·互联网 · 后台开发 · 进阶课', img: 'img/server.jpg',
+      teacher: '李老师', av: '李', intro: '微服务架构师 · 主导过日千万级订单系统的服务化拆分',
+      learners: '8600', stat: '5 节 · 2 小时 50 分', cnt: 5, price: ['199'], rating: '4.9', cards: '含 8 张配套知识卡',
+      desc: '不堆概念，按拆分顺序讲：拆什么、怎么拆、拆完怎么治理。注册中心、网关、熔断限流，每一步都落在同一个订单系统上。',
+      p1: '微服务最大的坑不是技术，是顺序：没想清楚拆什么就上注册中心，只会把单体的问题分布化。这门课按真实的拆分顺序讲，每一步都落在同一个订单系统上。',
+      p2: '从单体什么时候该拆讲起，到服务拆分与边界划分、注册中心与网关、熔断限流与雪崩防护，最后落到链路追踪与灰度发布。五节课走完，你会有一套跑得起来也管得住的服务化系统。',
+      fit: '写过单体后端、正在或即将参与服务化改造的人；被「分布式单体」折磨过的团队尤其适合。',
+      out: '独立完成一次合理的服务拆分，搭起网关与注册中心，给系统配上熔断限流，出问题时能靠链路追踪定位。',
+      chapters: [['单体什么时候该拆','30 分钟'],['拆分边界：按业务还是按数据','35 分钟'],['注册中心与网关','34 分钟'],['熔断、限流与雪崩防护','36 分钟'],['链路追踪与灰度发布','35 分钟']]
+    },
+    '前端工程师 2022 版': {
+      crumb: '前端开发', cate: '前端开发 · 体系课', cat: 'IT·互联网 · 前端开发 · 体系课', img: 'img/laptop.jpg',
+      teacher: '王老师', av: '王', intro: '前端负责人 · 从 0 到 1 搭过三个团队的前端基建',
+      learners: '5400', stat: '8 节 · 6 小时 20 分', cnt: 8, price: ['329'], rating: '4.7', cards: '含 12 张配套知识卡',
+      desc: '一条完整的前端成长路径：从 HTML/CSS 基础到框架、工程化与性能优化，适合想系统补齐知识版图的初学者。',
+      p1: '网上的前端知识又多又碎，初学者最容易在「学什么、按什么顺序学」上耗掉大半年。这门课把成长路径排成一条线，每一节都会告诉你它在整张知识地图上的位置。',
+      p2: '从 HTML/CSS 的基本功，到 JS 核心、DOM 与事件，再到一个主流框架、工程化与性能优化。每一节都配练习和小项目，学完你会有完整的知识版图和三个能放进简历的作品。',
+      fit: '想系统入门前端、不想靠碎片视频东拼西凑的初学者；自学到一半感觉知识有洞的人也适合。',
+      out: '建立完整的前端知识框架，独立完成三个课程项目，看招聘要求时能对上每一句话。',
+      chapters: [['HTML/CSS 基本功：写出不出错的页面','45 分钟'],['布局体系：从流式到 Flex/Grid','48 分钟'],['JS 核心：值、作用域与原型','50 分钟'],['DOM、事件与浏览器渲染','46 分钟'],['异步：Promise 与 async/await','48 分钟'],['框架上手：组件与数据驱动','50 分钟'],['工程化：构建、规范与协作','48 分钟'],['性能与面试：把知识连成网','45 分钟']]
+    },
+    'Java 泛型：从通配符到类型擦除': {
+      crumb: 'JAVA 开发', cate: 'JAVA 开发 · 入门', cat: 'IT·互联网 · JAVA 开发 · 入门课', img: 'img/code.jpg',
+      teacher: '陈老师', av: '陈', intro: '后端技术专家 · 简历上写着「写过所有版本的 Java」',
+      learners: '1.2 万', stat: '10 节 · 4 小时 10 分', cnt: 10, price: '免费', rating: '4.9', cards: '含 4 张配套知识卡',
+      desc: '泛型不是语法糖，是类型系统的契约。这门免费课把通配符、上下界、类型擦除一次讲透，帮你读懂 JDK 源码里的那些泛型通配符。',
+      p1: '泛型是 Java 类型系统里被误解最深的部分：多数人只会写 List，遇到通配符就绕着走。这门免费课把泛型从「怎么写」讲到「为什么这样设计」。',
+      p2: '从没有泛型的年代讲起，到类型参数与边界、通配符与 PECS 原则，最后落到类型擦除的运行时真相。每一节都配 JDK 源码实例，学完你读集合类源码不再需要跳过方法签名。',
+      fit: '会用集合但不理解泛型签名的人；准备面试或想读懂 JDK 源码的初中级开发者。',
+      out: '正确使用通配符与上下界，理解类型擦除对运行时的实际影响，能读懂 JDK 集合类源码中的泛型设计。',
+      chapters: [['没有泛型的年代：Object 与强转','24 分钟'],['类型参数：从 List 到自写泛型类','25 分钟'],['泛型方法与方法类型推断','24 分钟'],['上界与下界：extends 与 super','26 分钟'],['通配符与 PECS 原则','26 分钟'],['类型擦除：编译器偷偷做了什么','25 分钟'],['擦除的代价：那些不能写的地方','25 分钟'],['桥方法与协变返回','24 分钟'],['JDK 源码里的泛型设计','26 分钟'],['泛型最佳实践与面试题','25 分钟']]
+    },
+    'MySQL 索引与慢查询排查': {
+      crumb: '数据库', cate: '数据库 · 进阶', cat: 'IT·互联网 · 数据库 · 进阶课', img: 'img/charts.jpg',
+      teacher: '陈老师', av: '陈', intro: 'DBA 转后端 · 处理过 300+ 起线上慢查询事故',
+      learners: '6800', stat: '6 节 · 2 小时 15 分', cnt: 6, price: ['129'], rating: '4.8', cards: '含 6 张配套知识卡',
+      desc: '从 EXPLAIN 的执行计划读起，覆盖联合索引、覆盖索引、最左前缀与索引失效的常见姿势，最后落到一套可复用的排查流程。',
+      p1: '慢查询是后端最常背的锅，而多数慢查询的根因是索引没建对。这门课不从 B+ 树公式讲起，而从一条真实慢 SQL 的排查现场讲起。',
+      p2: '先学会读 EXPLAIN 执行计划，再讲联合索引、覆盖索引、最左前缀，以及索引失效的六种常见姿势，最后收束成一套可复用的排查流程。六节课走完，慢 SQL 对你不再是玄学。',
+      fit: '天天和数据库打交道但没系统学过索引的后端；想补业务侧视角的 DBA 也适合。',
+      out: '独立完成一次慢查询排查，为新表设计合理的索引方案，看懂执行计划里的每一列。',
+      chapters: [['一条慢 SQL 的排查现场','22 分钟'],['EXPLAIN 执行计划逐列读懂','24 分钟'],['联合索引与最左前缀','23 分钟'],['覆盖索引与回表','22 分钟'],['索引失效的六种姿势','24 分钟'],['排查流程沉淀：从告警到修复','20 分钟']]
+    },
+    'Docker 从部署到排障': {
+      crumb: '运维', cate: '运维 · 入门', cat: 'IT·互联网 · 运维 · 入门课', img: 'img/editor.jpg',
+      teacher: '周老师', av: '周', intro: 'SRE · 管着两百多个容器的不眠之夜',
+      learners: '9200', stat: '7 节 · 3 小时 05 分', cnt: 7, price: '免费', rating: '4.7', cards: '含 5 张配套知识卡',
+      desc: '镜像、容器、网络、卷，每一节都从一次真实的部署事故讲起。学完你能把一个服务稳稳地跑在容器里，并知道它挂了怎么查。',
+      p1: '容器技术不难，难的是出了问题没人知道从哪查。这门课每一节都从一次真实的部署事故讲起，把 Docker 的核心概念放进事故现场里讲。',
+      p2: '镜像与分层、容器生命周期、端口与网络、卷与数据持久化、Compose 编排，最后落到容器排障的通用套路。七节课走完，你能把一个服务稳稳跑在容器里，并知道它挂了怎么查。',
+      fit: '要把自己的服务部署上线的后端和独立开发者；被「在我机器上是好的」折磨过的所有人都适合。',
+      out: '为服务写出规范的 Dockerfile，用 Compose 编排本地依赖，容器故障时能按套路定位到出问题的层。',
+      chapters: [['第一次部署事故：从 docker run 讲起','26 分钟'],['镜像分层与 Dockerfile 写法','28 分钟'],['容器生命周期：不是虚拟机进程','26 分钟'],['端口、网络与容器互联','27 分钟'],['卷：数据不能跟着容器死','26 分钟'],['Compose：把依赖编排起来','27 分钟'],['排障套路：日志、exec 与 inspection','25 分钟']]
+    }
+  }
+
+  /* 讲师与评价（逐课对应） */
+  var META = {
+    'Java 程序员的前端课程': {
+      tHead: '前阿里 Java 工程师 · 现独立开发者', rCount: '328', rate: '98%',
+      tIntro: '8 年 Java 后端，转前端后带过 20 人的前后端混合团队。他的课专门写给有后端基础的人：不把你当小白，也不假设你什么都会，每一步都从后端视角讲清楚「为什么前端要这样」。',
+      tExp: ['前阿里巴巴 资深 Java 工程师，负责交易中台','自学前端并主导团队前端体系重建','技术专栏作者，文章累计阅读 200 万+'],
+      reviews: [['刘晓峰',5,'上周','从后端转前端看的第一门课，每节课都在回答我「为什么要这样写」，而不是照抄 API。',34],['林之然',5,'3 周前','跟着把项目做完并部署上线了。第 9 节的调试指南应该单独卖。',21],['何雨',4,'上月','内容很扎实，节奏偏快，零基础可能要回看两遍。配套知识卡很好用。',12]]
+    },
+    'MQTT 物联网实战：从设备接入到消息中台': {
+      tHead: 'IoT 平台架构师 · 十年设备接入经验', rCount: '156', rate: '97%',
+      tIntro: '十年都在和「设备连不上」打交道：从智能家电到工业网关，带过三个百万级设备接入项目。他的课把协议讲成设计决策——每个参数背后都是一次踩过的坑。',
+      tExp: ['某 IoT 独角兽 平台架构师，百万设备同时在线','MQTT 社区布道师，协议专题讲师','开源消息网关项目维护者'],
+      reviews: [['赵一鸣',5,'上周','QoS 那节课值回票价，我们线上的重连风暴问题照着改好了。',28],['钱小进',5,'2 周前','主题设计那一章直接抄进了我们团队规范。',17],['孙可可',4,'上月','偏应用层，想看内核源码实现的会有点不满足。',9]]
+    },
+    '可能是史上最全的微服务技术栈课程': {
+      tHead: '微服务架构师 · 主导日千万级订单系统拆分', rCount: '240', rate: '99%',
+      tIntro: '从单体一路拆到 40+ 服务的亲历者。他反复强调的一句话是「先有边界，再有框架」，这门课就是把这句话展开成可以执行的动作。',
+      tExp: ['主导日千万级订单系统的服务化拆分','两次从 0 搭建微服务基础设施','微服务专栏特邀审稿人'],
+      reviews: [['周衍',5,'上周','第一节就把「什么时候该拆」讲透了，比一堆从注册中心开头的课实在。',41],['吴限',5,'3 周前','熔断那节的雪崩演示让人后背发凉，我们照着做了故障演练。',23],['郑野',4,'上月','5 节确实太短，希望出进阶篇。',11]]
+    },
+    '前端工程师 2022 版': {
+      tHead: '前端负责人 · 三次从 0 到 1 搭建前端基建', rCount: '412', rate: '96%',
+      tIntro: '带过三个团队的前端基建，面试过几百个前端。他清楚初学者每一步会卡在哪，这门课的顺序就是按「面试官问什么、工作用什么」倒排的。',
+      tExp: ['某上市公司 前端负责人，管理 15 人团队','三次从 0 搭建团队前端工程体系','校招面试官，累计面试 500+ 人'],
+      reviews: [['陈一一',5,'上周','终于有一门课告诉我「学这个是为了什么」，而不是丢给我一堆视频。',37],['方旭',5,'2 周前','三个小项目都做完放进简历了，第二个面试就过了。',29],['高原',4,'上月','入门很合适，框架部分讲得浅，需要自己再啃文档。',14]]
+    },
+    'Java 泛型：从通配符到类型擦除': {
+      tHead: '后端技术专家 · 「写过所有版本的 Java」', rCount: '189', rate: '99%',
+      tIntro: '从 JDK 1.4 的无泛型时代写到现在。他坚持免费更新这门课，理由是「泛型是读源码的门票，不该收费」。',
+      tExp: ['某支付公司 资深后端专家','JVM 与字节码增强方向开源贡献者','内部 Java 基础课连续 5 年评分第一'],
+      reviews: [['罗辑',5,'上周','PECS 那节终于让我看懂了 Collections.sort 的方法签名。',25],['黄阅',5,'3 周前','免费的课做出这种质量，离谱。',33],['秦草',4,'上月','类型擦除部分稍难，建议先看完前五节再看后半段。',8]]
+    },
+    'MySQL 索引与慢查询排查': {
+      tHead: 'DBA 转后端 · 处理过 300+ 起线上慢查询', rCount: '167', rate: '98%',
+      tIntro: '做了 6 年 DBA 后转业务后端，两边视角都有：DBA 教会他「索引怎么建」，业务教会他「索引为什么还是慢」。这门课是两个视角的合流。',
+      tExp: ['某电商 DBA，管理 200+ 数据库实例','转岗后端后负责交易库性能专项','内部慢查询治理课程讲师'],
+      reviews: [['唐宋',5,'上周','照着第六节的流程查了一遍我们的慢 SQL，两小时定位了挂了两周的接口。',31],['薛丁',5,'2 周前','EXPLAIN 逐列讲得极清楚，之前官方文档看了三遍都没懂。',18],['冯简',4,'上月','希望补充分库分表的内容。',10]]
+    },
+    'Docker 从部署到排障': {
+      tHead: 'SRE · 管着两百多个容器的不眠之夜', rCount: '208', rate: '97%',
+      tIntro: '在云厂商做 SRE，白天搭平台、凌晨救火。这门课里的事故案例全是真事，有的连当事团队都不好意思承认。',
+      tExp: ['某云厂商 SRE，负责容器平台稳定性','处理过 100+ 起容器线上事故','内部 Docker 实战培训教材作者'],
+      reviews: [['杨过',5,'上周','每节开头的事故故事太真实了，我们组上周刚经历一模一样的。',27],['龙傲',5,'3 周前','排障套路那节直接打印出来贴在工位上。',19],['郭襄',4,'上月','适合上手，K8s 的部分没有涉及，期待续作。',13]]
+    }
+  }
+
+  /* 首页混排筛选：分类单选 + 免费/时长/试看多选 */
+  var MIX = { cat: 'all', ghosts: {} }
+  function pickCat(el) {
+    el.parentElement.querySelectorAll('.chip[data-dom]').forEach(function (c) { c.classList.toggle('on', c === el) })
+    MIX.cat = el.dataset.dom
+    applyMix()
+  }
+  function pickGhost(el) {
+    el.classList.toggle('on')
+    MIX.ghosts[el.dataset.f] = el.classList.contains('on')
+    applyMix()
+  }
+  function applyMix() {
+    var g = document.getElementById('gridMix')
+    if (!g) return
+    var n = 0
+    Array.prototype.forEach.call(g.children, function (c) {
+      var show = (MIX.cat === 'all' || c.dataset.dom === MIX.cat)
+        && (!MIX.ghosts.free || c.dataset.free === '1')
+        && (!MIX.ghosts.dur || +c.dataset.dur <= 30)
+        && (!MIX.ghosts.trial || c.dataset.trial === '1')
+      c.style.display = show ? '' : 'none'
+      if (show) n++
+    })
+    var empty = document.getElementById('gridMixEmpty')
+    if (empty) empty.style.display = n ? 'none' : 'block'
+  }
+
+  function dtTab(k) {
+    document.querySelectorAll('.tabs span[data-k]').forEach(function (s) { s.classList.toggle('on', s.dataset.k === k) })
+    ;['intro', 'syl', 'teacher', 'reviews'].forEach(function (x) {
+      var p = document.getElementById('dtp-' + x)
+      if (p) p.classList.toggle('on', x === k)
+    })
+  }
+
+  function openDetail(el, t) {
+    if (!t && el) t = (el.querySelector('.body h4') || el.querySelector('.res-t') || {}).textContent
+    var d = COURSES[t] || COURSES['Java 程序员的前端课程']
+    if (t) d.title = t
+    var $ = function (id) { return document.getElementById(id) }
+    $('dt-crumb-dir').textContent = d.crumb
+    $('dt-img').src = d.img
+    $('dt-cate').textContent = d.cate
+    $('dt-cat').textContent = d.cat
+    $('dt-title').textContent = d.title || t
+    $('dt-desc').textContent = d.desc
+    $('dt-p1').textContent = d.p1
+    $('dt-p2').textContent = d.p2
+    $('dt-fit').textContent = d.fit
+    $('dt-out').textContent = d.out
+    $('dt-rating').textContent = d.rating
+    $('dt-learners').textContent = d.learners
+    $('dt-stat').textContent = d.stat
+    $('dt-av').textContent = d.av
+    $('dt-teacher').textContent = d.teacher
+    $('dt-teacher-r').textContent = d.intro
+    $('dt-cards').textContent = d.cards
+    $('dt-note').textContent = '本课共 ' + d.cnt + ' 节。视频资源尚未上传完整，目前可查看讲义与配套知识卡，报名后可收到更新提醒。'
+    $('dt-chapters').innerHTML = d.chapters.map(function (c, i) {
+      return '<div class="ch"><span class="n">' + ('0' + (i + 1)).slice(-2) + '</span><span class="t">' + c[0] + '</span><span class="d">' + c[1] + '</span>' + (i === 0 ? '<span class="lock">试看</span>' : '') + '</div>'
+    }).join('')
+    var m = META[t] || {}
+    $('dt-t-av').textContent = d.av
+    $('dt-t-name').textContent = d.teacher
+    $('dt-t-head').textContent = m.tHead || ''
+    $('dt-t-intro').textContent = m.tIntro || ''
+    $('dt-t-exp').innerHTML = (m.tExp || []).map(function (x) { return '<li>' + x + '</li>' }).join('')
+    $('dt-r-score').textContent = d.rating
+    var r5 = Math.round(d.rating)
+    $('dt-r-stars').textContent = '★★★★★'.slice(0, r5) + '☆☆☆☆☆'.slice(0, 5 - r5)
+    $('dt-r-count').textContent = (m.rCount || '—') + ' 条评价'
+    $('dt-r-rate').textContent = m.rate ? '好评率 ' + m.rate : ''
+    $('dt-r-list').innerHTML = (m.reviews || []).map(function (r) {
+      return '<div class="review"><div class="av">' + r[0][0] + '</div><div style="flex:1;min-width:0"><div class="rhead"><span class="stars">' + '★★★★★'.slice(0, r[1]) + '☆☆☆☆☆'.slice(0, 5 - r[1]) + '</span><span class="who">' + r[0] + ' · ' + r[2] + '</span><span class="like">赞 ' + r[4] + '</span></div><p>' + r[3] + '</p></div></div>'
+    }).join('')
+    var p = $('dt-price')
+    p.innerHTML = Array.isArray(d.price) ? '<em>￥</em>' + d.price[0] : d.price
+    dtTab('intro')
+    show('detail')
+  }
+
+  function toggleQ() {
+    var w = document.getElementById('exWrap')
+    var q = w.classList.toggle('q')
+    document.getElementById('v-ex').classList.toggle('searching', q)
+    document.getElementById('qbtn').textContent = q ? '回到浏览态' : '切到搜索态：搜「并发」'
+    window.scrollTo(0, 0)
+  }
+
+  if (location.hash === '#ex') show('ex')
+  if (location.hash === '#exq') {
+    show('ex')
+    document.getElementById('exWrap').classList.add('q')
+    document.getElementById('v-ex').classList.add('searching')
+    document.getElementById('qbtn').textContent = '回到浏览态'
+  }
+  if (location.hash === '#detail') show('detail')
+
+  document.querySelectorAll('nav span[data-v]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      document.querySelectorAll('nav span').forEach(function (s) { s.classList.remove('on') })
+      el.classList.add('on')
+      document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('on') })
+      document.getElementById('v-' + el.dataset.v).classList.add('on')
+      window.scrollTo(0, 0)
+    })
+  })
+</script>
+
+
+</body></html>
