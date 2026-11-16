@@ -137,12 +137,33 @@ const fetchMyCouponList = async (statusId) => {
   return { ok: false, res }
 }
 
+/**
+ * 按券模板聚合成一张卡 + 数量角标。
+ *
+ * user_limit > 1 的券同一个人可以持有多张，后端就是多行记录。平铺渲染会出现几张
+ * 一模一样的卡，用户反而看不出「这张券我有几张」。这里按模板 id 聚合，
+ * 代表卡沿用第一条（列表按有效期升序，第一条就是最先过期的那张），并记 count。
+ *
+ * ⚠️ 只用于展示。兑换后找新券的差集必须用**未聚合**的原始行按 userCouponId 比 ——
+ *    聚合会把新到的那张并进老卡里，userCouponId 还是老的那个，差集就永远为空。
+ */
+const aggregateCoupons = (list) => {
+  const byTemplate = new Map()
+  list.forEach(d => {
+    if (d.count == null) d.count = 1
+    const hit = byTemplate.get(d.id)
+    if (hit) hit.count += 1
+    else byTemplate.set(d.id, d)
+  })
+  return [...byTemplate.values()]
+}
+
 const getMyCouponData = async () => {
   status.value = 'loading'
   try {
     const r = await fetchMyCouponList(actId.value)
     if (r.ok) {
-      myCoupon.value = r.list
+      myCoupon.value = aggregateCoupons(r.list)
       status.value = 'ok'
       return
     }
@@ -184,7 +205,7 @@ const collectFreshCoupons = async (beforeIds) => {
     if (fresh.length) {
       // 兑到的券一定在「未使用」，顺手把页签切回去，否则用户停在已使用 tab 上会以为没到账
       actId.value = 1
-      myCoupon.value = r.list
+      myCoupon.value = aggregateCoupons(r.list)
       status.value = 'ok'
       return fresh
     }

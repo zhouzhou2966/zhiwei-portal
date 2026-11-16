@@ -1,6 +1,10 @@
 <!-- 优惠券卡片 -->
 <template>
- <div class="couponCards fx" v-for="(item, index) in data" :key="index">
+ <div class="couponCards fx" :class="{ hasCount: item.count > 1 }" v-for="(item, index) in data" :key="index">
+   <!-- 同一张券模板持有多张时的数量角标。
+        user_limit > 1 的券一个人可以领到多张，平铺成几张一模一样的卡
+        反而看不出「一共有几张」。领券中心那张列表里 item.count 不存在，不显示。 -->
+   <span class="multiCount" v-if="item.count > 1" :aria-label="`共 ${item.count} 张`">×{{ item.count }}</span>
    <div class="price ft-cl-wt" v-if="item.discountType == 4 || item.discountType == 1 || item.discountType == 3">
      <div>￥ <em>{{item.discountValue / 100}}</em></div>
      <div class="desc" v-if="item.displayRule || item.rule">{{ item.displayRule || item.rule }}</div>
@@ -42,6 +46,7 @@ const props = defineProps({
 <style lang="scss" scoped>
 .couponCards{
   width: calc(50% - 18px);
+  position: relative;
   background: #FFFFFF;
   border: 1px solid #EEEEEE;
   border-left:none;
@@ -50,6 +55,27 @@ const props = defineProps({
   margin-right: 35px;
   &:nth-child(2n){
     margin-right: 0;
+  }
+  .multiCount{
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    height: 20px;
+    line-height: 20px;
+    padding: 0 8px;
+    border-radius: 10px;
+    background: #FFF4E5;
+    color: #B07C22;
+    font-size: 12px;
+    font-weight: 600;
+    /* 不参与 flex 布局，避免把 .butCont 挤走 */
+    z-index: 1;
+    pointer-events: none;
+  }
+  /* 有角标时给标题让出位置：券名是运营手填的自由文本，长度不可控，
+     不预留空间的话换行后的第二行会钻到角标底下 */
+  &.hasCount .tit{
+    padding-right: 46px;
   }
   .price{
     width: 138px;
