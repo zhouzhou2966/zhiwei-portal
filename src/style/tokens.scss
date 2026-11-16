@@ -1,0 +1,165 @@
+/**
+ * 设计令牌（Design Tokens）· v40 视觉稿基线
+ *
+ * 对照 prototype/redesign.html 的 :root，与旧版（米纸底/琥珀强调）的差异：
+ *   · 页面底改纯白：--bg #FFFFFF，米纸只做区块内的凹陷底
+ *   · 主色靛蓝 --main #1B4B6B（与 theme.scss 的 --color-main 同值，两套并存）
+ *   · 文字三级 --ink / --ink2 / --ink3
+ *
+ * 约定（新版页面必须遵守）：
+ *   1. 主色只表达「可操作」和「进度」；琥珀 --accent 只用于积分/打卡/星级；红色只给价格与错误。
+ *   2. 描边一律 1px solid var(--line)；只有浮层/悬停才加 --shadow-*。
+ *   3. 圆角三档：6（小控件）/10/12（卡）/16（大容器）。
+ */
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  // 只用于数字、英文标识、栏目序号；中文标题仍用无衬线
+  // 注意：Georgia 是老式数字（oldstyle figures），大号数字排版用 .zw-num（Times New Roman + lining-nums）
+  --font-serif: 'Times New Roman', Georgia, 'Songti SC', 'SimSun', serif;
+
+  /* 底与面 */
+  --bg: #ffffff;
+  --paper: #f7f5f0;
+  --paper2: #efebe3;
+  --surface: #ffffff;
+  --sunken: #f7f5f0;
+  --tint: #f2eee4;
+
+  /* 线与字 */
+  --line: #e6e0d3;
+  --line-strong: #d3cbbc;
+  --ink: #1a1d21;
+  --ink2: #57534c;
+  --ink3: #8a857c;
+
+  /* 主色与强调 */
+  --main: #1b4b6b;
+  --main-deep: #17415c;
+  --main-soft: #e5edf2;
+  --accent: #c8892f;
+  --accent-soft: #f8eed8;
+  --free: #2e7d6f;
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-card: 14px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* 阴影 */
+  --shadow-1: 0 1px 2px rgba(26, 29, 33, 0.04);
+  --shadow-2: 0 8px 24px rgba(26, 29, 33, 0.08);
+  --shadow-3: 0 18px 44px rgba(18, 55, 79, 0.12);
+
+  /* 字阶 / 间距 */
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-16: 16px;
+  --fs-20: 20px;
+  --fs-28: 28px;
+  --fs-40: 40px;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* Element Plus 主色跟随靛蓝（on-demand 引入下，组件在运行时读这些 CSS 变量，
+     不需要引全量主题文件。light-3/5/7/8/9 是 hover / 淡底 / 边框用的梯度色） */
+  --el-color-primary: #1b4b6b;
+  --el-color-primary-light-3: #4a7089;
+  --el-color-primary-light-5: #7a95a9;
+  --el-color-primary-light-7: #a9bcc9;
+  --el-color-primary-light-8: #c3d2dd;
+  --el-color-primary-light-9: #e5edf2;
+  --el-color-primary-dark-2: #17415c;
+}
+
+/**
+ * 新版通用排版类，前缀 zw- 避免和现有原子类（bt / fx / ft-*）冲突。
+ */
+.zw-h1 {
+  font-size: var(--fs-28);
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.zw-h2 {
+  font-size: var(--fs-20);
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.zw-sub {
+  font-size: var(--fs-13);
+  color: var(--ink3);
+  line-height: 1.6;
+}
+
+/* 大号数字：必须用 lining-nums，Georgia 默认的老式数字会高低不齐（v30 已踩过） */
+.zw-num {
+  font-family: var(--font-serif);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.5px;
+}
+
+/* 栏目序号 01 / 02 */
+.zw-index {
+  font-family: var(--font-serif);
+  font-variant-numeric: lining-nums;
+  font-size: var(--fs-12);
+  letter-spacing: 1px;
+  color: var(--ink3);
+}
+
+.zw-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.zw-hover-lift {
+  transition: transform 0.22s var(--ease-out), border-color 0.22s var(--ease-out),
+    box-shadow 0.22s var(--ease-out);
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-2);
+  }
+}
+
+/* 单行/两行截断 */
+.zw-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.zw-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.zw-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
