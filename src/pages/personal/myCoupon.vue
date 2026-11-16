@@ -255,11 +255,11 @@ const queryPreview = async (code) => {
   try {
     const res = await previewExchangeCoupon(code)
     if (seq !== previewSeq) return   // 慢请求回来得晚，不能覆盖新输入的结果
-    if (res && res.code === 200 && res.data) {
-      preview.value = res.data
-    } else {
-      preview.value = {valid: false, canExchange: false, reason: errMsg(res, '兑换码无效')}
-    }
+    // 只有拿到完整预检结果才采用。其余情况一律当「没查成」：
+    // 网关对不存在的路由也回 HTTP 200 + {code:0,msg:"请求路径不存在"}，
+    // 如果把它当成「不能兑换」，预检一挂按钮就被禁用，用户连试都试不了。
+    // 预检只是提前告知，最终判定必须由兑换接口做。
+    preview.value = (res && res.code === 200 && res.data && res.data.valid !== false) ? res.data : null
   } catch (e) {
     if (seq !== previewSeq) return
     // 预检查不了不等于不能兑，清空即可，按钮保持可点
