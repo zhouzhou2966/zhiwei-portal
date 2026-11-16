@@ -88,18 +88,33 @@ export const getMediasSignature = (params) =>
 export const formatRule = (d) => {
 	let rule = "";
 	let PER_PRICE_DISCOUNT = 1, RATE_DISCOUNT = 2,NO_THRESHOLD = 3, PRICE_DISCOUNT = 4
+	// 门槛与上限为 0 时业务含义是「无门槛」「不封顶」，直接拼进文案会变成
+	// 「满0元打8折」「每满100元减15元，不超过0元」这种自相矛盾的说明
+	// （上限 0 元等于告诉用户这张券不能用）。所以先把 0 归一成「没有这个限制」再拼。
+	const threshold = Number(d.thresholdAmount) || 0;
+	const value = Number(d.discountValue) || 0;
+	const max = Number(d.maxDiscountAmount) || 0;
+	const cap = max > 0 ? `，不超过${max / 100}元` : "";
 	switch (d.discountType) {
 		case PER_PRICE_DISCOUNT:
-			rule = `每满${d.thresholdAmount / 100}元减${d.discountValue / 100}元，不超过${d.maxDiscountAmount / 100}元`;
+			// 每满减的「每满」必须是正数才有意义，脏数据下退化成一次性的直减
+			rule = threshold > 0
+				? `每满${threshold / 100}元减${value / 100}元${cap}`
+				: `直减${value / 100}元${cap}`;
 			break;
 		case PRICE_DISCOUNT:
-			rule = `满${d.thresholdAmount / 100}元减${d.discountValue / 100}元`;
+			rule = threshold > 0
+				? `满${threshold / 100}元减${value / 100}元`
+				: `无门槛减${value / 100}元`;
 			break;
 		case NO_THRESHOLD:
-			rule = `无门槛抵扣${d.discountValue / 100}元`;
+			rule = `无门槛抵扣${value / 100}元`;
 			break;
 		case RATE_DISCOUNT:
-			rule = `满${ d.thresholdAmount / 100}元打${d.discountValue / 10}折，不超过${d.maxDiscountAmount / 100}元`
+			// 不能写「全场打8折」：限定分类的券（specific=1）门槛往往就是 0，
+			// 此时「全场」和券面上「仅限 X 个分类」直接打架，用户会以为券用不了。
+			// 范围交给 scope 那行说，这里只描述折扣本身。
+			rule = `${threshold > 0 ? `满${threshold / 100}元` : ""}打${value / 10}折${cap}`;
 			break;
 	}
 	return rule;

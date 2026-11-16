@@ -42,11 +42,22 @@
       </div>
       <template #footer>
         <span class="dialog-footer">
-          <div class="bt bt-grey" @click="dialogVisible = false">取消</div>
-          <div class="bt" type="primary" @click="exchangeCouponHandle">兑换</div>
+          <div class="bt bt-grey" @click="exchanging ? null : dialogVisible = false">取消</div>
+          <div class="bt" :style="exchanging ? { opacity: 0.6, pointerEvents: 'none' } : null"
+               @click="exchangeCouponHandle">{{ exchanging ? '兑换中' : '兑换' }}</div>
         </span>
       </template>
     </el-dialog>
+
+    <!-- 兑换成功后的翻卡浮层。
+         兑换是这套动效**语义最吻合**的场景：用户输入一串码时并不知道会得到什么券，
+         翻开的确实是新信息。原来这里只有一条「优惠券兑换成功」的 toast，
+         等于把唯一一个天然带「惊喜」的时刻白白用掉了。 -->
+    <CouponFlipDialog
+        v-model:visible="flipVisible"
+        :coupons="flipCoupons"
+        @use="onFlipUse"
+    />
   </div>
 </template>
 <script setup>
@@ -57,16 +68,19 @@ import {ElMessage} from "element-plus";
 // errMsg 取业务失败文案（禁止写 res.data.msg）；catchMsg 取网络层失败文案
 import {errMsg, catchMsg} from "@/utils/request";
 import {getMyCoupon, exchangeCoupon, formatRule} from "@/api/class.js";
-import {useRoute} from "vue-router";
+import {couponCopy, isCouponRenderable} from "@/utils/couponEffect";
+import {useRoute, useRouter} from "vue-router";
 import {dataCacheStore} from "@/store"
 
 // 组件导入
 import CardsTitle from "./components/CardsTitle.vue";
 import TableSwitchBar from "./components/TableSwitch.vue";
 import CouponCards from "@/components/CouponCards.vue";
+import CouponFlipDialog from "@/components/CouponFlipDialog.vue";
 import Empty from "@/components/Empty.vue";
 
 const route = useRoute()
+const router = useRouter()
 const store = dataCacheStore()
 
 const tableBar = [
@@ -97,24 +111,43 @@ const myCoupon = ref([])
  */
 const status = ref('loading')
 const errorMsg = ref('')
-const getMyCouponData = async () => {
-  const params = {
-    status: actId.value,
-    pageNo: 1,
-    pageSize: 1000
+
+/** 列表项统一加工：规则去重 + 券名去重，领券页和这里共用同一套 utils */
+const normalizeCouponList = (list) => {
+  list.forEach(d => {
+    d.rule = formatRule(d)
+    // 与领券页同一套去重，避免「我的优惠券」里券名和规则行重复
+    const copy = couponCopy(d)
+    d.displayTitle = copy.title
+    d.displayRule = copy.rule
+  })
+  return list
+}
+
+/**
+ * 静默拉一个 tab 的列表：不改 status / myCoupon。
+ * 兑换成功后要轮询等 MQ 落库，如果每轮都走 getMyCouponData 会把 status 反复打回
+ * loading，列表在浮层底下闪六次「正在加载优惠券…」。
+ */
+const fetchMyCouponList = async (statusId) => {
+  const res = await getMyCoupon({ status: statusId, pageNo: 1, pageSize: 1000 })
+  if (res && res.code == 200 && res.data) {
+    return { ok: true, list: normalizeCouponList(res.data.list || []) }
   }
+  return { ok: false, res }
+}
+
+const getMyCouponData = async () => {
   status.value = 'loading'
   try {
-    const res = await getMyCoupon(params)
-    if (res && res.code == 200 && res.data) {
-      const list = res.data.list || []
-      list.forEach(d => d.rule = formatRule(d))
-      myCoupon.value = list
+    const r = await fetchMyCouponList(actId.value)
+    if (r.ok) {
+      myCoupon.value = r.list
       status.value = 'ok'
       return
     }
     myCoupon.value = []
-    errorMsg.value = errMsg(res, '优惠券加载失败，请稍后重试')
+    errorMsg.value = errMsg(r.res, '优惠券加载失败，请稍后重试')
     status.value = 'error'
   } catch (err) {
     myCoupon.value = []
@@ -126,40 +159,94 @@ const getMyCouponData = async () => {
 // 兑换优惠券
 const dialogVisible = ref(false)
 const inputVal = ref('')
+const exchanging = ref(false)
+// 兑换成功后的翻卡浮层
+const flipVisible = ref(false)
+const flipCoupons = ref([])
+
+const delay = (ms) => new Promise(r => setTimeout(r, ms))
+
+/**
+ * 兑换成功后找出「新到的那张券」。
+ *
+ * 为什么要轮询：后端 exchangeCoupon 是 Redis Lua（扣码/校验/原子标记）+ MQ 异步落库，
+ * 接口返回 200 只代表受理成功，此刻 user_coupon 表里还没有记录，也不返回 couponId。
+ * 所以只能「兑换前记快照 → 兑换后比对差集」，而且要比对几次等 MQ 消费完。
+ *
+ * ⚠️ 差集必须用 userCouponId，不能用 id：
+ *    id 是券模板 id，同一个兑换码对应的券被两个人兑换时 id 完全相同，差集会算空。
+ */
+const collectFreshCoupons = async (beforeIds) => {
+  for (let i = 0; i < 7; i += 1) {
+    const r = await fetchMyCouponList(1).catch(() => null)
+    if (!r || !r.ok) break
+    const fresh = r.list.filter(d => !beforeIds.has(d.userCouponId))
+    if (fresh.length) {
+      // 兑到的券一定在「未使用」，顺手把页签切回去，否则用户停在已使用 tab 上会以为没到账
+      actId.value = 1
+      myCoupon.value = r.list
+      status.value = 'ok'
+      return fresh
+    }
+    await delay(350)
+  }
+  return []
+}
 
 const exchangeCouponHandle = async () => {
   if (inputVal.value == "") {
     ElMessage({message: '请输入正确的优惠券码'});
     return false
   }
-  const params = {code: inputVal.value}
-  // 兑换码兑换优惠券
-  await exchangeCoupon(params)
-      .then((res) => {
-        if (res.code == 200) {
-          ElMessage({
-            message: '优惠券兑换成功',
-            type: 'success'
-          });
-          dialogVisible.value = false
-          getMyCouponData();
-        } else {
-          ElMessage({
-            message: errMsg(res, '优惠券兑换失败'),
-            type: 'error',
-            grouping: true
-          });
-        }
+  // 兑换按钮连点会发多个请求：Lua 有防重，但前端不该把注定失败的请求发出去
+  if (exchanging.value) return false
+  exchanging.value = true
+  const code = inputVal.value
+  try {
+    // 快照失败不阻断兑换，降级成原来的纯 toast
+    let beforeIds = null
+    try {
+      const snap = await fetchMyCouponList(1)
+      if (snap.ok) beforeIds = new Set(snap.list.map(d => d.userCouponId))
+    } catch (e) { beforeIds = null }
+
+    const res = await exchangeCoupon({ code })
+    if (res.code != 200) {
+      ElMessage({
+        message: errMsg(res, '优惠券兑换失败'),
+        type: 'error',
+        grouping: true
       })
-      .catch((err) => {
-        // 原来这里写的是「订单列表请求失败！」—— 兑换接口的报错挂了个订单列表的文案
-        ElMessage({
-          message: catchMsg(err, '优惠券兑换失败，请稍后重试') || '优惠券兑换失败',
-          type: 'error',
-          grouping: true
-        });
-      });
+      return false
+    }
+    dialogVisible.value = false
+    inputVal.value = ''
+
+    const fresh = beforeIds ? await collectFreshCoupons(beforeIds) : []
+    const renderable = fresh.filter(isCouponRenderable)
+    if (renderable.length) {
+      // 浮层本身就是「兑换成功」的反馈，不再叠一条 toast，否则两套反馈互相抢
+      flipCoupons.value = renderable
+      flipVisible.value = true
+    } else {
+      // 等不到（MQ 延迟异常 / 拿到了渲染不出券面的脏数据）：退回原来的文字提示
+      ElMessage({message: '优惠券兑换成功', type: 'success'})
+      getMyCouponData()
+    }
+  } catch (err) {
+    // 原来这里写的是「订单列表请求失败！」—— 兑换接口的报错挂了个订单列表的文案
+    ElMessage({
+      message: catchMsg(err, '优惠券兑换失败，请稍后重试') || '优惠券兑换失败',
+      type: 'error',
+      grouping: true
+    })
+  } finally {
+    exchanging.value = false
+  }
 }
+
+// 「去使用」跳搜索页：和领券页一致，不要跳「我的优惠券」（刚兑完 MQ 可能还没落库）
+const onFlipUse = () => router.push('/search/index')
 
 </script>
 <style lang="scss" src="./index.scss"></style>

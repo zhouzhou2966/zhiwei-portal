@@ -3,22 +3,31 @@
  <div class="couponCards fx" v-for="(item, index) in data" :key="index">
    <div class="price ft-cl-wt" v-if="item.discountType == 4 || item.discountType == 1 || item.discountType == 3">
      <div>￥ <em>{{item.discountValue / 100}}</em></div>
-     <div class="desc">{{item.rule}}</div>
+     <div class="desc" v-if="item.displayRule || item.rule">{{ item.displayRule || item.rule }}</div>
    </div>
    <div class="price ft-cl-wt" v-if="item.discountType == 2 || item.discountType == 5">
      <div><em>{{item.discountValue / 10}}</em> 折</div>
-     <div class="desc">{{item.rule}}</div>
+     <div class="desc" v-if="item.displayRule || item.rule">{{ item.displayRule || item.rule }}</div>
    </div>
     <div class="info">
-        <div class="tit">{{item.name}}</div>
-        <div><em>适用平台：</em>{{item.specific  ? '限定分类' : '全部课程'}}</div>
+        <div class="tit">{{ item.displayTitle || item.name }}</div>
+        <div><em>适用分类：</em>{{ couponScopeText(item, categoryMap) }}</div>
       <div><em>有效日期：</em> {{item.termDays ? `${item.termDays}天` : parseDate(item.termEndTime).format('YYYY-MM-DD hh:mm:ss')}}</div>
     </div>
     <div class="butCont fx-ct" v-if="type == 1"><span @click="() => {$router.push({path: '/search/index'})}" class="bt">去使用</span></div>
 </div>
 </template>
 <script setup>
+import { onMounted, shallowRef } from 'vue';
 import { parseDate } from '@/utils/date';
+import { couponScopeText, loadCategoryMap } from '@/utils/couponScope';
+// 分类 id -> 名称，和领券页共用同一份模块级缓存
+const categoryMap = shallowRef(new Map());
+onMounted(() => {
+  loadCategoryMap().then((map) => {
+    categoryMap.value = map;
+  });
+});
 const props = defineProps({
   data:{
     type: Object,

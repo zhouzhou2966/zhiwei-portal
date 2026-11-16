@@ -6,25 +6,31 @@
     </div>
     <div class="couponItems container bg-wt">
       <template v-if="couponData.length > 0">
-        <div class="mainCouponCards fx" v-for="(item, index) in couponData" :key="index">
+        <div class="mainCouponCards fx" v-for="(item, index) in couponData" :key="index"
+             :class="{ 'is-flying-out': flyingId === item.id }">
           <div class="price ft-cl-wt" v-if="item.discountType == 4 || item.discountType == 1 || item.discountType == 3">
             <div>￥ <em>{{item.discountValue / 100}}</em></div>
-            <div class="desc">{{item.rule}}</div>
+            <div class="desc" v-if="item.displayRule">{{ item.displayRule }}</div>
           </div>
           <div class="price ft-cl-wt" v-if="item.discountType == 2 || item.discountType == 5">
             <div><em>{{item.discountValue / 10}}</em> 折</div>
-            <div class="desc">{{item.rule}}</div>
+            <div class="desc" v-if="item.displayRule">{{ item.displayRule }}</div>
           </div>
           <div class="info">
-            <div class="tit">{{item.name}}</div>
-            <div><em>适用平台：</em>{{item.specific ? '指定课程' : '全部课程'}}</div>
+            <div class="tit">{{ item.displayTitle || item.name }}</div>
+            <div><em>适用分类：</em>{{ couponScopeText(item, categoryMap) }}</div>
             <div><em>有效日期：</em> {{item.termDays ? `${item.termDays}天` : parseDate(item.termEndTime).format('YYYY-MM-DD hh:mm:ss')}}</div>
           </div>
           <div class="butCont fx-ct" v-if="item.received">
             <span  @click="() => $router.push('/search/index')" class="bt">去使用</span>
           </div>
           <div class="butCont fx-ct" v-else>
-            <span v-if="item.available" @click="getCouponData(item)" class="bt">立即领取</span>
+            <span
+              v-if="item.available"
+              @click="getCouponData(item, $event)"
+              class="bt"
+              :class="{ 'bt-loading': receivingId === item.id, 'bt-fail': failId === item.id }"
+            >{{ receivingId === item.id ? '领取中' : '立即领取' }}</span>
             <span v-else class="bt bt-grey">已领完</span>
           </div>
         </div>
@@ -34,29 +40,67 @@
         <Empty desc="暂无优惠券"></Empty>
       </div>
     </div>
+    <!-- 领券成功后的翻卡浮层，替代原来的纯文字 toast -->
+    <CouponFlipDialog
+      v-model:visible="flipVisible"
+      :coupons="flipCoupons"
+      :origin-rect="flipOrigin"
+      @closed="onFlipClosed"
+      @use="onFlipUse"
+    />
   </div>
 </template>
 <script setup>
 // errMsg：统一取后端错误提示（禁止写 res.data.msg —— 业务失败时响应体里没有 data 字段，见 utils/request.js）
-import { errMsg } from '@/utils/request'
+// catchMsg：catch 分支专用（区分超时/断网/401，见 utils/request.js）
+import { errMsg, catchMsg } from '@/utils/request'
 /** 数据导入 **/
 
-import { onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
+import { useRouter } from 'vue-router';
 import { ElMessage } from "element-plus";
 import { parseDate } from '@/utils/date';
 import { getCollectableCoupon, getCoupon,formatRule } from "@/api/class.js";
-import { isLogin } from '@/store'
+import { isCouponRenderable, couponCopy } from '@/utils/couponEffect';
+import { couponScopeText, loadCategoryMap } from '@/utils/couponScope';
 // 组件导入
 import Breadcrumb from "@/components/Breadcrumb.vue";
 import Empty from "@/components/Empty.vue";
+import CouponFlipDialog from "@/components/CouponFlipDialog.vue";
+const router = useRouter();
 const couponData = ref([]);
+// 三级分类 id -> 名称：券范围只拿到 id，名称本地映射（模块内缓存，切页面不重复请求）
+const categoryMap = shallowRef(new Map());
 // 首屏请求未返回前不显示空状态，否则会先闪一下「暂无优惠券」
 const loading = ref(true);
+// 翻卡浮层：flipCoupons 是「本次领到的券」，目前一次一张，组件按数组设计以便以后扩多张
+const flipVisible = ref(false);
+const flipCoupons = ref([]);
+// 被点的那张列表卡的视口坐标，浮层据此播「卡片飞过来」。
+// 存成纯对象而不是 DOMRect：DOMRect 带原型，跨组件传参时容易在响应式包装里出意外。
+const flipOrigin = ref(null);
+// 正在「飞出去」的那张卡。飞行副本的起点和它在屏幕上完全重合，
+// 所以原卡必须在副本出现的同时让位，否则会看到「列表里还留着一张，空中又飞着一张」。
+const flyingId = ref(null);
+// 正在领取的券 id：按钮据此置灰，挡住连点（后端 Lua 会挡重复领，但前端不该把请求发出去）
+const receivingId = ref(null);
+// 领取失败的那张券 id：用来抖一下按钮。失败没有浮层（没抢到就没有券面可翻），
+// 只靠 ElMessage 的话，注意力在按钮上的用户会以为「点了没反应」。
+const failId = ref(null);
+let failTimer = 0;
+let refreshTimer = 0;
+// 本次打开页面里已经领过的券 id。领券是 MQ 异步落库，刷新时后端可能还没算上这张券，
+// 不记住的话按钮会在刷新后闪回「立即领取」（用户以为没领到，会再点一次）。
+const justClaimed = new Set();
 
 // mounted生命周期
 onMounted(() => {
   // 获取可领优惠券（超值优惠券）
   getCollectableCouponData()
+  // 分类树与券列表并行拉，谁先回来都不影响对方；失败时文案退化成「指定分类课程」
+  loadCategoryMap().then((map) => {
+    categoryMap.value = map
+  })
 });
 
 /** 方法定义 **/
@@ -65,7 +109,15 @@ const getCollectableCouponData = async () => {
   await getCollectableCoupon()
   .then((res) => {
       if (res.code == 200) {
-        res.data.forEach(d => d.rule = formatRule(d));
+        res.data.forEach(d => {
+          d.rule = formatRule(d);
+          // 券名里若已经复述了满减条件，展示时剥掉，规则行保留（见 couponCopy 注释）
+          const copy = couponCopy(d);
+          d.displayTitle = copy.title;
+          d.displayRule = copy.rule;
+          // 刚领过但 MQ 还没落库的券，强制按「已领」渲染，避免按钮状态回退
+          if (justClaimed.has(d.id)) d.received = true;
+        });
         couponData.value = res.data;
       } else {
         ElMessage({
@@ -86,32 +138,88 @@ const getCollectableCouponData = async () => {
 }
 
 // 优惠券领取
-const getCouponData = async (item) => {
-  const id = item.id
-  await getCoupon({id:id})
-  .then((res) => {
-      if (res.code == 200) {
-        // 领取成功之后重新刷新列表
-        getCollectableCouponData()
-        item.recieveStatus = 2
-        ElMessage({
-          message:'优惠券领取成功!',
-          type: 'success'
-        });
-      } else {
-        ElMessage({
-          message:errMsg(res),
-          type: 'error'
-        });
-      }
-    })
-    .catch(() => {
-      ElMessage({
-        message: "分类请求出错！",
-        type: 'error'
-      });
-    });
+// ⚠️ 后端 receive 是「Redis 扣库存 + 发 MQ」的异步链路，返回 void：
+//    接口 200 只代表受理成功，此刻 user_coupon 表里还没有记录。
+//    所以成功后既不能立刻重拉列表（received 由未使用记录数算出，必然是 false，按钮会闪回「立即领取」），
+//    也不能马上去「我的优惠券」里找这张券——浮层展示的是列表这条数据。
+const getCouponData = async (item, ev) => {
+  if (receivingId.value) return;   // 并发保护：动画期间/请求未回时不再发第二次
+  receivingId.value = item.id;
+  // 记下这张卡此刻的位置，供浮层播「飞过来」。必须在点击瞬间取：
+  // 领取成功后按钮会从「立即领取」变「去使用」，卡片内容跟着变，再取就不准了。
+  const cardEl = ev?.currentTarget?.closest?.('.mainCouponCards');
+  const r = cardEl?.getBoundingClientRect();
+  flipOrigin.value = r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null;
+  try {
+    const res = await getCoupon({ id: item.id });
+    if (res.code !== 200) {
+      ElMessage({ message: errMsg(res), type: 'error' });
+      flashFail(item.id);
+      return;
+    }
+    if (!isCouponRenderable(item)) {
+      // 数据异常时不该弹一张空卡面，退回原来的文字提示
+      ElMessage({ message: '优惠券领取成功!', type: 'success' });
+      scheduleRefresh();
+      return;
+    }
+    // 本地先置为已领：动画期间卡片要显示「去使用」，且列表不该出现「还能再领」的错觉
+    item.received = true;
+    justClaimed.add(item.id);
+    flipCoupons.value = [item];
+    // 原卡让位给飞行副本（必须在 flipVisible 之前设，否则会先看到两张卡同框）
+    flyingId.value = item.id;
+    flipVisible.value = true;
+  } catch (e) {
+    ElMessage({ message: catchMsg(e, '领取失败，请稍后重试'), type: 'error' });
+    flashFail(item.id);
+  } finally {
+    receivingId.value = null;
+  }
 }
+
+/**
+ * 失败的轻量反馈：按钮抖一下。
+ * 为什么不弹浮层：浮层是「翻卡给人惊喜」的正反馈，失败时再弹一层会把失败包装成奖励，
+ * 而且没领到券就没有可信的券面数据可展示。抖动 + 文字提示是成本最低也最准确的空间反馈。
+ */
+const flashFail = (id) => {
+  // 先摘掉再挂，否则同一张券连续失败时 class 没变化，动画不会重播
+  failId.value = null;
+  window.requestAnimationFrame(() => {
+    failId.value = id;
+  });
+  window.clearTimeout(failTimer);
+  failTimer = window.setTimeout(() => {
+    failId.value = null;
+  }, 420);
+}
+
+/**
+ * 领券后才刷新列表，且必须延迟。
+ * 用户关掉浮层时 MQ 往往还没消费完，立即刷新会让「去使用」闪回「立即领取」，
+ * 800ms 是留给消费落库的缓冲；仍没跟上也没关系，下次进页面会自然对齐。
+ */
+const scheduleRefresh = (delay = 800) => {
+  window.clearTimeout(refreshTimer);
+  refreshTimer = window.setTimeout(() => {
+    getCollectableCouponData();
+  }, delay);
+}
+
+const onFlipClosed = () => {
+  // 浮层关了，让位的卡片要回来（此时后端可能还没落库，卡片显示的是本地置的「去使用」）
+  flyingId.value = null;
+  scheduleRefresh();
+};
+
+// 「去使用」跳搜索页而不是「我的优惠券」：后者要等 MQ 落库才能查到，刚领完进去会看到空列表
+const onFlipUse = () => router.push('/search/index');
+
+onBeforeUnmount(() => {
+  window.clearTimeout(refreshTimer);
+  window.clearTimeout(failTimer);
+});
 
 </script>
 <style lang="scss" src="./index.scss"> </style>
@@ -143,6 +251,13 @@ const getCouponData = async (item) => {
     margin-right: 40px;
     &:nth-child(2n){
       margin-right: 0;
+    }
+    /* 正在「飞出去」的那张：浮层的飞行副本起点和它完全重合，
+       这里必须在同一帧让位，读起来才是「同一张卡变深色、然后飞向屏幕中央」。
+       用 visibility 而不是 opacity —— 要的是瞬时替换，不是淡出；
+       淡出会有一小段「两张卡都半透明」的重影。 */
+    &.is-flying-out{
+      visibility: hidden;
     }
     .price{
       width: 167px;
@@ -195,7 +310,34 @@ const getCouponData = async (item) => {
         height: 40px;
         border-radius: 20px;
       }
+      /* 领取中：请求未回时置灰并断掉点击，避免连点发出第二个请求 */
+      span.bt-loading{
+        opacity: 0.6;
+        pointer-events: none;
+        cursor: default;
+      }
+      /* 领取失败：横向抖一下（1 次 420ms，与 flashFail 里的清除时长对齐） */
+      span.bt-fail{
+        animation: coupon-bt-shake 420ms cubic-bezier(.36,.07,.19,.97) both;
+      }
     }
+  }
+}
+
+@keyframes coupon-bt-shake{
+  0%, 100% { transform: translateX(0); }
+  15%      { transform: translateX(-6px); }
+  30%      { transform: translateX(6px); }
+  45%      { transform: translateX(-4px); }
+  60%      { transform: translateX(4px); }
+  80%      { transform: translateX(-2px); }
+}
+
+/* 关了动效的用户：抖动会变成「抽一下」，改用静态描边标记，反馈还在但不位移 */
+@media (prefers-reduced-motion: reduce){
+  .discountChoiceWrapper .couponItems .mainCouponCards .butCont span.bt-fail{
+    animation: none;
+    box-shadow: 0 0 0 2px rgba(206, 76, 76, 0.55);
   }
 }
 </style>
