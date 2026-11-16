@@ -55,7 +55,9 @@
       <div class="exchangePreview" v-if="previewLoading || preview">
         <div class="pvLoading" v-if="previewLoading">正在查询兑换码…</div>
         <template v-else>
-          <div class="pvCoupon" :class="{ 'is-blocked': !preview.canExchange }">
+          <!-- 只有真的解析出券模板才画券面。码已被使用 / 无效时后端不会填券信息，
+               这时画出来就是一张「优惠券 ¥0」的空卡，比不画更让人困惑。 -->
+          <div class="pvCoupon" v-if="preview.couponId" :class="{ 'is-blocked': !preview.canExchange }">
             <div class="pvFace">
               <span class="sym" v-if="previewFace.symbol">{{ previewFace.symbol }}</span><em>{{ previewFace.amount }}</em><span class="unit" v-if="previewFace.unit">{{ previewFace.unit }}</span>
             </div>
