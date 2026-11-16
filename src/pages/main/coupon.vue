@@ -21,17 +21,23 @@
             <div><em>适用分类：</em>{{ couponScopeText(item, categoryMap) }}</div>
             <div><em>有效日期：</em> {{item.termDays ? `${item.termDays}天` : parseDate(item.termEndTime).format('YYYY-MM-DD hh:mm:ss')}}</div>
           </div>
-          <div class="butCont fx-ct" v-if="item.received">
-            <span  @click="() => $router.push('/search/index')" class="bt">去使用</span>
-          </div>
-          <div class="butCont fx-ct" v-else>
+          <!-- 「还能不能再领」和「手里有没有可用的」是两件事，不能再用 received 一票否决：
+               user_limit > 1 的券领过一张之后 received 就是 true，原来的写法会把按钮
+               直接换成「去使用」，用户再也点不到「领取」，第二张永远领不了。 -->
+          <div class="butCont fx-ct">
             <span
               v-if="item.available"
               @click="getCouponData(item, $event)"
               class="bt"
               :class="{ 'bt-loading': receivingId === item.id, 'bt-fail': failId === item.id }"
-            >{{ receivingId === item.id ? '领取中' : '立即领取' }}</span>
-            <span v-else class="bt bt-grey">已领完</span>
+            >{{ receivingId === item.id ? '领取中' : (item.remainCount > 1 ? `还可领 ${item.remainCount} 张` : '立即领取') }}</span>
+            <span v-else-if="item.received" @click="() => $router.push('/search/index')" class="bt">去使用</span>
+            <!-- 区分两种「不能领」：库存发完了，还是你自己的额度用完了。
+                 后端没返回 soldOut（旧版本）时回退成原来的「已领完」，不显示误导性文案 -->
+            <span v-else class="bt bt-grey">{{ item.soldOut === true ? '已领完' : (item.remainCount === 0 ? '已领过' : '已领完') }}</span>
+            <!-- 还能领、但手里也有未使用的券：给「去使用」留个次要入口 -->
+            <span v-if="item.available && item.received" class="useLink"
+                  @click="() => $router.push('/search/index')">去使用</span>
           </div>
         </div>
       </template>
@@ -165,6 +171,12 @@ const getCouponData = async (item, ev) => {
     }
     // 本地先置为已领：动画期间卡片要显示「去使用」，且列表不该出现「还能再领」的错觉
     item.received = true;
+    // user_limit > 1 的券还能继续领，本地把额度递减掉，
+    // 否则要等浮层关掉后的定时刷新才更新，用户会以为「领了这张就不能再领了」
+    if (typeof item.remainCount === 'number' && item.remainCount > 0) {
+      item.remainCount -= 1;
+      item.available = item.remainCount > 0;
+    }
     justClaimed.add(item.id);
     flipCoupons.value = [item];
     // 原卡让位给飞行副本（必须在 flipVisible 之前设，否则会先看到两张卡同框）

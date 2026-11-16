@@ -137,33 +137,17 @@
 
     .butCont {
       width: 250px;
-    }
-  }
-
-  /* ===== 右下角浮动优惠券 =====
-     原来 180×180 还带 80px 的 margin-right，等于贴在屏幕中间偏右，很挡内容。
-     缩到 110 并贴边，只作为轻量入口。 */
-  .floatCont {
-    position: fixed;
-    right: 16px;
-    bottom: 20vh;
-    z-index: 20;
-    transition: transform .2s;
-
-    a {
-      display: block;
-      width: 110px;
-      height: 110px;
-    }
-
-    img {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    &:hover {
-      transform: translateY(-4px);
+      // 还能领、但手里也有未使用券时的次要入口（主按钮仍是「领取」）
+      .useLink {
+        margin-left: 12px;
+        font-size: 12px;
+        color: var(--color-font3);
+        white-space: nowrap;
+        cursor: pointer;
+        &:hover {
+          color: var(--color-main);
+        }
+      }
     }
   }
 }
