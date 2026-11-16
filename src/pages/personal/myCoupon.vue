@@ -229,8 +229,15 @@ const exchangeCouponHandle = async () => {
       flipCoupons.value = renderable
       flipVisible.value = true
     } else {
-      // 等不到（MQ 延迟异常 / 拿到了渲染不出券面的脏数据）：退回原来的文字提示
-      ElMessage({message: '优惠券兑换成功', type: 'success'})
+      // 轮询 2.5s 仍没等到新券。这里**不能**再说「兑换成功」：
+      // 接口 200 只代表受理成功，券有没有落库是另一回事（实测有过「Redis 扣了库存、
+      // 兑换码也标记了，但消费端判重把消息丢掉」的静默丢券）。断然说成功会让用户
+      // 去列表里找不到券，反而更困惑。说「已受理 + 去哪确认」才是准确的说法。
+      ElMessage({
+        message: '兑换请求已受理，券到账可能有延迟，请稍后在「我的优惠券」查看',
+        type: 'warning',
+        duration: 5000
+      })
       getMyCouponData()
     }
   } catch (err) {
