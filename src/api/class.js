@@ -145,6 +145,13 @@ request({
 	url: `${PROMOTION_API_PREFIX}/user-coupons/${data.code}/exchange`,
 	method: 'post'
 })	
+// 兑换码预检：输入框里查一次，提前告诉用户会换到什么券、能不能兑
+// 只读接口，不占名额也不动库存，所以可以在输入时防抖调用
+export const previewExchangeCoupon = (code) =>
+request({
+	url: `${PROMOTION_API_PREFIX}/user-coupons/${code}/preview`,
+	method: 'get'
+})
 
 // 课程表管理接口
 

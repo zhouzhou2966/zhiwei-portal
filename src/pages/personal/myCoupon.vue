@@ -35,16 +35,48 @@
     <el-dialog
         v-model="dialogVisible"
         title="兑换优惠券"
-        width="30%"
+        width="440px"
+        @closed="resetExchange"
     >
       <div class="exchangeCoupon fx"><span>优惠券码：</span>
-        <el-input type="text" v-model="inputVal" placeholder="请输入"/>
+        <el-input
+            type="text"
+            v-model="inputVal"
+            maxlength="10"
+            clearable
+            placeholder="请输入 8~10 位兑换码"
+            @input="onCodeInput"
+        />
       </div>
+
+      <!-- 预检结果：把「会换到什么券、能不能兑」提前摆出来。
+           原来只有点了「兑换」才被一句「超出领取数量」挡住 —— 用户手里只有一串码，
+           既不知道换的是什么券，也不知道自己的额度用在哪了，只会觉得「有效码凭什么不给我」。 -->
+      <div class="exchangePreview" v-if="previewLoading || preview">
+        <div class="pvLoading" v-if="previewLoading">正在查询兑换码…</div>
+        <template v-else>
+          <div class="pvCoupon" :class="{ 'is-blocked': !preview.canExchange }">
+            <div class="pvFace">
+              <span class="sym" v-if="previewFace.symbol">{{ previewFace.symbol }}</span><em>{{ previewFace.amount }}</em><span class="unit" v-if="previewFace.unit">{{ previewFace.unit }}</span>
+            </div>
+            <div class="pvInfo">
+              <p class="pvName">{{ previewCopy.title || '优惠券' }}</p>
+              <p class="pvRule" v-if="previewCopy.rule">{{ previewCopy.rule }}</p>
+              <p class="pvTerm" v-if="preview.termDays">领取后 {{ preview.termDays }} 天内有效</p>
+            </div>
+          </div>
+          <p class="pvTip" :class="{ bad: !preview.canExchange }">
+            <template v-if="preview.canExchange">可以兑换，兑完你将持有 {{ preview.userCount + 1 }} 张（每人限领 {{ preview.userLimit }} 张）</template>
+            <template v-else>{{ preview.reason || '暂不可兑换' }}</template>
+          </p>
+        </template>
+      </div>
+
       <template #footer>
         <span class="dialog-footer">
           <div class="bt bt-grey" @click="exchanging ? null : dialogVisible = false">取消</div>
-          <div class="bt" :style="exchanging ? { opacity: 0.6, pointerEvents: 'none' } : null"
-               @click="exchangeCouponHandle">{{ exchanging ? '兑换中' : '兑换' }}</div>
+          <div class="bt" :class="{ 'is-disabled': submitBlocked }"
+               @click="submitBlocked ? null : exchangeCouponHandle()">{{ exchangeBtnText }}</div>
         </span>
       </template>
     </el-dialog>
@@ -63,12 +95,12 @@
 <script setup>
 
 /** 数据导入 **/
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {ElMessage} from "element-plus";
 // errMsg 取业务失败文案（禁止写 res.data.msg）；catchMsg 取网络层失败文案
 import {errMsg, catchMsg} from "@/utils/request";
-import {getMyCoupon, exchangeCoupon, formatRule} from "@/api/class.js";
-import {couponCopy, isCouponRenderable} from "@/utils/couponEffect";
+import {getMyCoupon, exchangeCoupon, previewExchangeCoupon, formatRule} from "@/api/class.js";
+import {couponCopy, couponFace, isCouponRenderable} from "@/utils/couponEffect";
 import {useRoute, useRouter} from "vue-router";
 import {dataCacheStore} from "@/store"
 
@@ -185,6 +217,65 @@ const exchanging = ref(false)
 const flipVisible = ref(false)
 const flipCoupons = ref([])
 
+/* ---------- 兑换码预检 ---------- */
+// 输入即查：用户手里只有一串码，不查就只能靠点了「兑换」再被拒绝。
+// 只读接口，不占名额不动库存，可以放心防抖调用。
+const preview = ref(null)
+const previewLoading = ref(false)
+const previewFace = computed(() => couponFace(preview.value || {}))
+// 券名和规则去重，和卡片列表用同一套（运营常把「满299减80」也写进券名）
+const previewCopy = computed(() => {
+  const p = preview.value || {}
+  return couponCopy({...p, rule: formatRule(p)})
+})
+// 预检明确说不能兑时才禁用按钮；预检没查成（断网/接口异常）不阻断，交给后端给最终结论
+const submitBlocked = computed(() => exchanging.value || (!!preview.value && !preview.value.canExchange))
+const exchangeBtnText = computed(() => {
+  if (exchanging.value) return '兑换中'
+  if (preview.value && !preview.value.canExchange) return '无法兑换'
+  return '兑换'
+})
+
+let previewTimer = 0
+let previewSeq = 0
+const onCodeInput = () => {
+  // 输入变了，旧结论立刻作废，避免「改完码还显示上一张券」
+  preview.value = null
+  previewLoading.value = false
+  if (previewTimer) window.clearTimeout(previewTimer)
+  const code = String(inputVal.value || '').trim().toUpperCase()
+  // 兑换码是 8~10 位，不足就没必要打接口
+  if (code.length < 8) return
+  previewTimer = window.setTimeout(() => queryPreview(code), 450)
+}
+
+const queryPreview = async (code) => {
+  const seq = ++previewSeq
+  previewLoading.value = true
+  try {
+    const res = await previewExchangeCoupon(code)
+    if (seq !== previewSeq) return   // 慢请求回来得晚，不能覆盖新输入的结果
+    if (res && res.code === 200 && res.data) {
+      preview.value = res.data
+    } else {
+      preview.value = {valid: false, canExchange: false, reason: errMsg(res, '兑换码无效')}
+    }
+  } catch (e) {
+    if (seq !== previewSeq) return
+    // 预检查不了不等于不能兑，清空即可，按钮保持可点
+    preview.value = null
+  } finally {
+    if (seq === previewSeq) previewLoading.value = false
+  }
+}
+
+const resetExchange = () => {
+  inputVal.value = ''
+  preview.value = null
+  previewLoading.value = false
+  if (previewTimer) window.clearTimeout(previewTimer)
+}
+
 const delay = (ms) => new Promise(r => setTimeout(r, ms))
 
 /**
@@ -215,14 +306,15 @@ const collectFreshCoupons = async (beforeIds) => {
 }
 
 const exchangeCouponHandle = async () => {
-  if (inputVal.value == "") {
+  // 兑换码统一去空格转大写：用户从微信里复制过来常带空格或小写
+  const code = String(inputVal.value || '').trim().toUpperCase()
+  if (code === "") {
     ElMessage({message: '请输入正确的优惠券码'});
     return false
   }
   // 兑换按钮连点会发多个请求：Lua 有防重，但前端不该把注定失败的请求发出去
   if (exchanging.value) return false
   exchanging.value = true
-  const code = inputVal.value
   try {
     // 快照失败不阻断兑换，降级成原来的纯 toast
     let beforeIds = null

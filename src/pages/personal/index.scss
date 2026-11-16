@@ -145,6 +145,83 @@
         margin-left: 20px;
         border-radius: 4px;
     }
+    // 预检判定不能兑换时的禁用态
+    .bt.is-disabled{
+        opacity: .5;
+        cursor: not-allowed;
+    }
+}
+/* ---------- 兑换弹窗：兑换码预检结果 ---------- */
+// 兑换码是盲盒：用户手里只有一串码。不预检的话只能点了兑换再被「超出领取数量」挡住，
+// 既不知道换的是什么券，也不知道自己的额度用在哪了。这里把券面和限制提前摆出来。
+.exchangeCoupon{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    span{
+        white-space: nowrap;
+        font-size: 14px;
+    }
+}
+.exchangePreview{
+    margin-top: 18px;
+    .pvLoading{
+        font-size: 13px;
+        color: var(--color-font3);
+    }
+    .pvCoupon{
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 14px 16px;
+        border-radius: 8px;
+        background: #FFF9F0;
+        border: 1px solid #F3E3C8;
+        &.is-blocked{
+            background: #FAFAFA;
+            border-color: #EAEAEA;
+            .pvFace{ color: #9A9A9A; }
+        }
+    }
+    .pvFace{
+        min-width: 88px;
+        text-align: center;
+        color: #C0392B;
+        font-weight: 600;
+        font-style: normal;
+        .sym{ font-size: 14px; }
+        em{
+            font-style: normal;
+            font-size: 30px;
+            line-height: 1;
+        }
+        .unit{ font-size: 13px; }
+    }
+    .pvInfo{
+        flex: 1;
+        min-width: 0;
+        .pvName{
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .pvRule{
+            font-size: 13px;
+            color: var(--color-font3);
+            margin-bottom: 4px;
+        }
+        .pvTerm{
+            font-size: 12px;
+            color: var(--color-font3);
+        }
+    }
+    .pvTip{
+        margin-top: 10px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #B07C22;
+        &.bad{ color: #C0392B; }
+    }
 }
 // 子页标题行：返回箭头贴在标题左边（箭头见 components/BackArrow.vue）
 // 用在「优惠券说明 / 考试批阅 / 订单详情」这类不用 CardsTitle 的页面标题上
