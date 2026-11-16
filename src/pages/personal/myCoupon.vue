@@ -25,6 +25,11 @@
       </div>
       <div class="myCouponItems" v-else :class="{'is-empty': myCoupon.length === 0}">
         <CouponCards v-if="myCoupon.length > 0" :data="myCoupon" :type="actId"></CouponCards>
+        <!-- 一次最多加载 PAGE_SIZE 条（不分页，因为同款多张要在前端聚合）。
+             超过时明确告知，否则用户会以为券就这么多 -->
+        <p class="tipText mt-10" v-if="truncated > 0">
+          券数量较多，当前只加载了 {{ PAGE_SIZE }} 张，还有 {{ truncated }} 张未展示
+        </p>
         <div v-else class="nodata">
           <!-- 首屏还没回来时不要立刻显示「空」，否则会闪一下 -->
           <span v-if="status === 'loading'" class="tipText fadeInDelay">正在加载优惠券…</span>
@@ -145,6 +150,14 @@ const myCoupon = ref([])
  */
 const status = ref('loading')
 const errorMsg = ref('')
+/**
+ * 一次拉多少条。列表不分页，靠一个足够大的 pageSize 一次取完 ——
+ * 因为「同款多张」要在前端聚合成 ×N，只取一页会算少。
+ * 但总得有个上限，超出时下面用 truncated 明确告知，不能让用户以为就这些。
+ */
+const PAGE_SIZE = 1000
+// 超过 PAGE_SIZE 没被拉回来的条数，>0 时页面底部给提示
+const truncated = ref(0)
 
 /** 列表项统一加工：规则去重 + 券名去重，领券页和这里共用同一套 utils */
 const normalizeCouponList = (list) => {
@@ -164,9 +177,10 @@ const normalizeCouponList = (list) => {
  * loading，列表在浮层底下闪六次「正在加载优惠券…」。
  */
 const fetchMyCouponList = async (statusId) => {
-  const res = await getMyCoupon({ status: statusId, pageNo: 1, pageSize: 1000 })
+  const res = await getMyCoupon({ status: statusId, pageNo: 1, pageSize: PAGE_SIZE })
   if (res && res.code == 200 && res.data) {
-    return { ok: true, list: normalizeCouponList(res.data.list || []) }
+    const list = res.data.list || []
+    return { ok: true, list: normalizeCouponList(list), total: Number(res.data.total) || list.length }
   }
   return { ok: false, res }
 }
@@ -192,13 +206,19 @@ const aggregateCoupons = (list) => {
   return [...byTemplate.values()]
 }
 
+/** 统一落地一次列表结果：聚合展示 + 记录被截断的条数 */
+const applyList = (r) => {
+  myCoupon.value = aggregateCoupons(r.list)
+  truncated.value = Math.max((r.total || 0) - r.list.length, 0)
+  status.value = 'ok'
+}
+
 const getMyCouponData = async () => {
   status.value = 'loading'
   try {
     const r = await fetchMyCouponList(actId.value)
     if (r.ok) {
-      myCoupon.value = aggregateCoupons(r.list)
-      status.value = 'ok'
+      applyList(r)
       return
     }
     myCoupon.value = []
@@ -298,8 +318,7 @@ const collectFreshCoupons = async (beforeIds) => {
     if (fresh.length) {
       // 兑到的券一定在「未使用」，顺手把页签切回去，否则用户停在已使用 tab 上会以为没到账
       actId.value = 1
-      myCoupon.value = aggregateCoupons(r.list)
-      status.value = 'ok'
+      applyList(r)
       return fresh
     }
     await delay(350)

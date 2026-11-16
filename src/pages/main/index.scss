@@ -136,18 +136,9 @@
     }
 
     .butCont {
+      // 注意：领券卡真正的按钮样式在 pages/main/coupon.vue 里（.butCont span.bt），
+      // 这里只有宽度约束，改按钮尺寸别改这里
       width: 250px;
-      // 还能领、但手里也有未使用券时的次要入口（主按钮仍是「领取」）
-      .useLink {
-        margin-left: 12px;
-        font-size: 12px;
-        color: var(--color-font3);
-        white-space: nowrap;
-        cursor: pointer;
-        &:hover {
-          color: var(--color-main);
-        }
-      }
     }
   }
 }

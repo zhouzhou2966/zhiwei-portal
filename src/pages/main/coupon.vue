@@ -315,12 +315,29 @@ onBeforeUnmount(() => {
     }
     .butCont{
       padding: 20px;
-      span{
+      /* 只作用于按钮本身。原来写的是 `.butCont span`，
+         结果新加的「去使用」文字链（也是 span）被按 104px 宽的按钮渲染，
+         两个元素吃掉 208px，把 .info 挤到只剩 84px —— 券名一字一行 */
+      span.bt{
         display: inline-block;
         width: 104px;
         text-align: center;
         height: 40px;
         border-radius: 20px;
+      }
+      /* 还能领、但手里也有未使用券时的次要入口 */
+      .useLink{
+        display: inline-block;
+        margin-left: 10px;
+        font-size: 12px;
+        line-height: 40px;
+        color: var(--color-font3);
+        white-space: nowrap;
+        vertical-align: top;
+        cursor: pointer;
+        &:hover{
+          color: var(--color-main);
+        }
       }
       /* 领取中：请求未回时置灰并断掉点击，避免连点发出第二个请求 */
       span.bt-loading{
