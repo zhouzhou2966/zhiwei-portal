@@ -2,17 +2,27 @@
 <template>
   <div class="couponWrapper">
     <div class="personalCards">
-      <div class="headTop fx-sb">
-        <CardsTitle class="marg-bt-20" title="我的优惠券"/>
-        <div class="fx">
-          <span class="font-bt ft-14" @click="() => dialogVisible = true">兑换优惠券&gt;</span>
-          <span @click="() => $router.push({path: '/personal/main/myCouponExplain'})"
-                class="font-bt ft-14">优惠券使用说明&gt;</span>
+      <!-- 页头：左标题、右入口。
+           原来右侧只有「兑换 / 使用说明」两个文字链，而领券入口在首页右下角的礼包球里 ——
+           领完券的人站到这个页面上，没有任何一条路能回到领券中心。反向入口放在这里。 -->
+      <div class="couponHead">
+        <h2 class="cpTitle">我的优惠券</h2>
+        <div class="cpActs">
+          <span class="cpGo" @click="() => $router.push('/main/coupon')">领券中心 ›</span>
+          <span class="cpLink" @click="() => dialogVisible = true">兑换优惠码</span>
+          <span class="cpLink" @click="() => $router.push({path: '/account/main/myCouponExplain'})">使用说明</span>
         </div>
       </div>
-      <div>
+      <div class="cpTabs">
         <TableSwitchBar :data="tableBar" @changeTable="changeTable"></TableSwitchBar>
       </div>
+      <!-- 即将过期提示：券是过期作废的资产，「7 天内到期」是最该出现在列表上方的一句话。
+           只挂在「未使用」页签 —— 另外两个页签的券已经不作数了，提示没有意义 -->
+      <p class="cpWarn" v-if="actId === 1 && expiringSoon.length > 0">
+        <span class="dot" aria-hidden="true"></span>
+        {{ expiringSoon.length }} 张券将在 7 天内到期，建议先用：
+        <em>{{ expiringSoonNames }}</em>
+      </p>
       <!-- 请求失败：明确面板 + 重试。原来只弹一条 toast，列表停在空数组上，
            页面显示「暂无优惠券」，看起来像真的没有券 —— 其实是优惠券服务没起来。
            网关对「服务不存在」回的是 HTTP 200 + code:0，axios 不会 reject。 -->
@@ -23,7 +33,7 @@
           <el-button type="primary" plain size="small" @click="getMyCouponData">重新加载</el-button>
         </div>
       </div>
-      <div class="myCouponItems" v-else :class="{'is-empty': myCoupon.length === 0}">
+      <div class="myCouponItems" v-else :class="{ 'is-empty': myCoupon.length === 0, 'is-one': myCoupon.length === 1 }">
         <!-- 用 <template v-if> 包起来，不要再用 v-else 直接配 list：
              中间只要多插一个 v-if 的元素（比如下面那条「已加载上限」提示），
              v-else 就会被它截走，结果是「有券」和「空状态」同时显示。 -->
@@ -47,8 +57,15 @@
         </template>
         <div v-else class="nodata">
           <!-- 首屏还没回来时不要立刻显示「空」，否则会闪一下 -->
-          <span v-if="status === 'loading'" class="tipText fadeInDelay">正在加载优惠券…</span>
-          <Empty v-else></Empty>
+          <template v-if="status === 'loading'">
+            <span class="tipText fadeInDelay">正在加载优惠券…</span>
+          </template>
+          <!-- 空状态不是死胡同：文案 + 主按钮 + 领券中心精选（可直接领）。
+               只在「未使用」页签做推荐位 —— 另两个页签的空就是真的空 -->
+          <template v-else>
+            <Empty :desc="actId === 1 ? '还没有可用的优惠券' : '这里还空着'"></Empty>
+            <p class="emptySub" v-if="actId === 1">去领券中心领一张，下单时能省一点是一点</p>
+          </template>
         </div>
       </div>
     </div>
@@ -110,6 +127,7 @@
     <CouponFlipDialog
         v-model:visible="flipVisible"
         :coupons="flipCoupons"
+        :mine-entry="false"
         @use="onFlipUse"
     />
   </div>
@@ -122,12 +140,11 @@ import {ElMessage} from "element-plus";
 // errMsg 取业务失败文案（禁止写 res.data.msg）；catchMsg 取网络层失败文案
 import {errMsg, catchMsg} from "@/utils/request";
 import {getMyCoupon, exchangeCoupon, previewExchangeCoupon, formatRule} from "@/api/class.js";
-import {couponCopy, couponFace, isCouponRenderable} from "@/utils/couponEffect";
+import {couponCopy, couponFace, isCouponRenderable, couponExpiringSoon} from "@/utils/couponEffect";
 import {useRoute, useRouter} from "vue-router";
 import {dataCacheStore} from "@/store"
 
 // 组件导入
-import CardsTitle from "./components/CardsTitle.vue";
 import TableSwitchBar from "./components/TableSwitch.vue";
 import CouponCards from "@/components/CouponCards.vue";
 import CouponFlipDialog from "@/components/CouponFlipDialog.vue";
@@ -137,11 +154,16 @@ const route = useRoute()
 const router = useRouter()
 const store = dataCacheStore()
 
-const tableBar = [
+/**
+ * 页签上的数字 = 这一栏里有多少张卡（聚合后，不是 user_coupon 行数）。
+ * 只给**当前**页签标数字：三个页签各拉一次接口只为标个数，请求数直接翻三倍，
+ * 而用户点进去自然就看到了。数字的意义是「告诉你别的那栏有没有东西」，不是统计面板。
+ */
+const tableBar = ref([
   {id: 1, name: '未使用'},
   {id: 2, name: '已使用'},
   {id: 3, name: '已过期'},
-]
+])
 
 // tab切换
 const actId = ref(1)
@@ -241,7 +263,24 @@ const applyList = (r) => {
   // 数据换了（切 tab / 兑换后刷新）就回到第一页，
   // 否则可能停在一个已经不存在的页码上，看到一片空白
   pageNo.value = 1
+  syncTabCount()
 }
+
+/** 把当前页签的数字对齐到刚拿到的列表长度（失败时列表为空，角标自然消失） */
+const syncTabCount = () => {
+  const hit = tableBar.value.find(t => t.id === actId.value)
+  if (hit) hit.count = myCoupon.value.length
+}
+
+/** 7 天内到期的券：卡片自己会标暖色，顶部再汇总一句，扫一眼就知道该先用哪几张 */
+const expiringSoon = computed(() => {
+  if (actId.value !== 1) return []
+  return myCoupon.value.filter(d => couponExpiringSoon(d))
+})
+const expiringSoonNames = computed(() => {
+  const names = expiringSoon.value.map(d => d.displayTitle || d.name).filter(Boolean)
+  return names.length > 3 ? `${names.slice(0, 3).join('、')} 等` : names.join('、')
+})
 
 const getMyCouponData = async () => {
   status.value = 'loading'
@@ -254,10 +293,12 @@ const getMyCouponData = async () => {
     myCoupon.value = []
     errorMsg.value = errMsg(r.res, '优惠券加载失败，请稍后重试')
     status.value = 'error'
+    syncTabCount()
   } catch (err) {
     myCoupon.value = []
     errorMsg.value = catchMsg(err, '优惠券加载失败，请稍后重试') || '请先登录后查看优惠券'
     status.value = 'error'
+    syncTabCount()
   }
 }
 

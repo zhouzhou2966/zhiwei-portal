@@ -79,7 +79,7 @@
     <div class="sideBlock rank" v-if="logged && rank.list.length">
       <header class="blkHead">
         <span class="blkTitle">学霸天梯榜</span>
-        <span class="blkMore" @click="$router.push('/personal/main/myIntegralRanking')">完整榜单<i class="arr"></i></span>
+        <span class="blkMore" @click="$router.push('/account/main/myIntegralRanking')">完整榜单<i class="arr"></i></span>
       </header>
 
       <div class="rankRow" v-for="(item, i) in rank.list.slice(0, 5)" :key="i">

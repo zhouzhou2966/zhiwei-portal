@@ -23,6 +23,12 @@
           <span>{{scope.row.score || 0}}</span>
         </template>
       </el-table-column>
+      <!-- 正确率由后端判卷时算好存库（ExamRecord.correctRate），前端不要自己除 -->
+      <el-table-column prop="correctRate" align="center" label="正确率" width="80" >
+        <template #default="scope">
+          <span>{{ scope.row.correctRate == null ? '--' : scope.row.correctRate + '%' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" width="100">
         <template #default="scope">
           <div class="font-bt1" @click="() => $router.push({name:'myExamDetails', query:scope.row})">查看</div>

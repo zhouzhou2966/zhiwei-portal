@@ -77,6 +77,19 @@
             line-height: 69px;
             border-bottom: 1px solid #EEEEEE;
         }
+        // 退出登录行：说明文字用弱灰，按钮 hover 转红 —— 这是全页唯一的破坏性动作
+        .logoutLine{
+            span:first-child{
+                color: var(--color-font3);
+                margin-right: 6px;
+            }
+            .quitBt{
+                color: var(--color-font2);
+                &:hover{
+                    color: var(--color-error);
+                }
+            }
+        }
     }
-      
+
 }

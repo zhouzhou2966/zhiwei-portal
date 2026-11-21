@@ -30,24 +30,17 @@
         <span class="actLink" @click="goChat">消息</span>
         <span class="actLink" @click="goCart">购物车</span>
 
-        <el-dropdown
+        <!-- 头像 = 个人中心入口：点击直达，不再弹下拉菜单。
+             订单 / 券 / 积分 / 设置都在个人中心左导航里，弹一层菜单等于重复列一遍目录；
+             退出登录挪进了「个人设置」的账号安全页 -->
+        <div
           v-if="userInfo && userInfo.name"
-          trigger="click"
-          placement="bottom-end"
-          popper-class="header-user-dropdown"
-          @command="handleUserCommand"
+          class="userTrigger"
+          title="进入个人中心"
+          @click="goAccount"
         >
-          <div class="userTrigger">
-            <img class="avatar" :src="headerIcon" @error="onerrorImg" alt="" />
-          </div>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="myClass">我的课程</el-dropdown-item>
-              <el-dropdown-item command="mySet">个人设置</el-dropdown-item>
-              <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+          <img class="avatar" :src="headerIcon" @error="onerrorImg" alt="" />
+        </div>
         <div class="auth" v-else>
           <span @click="() => $router.push({ path: '/login', query: { md: 'register' } })">注册</span>
           <i>/</i>
@@ -62,7 +55,7 @@ import { computed, onBeforeMount, ref, watch, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore, isLogin, getToken, dataCacheStore } from '@/store'
-import { getUserInfo, userLogout } from '@/api/user'
+import { getUserInfo } from '@/api/user'
 import router from '../router'
 
 // 默认头像（用户无头像或图片加载失败时使用）
@@ -82,14 +75,16 @@ const route = useRoute()
 const userStore = getToken()
 const dataCache = dataCacheStore()
 
-// 导航：学习 = 个人中心「我的课程」（游客点学习先去登录，与旧版学习中心入口行为一致）
+// 导航：学习 = 学习中心「我的课程」（游客点学习先去登录，与旧版学习中心入口行为一致）。
+// 订单 / 优惠券 / 积分 / 设置在「个人中心」（/account），入口是头像点击直达，不占顶栏位
 const navItems = computed(() => [
   { key: 'home', label: '发现', path: '/main/index', active: route.path === '/main/index' },
   { key: 'explore', label: '探索', path: '/search/index', active: route.path.startsWith('/search') },
   {
     key: 'learn',
     label: '学习',
-    path: '/personal/main/myClass',
+    path: '/personal/main/overview',
+    // 个人中心（/account）不算「在学习」，顶栏学习不再高亮
     active: route.path.startsWith('/personal') || route.path.startsWith('/learning'),
     needLogin: true
   },
@@ -140,30 +135,10 @@ watchEffect(() => {
   }
 })
 
-// 头像下拉：分发「我的课程 / 个人设置 / 退出登录」
-const handleUserCommand = (command) => {
-  if (command === 'myClass') {
-    router.push('/personal/main/myClass')
-    return
-  }
-  if (command === 'mySet') {
-    router.push('/personal/main/mySet')
-    return
-  }
-  if (command === 'logout') {
-    logoutHandle()
-  }
-}
-
-// 退出登录：先通知后端注销，再清本地凭据并回首页
-const logoutHandle = () => {
-  userLogout().then(res => {
-    if (res.code === 200) {
-      store.logout()
-      location.href = '/'
-    }
-  }).catch(() => {})
-}
+// 头像点击直达个人中心（默认落「个人设置」）。
+// 原来的下拉菜单砍掉的原因：菜单里每一项在个人中心左导航里都有，
+// 弹一层等于把那份目录再抄一遍；退出登录挪到了「个人设置」的账号安全页
+const goAccount = () => router.push('/account/main/mySet')
 
 /**
  * 购物车入口：未登录直接去登录页。

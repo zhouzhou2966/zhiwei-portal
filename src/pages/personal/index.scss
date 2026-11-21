@@ -31,6 +31,15 @@
         min-height: 0;
         overflow-y: auto;
         overflow-x: hidden;
+        // 学习中心：内容区白底铺满（用户反馈「白色背景铺满好看一点」）——
+        // 页头和卡片不再悬在雾蓝渐变上，侧栏一侧的渐变保持不变。
+        // 选择器挂在 .personalBg（只有 /personal 会加）上，个人中心 /account 不受影响。
+        // 左右内边距：白底铺满后页根（.myClassWrapper 等）没有容器约束，
+        // 文字会贴着白区左边缘 —— 给内容一个统一的左右起点
+        .personalBg &{
+            background: #fff;
+            padding: 0 32px;
+        }
         // 滚动条不压住卡片的圆角和投影
         padding-right: 4px;
         // 细滚动条，默认的 15px 宽会在 1200 容器里显得很突兀

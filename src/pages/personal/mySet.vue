@@ -60,6 +60,12 @@
         <div><span>绑定邮箱</span> 已绑定邮箱：{{ contactEmail }}</div>
         <span class="font-bt" @click="openEmailDialog">{{ hasEmail ? '去解绑' : '去绑定' }}</span>
       </div>
+      <!-- 退出登录从顶栏头像下拉挪到这里：头像现在点击直达个人中心，
+           菜单没了，退出这种低频但重要的动作放在「账号安全」页的末尾刚好 -->
+      <div class="line fx-sb logoutLine">
+        <div><span>退出登录</span> 退出后需重新登录才能继续学习</div>
+        <span class="font-bt quitBt" @click="quitHandle">退出登录</span>
+      </div>
     </div>
 
     <!-- 修改登录密码 -->
@@ -138,11 +144,12 @@
 
 /** 数据导入 **/
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue";
+import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import axios from "axios";
 import {
   updateUserInfo, getUserInfo,
-  updatePassword, sendCode, updatePhone, updateEmail
+  updatePassword, sendCode, updatePhone, updateEmail, userLogout
 } from "@/api/user.js";
 import { errMsg, catchMsg } from "@/utils/request.js";
 import { useUserStore } from "@/store"
@@ -155,6 +162,18 @@ import CardsTitle from "./components/CardsTitle.vue";
 import TableSwitchBar from "@/components/TableSwitchBar.vue";
 
 const store = useUserStore()
+const router = useRouter()
+
+/** 退出登录：先通知后端注销，再清本地凭据回首页（原顶栏头像下拉的 logoutHandle）。
+ *  注销接口失败也要清本地 —— 卡在一份已失效的会话里比没登录更糟 */
+const quitHandle = () => {
+  userLogout().then(res => {
+    if (res.code === 200) {
+      store.logout()
+      location.href = '/'
+    }
+  }).catch(() => {})
+}
 const userInfo = ref(store.getUserInfo)
 
 /**

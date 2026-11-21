@@ -55,7 +55,7 @@
             <span class="dayTag" v-else @click="pointsSignHandle(item)">打卡</span>
           </div>
           <div :class="{records: item.isRecords == 1, noRecords: item.isRecords == 0}" v-else>
-            {{item.date.split('-')[2]}}
+            <span class="tile">{{item.date.split('-')[2]}}</span>
           </div>
         </template>
         <!-- 前后月日期只做补位参考：浅灰、无底色、不参与打卡状态 -->
@@ -65,7 +65,7 @@
   </div>
 </template>
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watchEffect } from 'vue';
 // errMsg 取业务失败文案；catchMsg 取网络层失败文案
 import { errMsg, catchMsg } from "@/utils/request";
 import { getSignRecords } from "@/api/class.js";
@@ -79,7 +79,7 @@ const props = defineProps({
   }
 })
 // 定义emits
-const emit = defineEmits(['pointsSign']);
+const emit = defineEmits(['pointsSign', 'signed']);
 const week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 const calendarData = ref([])
 const currentDay = dayjs().format('YYYY-MM-DD')
@@ -91,6 +91,8 @@ const monthTitle = dayjs().format('YYYY年M月D日')
 const isCurMonth = (date) => date.slice(0, 7) === currentMonth
 // 本月已打卡天数：直接从日历数据里数，打卡后 `pointsSignHandle` 把 isRecords 置 1，这里会自动跟着变
 const signedCount = computed(() => calendarData.value.filter(it => isCurMonth(it.date) && it.isRecords == 1).length)
+// 天数变化回传给父级（我的积分页把它画进顶部概览条）
+watchEffect(() => emit('signed', signedCount.value))
 
 onMounted(() => {
   // 获取打卡数据
@@ -163,12 +165,15 @@ const getSignRecordsHandel = async () => {
 }
 </script>
 <style lang="scss" scoped>
+// 打卡日历：无表格线、圆角格子。
+// 原来是 1px 边框的七列表格 + 交替灰底，读起来像 Excel 而不像全站的卡片语言；
+// 状态全部收敛到每个日期自己的 40px 圆角块上
 .calendar{
   .calendarTop{
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     .titleBox{
       display: flex;
       align-items: center;
@@ -203,75 +208,84 @@ const getSignRecordsHandel = async () => {
     align-items: center;
     span{
       display: inline-block;
-      width: 18px;
-      height: 18px;
-      background-color:#E8E8E8;
-      margin-right: 10px;
-      border-radius: 2px;
+      width: 14px;
+      height: 14px;
+      background-color: var(--color-background5);
+      border: 1px solid var(--color-background3);
+      margin-right: 8px;
+      border-radius: 4px;
     }
     .isRecords{
-      background: var(--color-main-light2);
+      background: var(--color-main-light);
+      border-color: var(--color-main-light2);
     }
   }
   .calendarHead{
     display: flex;
-    border-top: solid 1px #eeeeee;
-    border-left: solid 1px #eeeeee;
     span{
       flex: 1;
       text-align: center;
-      line-height: 40px;
-      border-right: solid 1px #eeeeee;
-      border-bottom: solid 1px #eeeeee;
+      font-size: 13px;
+      color: var(--color-font3);
+      padding: 6px 0;
     }
   }
   .calendarCont{
-      display:flex;
+      display: flex;
       flex-wrap: wrap;
-      border-left: solid 1px #eeeeee;
       .day{
           width: calc(100% / 7);
-          text-align: center;
-          line-height: 40px;
-          min-height: 40px;
-          border-right: solid 1px #eeeeee;
-          border-bottom: solid 1px #eeeeee;
+          min-height: 52px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
       }
       .isOtherMonth{
-        background: #fbfbfb;
         .otherMonthDay{
-          color: #c6c6c6;
+          color: var(--color-font4);
           font-size: 13px;
         }
       }
+      // 日期格子：所有状态都是同一枚 44px 圆角块，差别只在配色
+      .tile,
+      .records,
+      .noRecords,
       .taday{
-        background-color: var(--color-main);
-        color: #fff;
-        cursor: pointer;
-        // 今天这格既要显示日期数字，也要显示打卡状态，所以改成上下两行紧凑排
-        height: 40px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        line-height: 1;
-        .dayNum{
-          font-size: 15px;
-          font-weight: 600;
-        }
-        .dayTag{
-          margin-top: 3px;
-          font-size: 11px;
-          opacity: .88;
-        }
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          line-height: 1;
+          font-size: 14px;
+      }
+      .tile{
+          color: var(--color-font2);
       }
       .records{
-        background: var(--color-main-light2);
-        color: var(--color-main);
-        font-weight: 600;
+          background: var(--color-main-light);
+          color: var(--color-main);
+          font-weight: 600;
       }
       .noRecords{
-        background: #E8E8E8;
+          color: var(--color-font3);
+      }
+      // 今天：主色实底。未打卡时这块就是打卡按钮（点击事件挂在它上面）
+      .taday{
+          background-color: var(--color-main);
+          color: #fff;
+          cursor: pointer;
+          .dayNum{
+            font-size: 14px;
+            font-weight: 600;
+          }
+          .dayTag{
+            margin-top: 3px;
+            font-size: 10px;
+            opacity: .88;
+          }
       }
   }
 }

@@ -228,7 +228,7 @@ const refundApplyReq = () => {
             message: "退款成功",
             type: 'success'
           });
-          router.push('/personal/main/myOrder')
+          router.push('/account/main/myOrder')
         } else {
           ElMessage({
             message: errMsg(res, '申请退款失败'),

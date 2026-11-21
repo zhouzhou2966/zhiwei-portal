@@ -28,7 +28,11 @@ const goBack = () => {
     return
   }
   if (route.meta.active) {
-    router.push(`/personal/main/${route.meta.active}`)
+    // 一级页跟随当前所在区：个人中心（/account）和学习中心（/personal）
+    // 的子路由都叫 myXxx，直接拼区前缀，不能写死 —— 否则账户页的返回会先
+    // 绕一圈旧路径兼容 redirect 才回来
+    const area = route.path.startsWith('/account') ? 'account' : 'personal'
+    router.push(`/${area}/main/${route.meta.active}`)
   }
 }
 </script>

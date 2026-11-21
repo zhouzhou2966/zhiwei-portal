@@ -5,7 +5,7 @@
         <div><img src="@/assets/icon_success.png" width="72" height="72" alt=""></div>
         <div class="tit">支付成功</div>
         <div class="order" v-if="orderId">订单ID ：{{ orderId }}</div>
-        <div @click="() => $router.push('/personal/main/myOrder')"><span class="bt">查看订单详情</span></div>
+        <div @click="() => $router.push('/account/main/myOrder')"><span class="bt">查看订单详情</span></div>
       </div>
   </div>
 </template>

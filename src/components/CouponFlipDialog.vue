@@ -141,6 +141,18 @@
           <button ref="safeBtnRef" type="button" class="cf-btn cf-btn--ghost" @click="onTake">开心收下</button>
           <button type="button" class="cf-btn cf-btn--primary" @click="onUse">去使用</button>
         </div>
+
+        <!-- 第三个出口：领完券最常见的下一个动作是「我还有几张、都在哪」。
+             不加第三个按钮（两个主次按钮的节奏会被打破），只做一行弱化的文字链，
+             等按钮落定之后再出现，不和主按钮抢焦点。 -->
+        <button
+          v-if="mineEntry"
+          type="button"
+          class="cf-mine"
+          :class="{ 'is-on': settled }"
+          :tabindex="settled ? 0 : -1"
+          @click="onMine"
+        >查看我的优惠券 ›</button>
       </div>
     </div>
   </Teleport>
@@ -177,8 +189,11 @@ const props = defineProps({
   // 列表卡的视口坐标（{left, top, width, height}）。传了就先播一段「卡片飞过来」，
   // 再开始蓄力翻卡；不传（直接调用、刷新后重开）则按老样子从中心弹出
   originRect: { type: Object, default: null },
+  // 是否显示「查看我的优惠券」文字链。在「我的优惠券」页面里再显示一次就是指向自己，
+  // 由父组件关掉
+  mineEntry: { type: Boolean, default: true },
 })
-const emit = defineEmits(['update:visible', 'use', 'closed'])
+const emit = defineEmits(['update:visible', 'use', 'closed', 'mine'])
 
 const index = ref(0)
 const isOpen = ref(false)
@@ -539,6 +554,12 @@ function onUse() {
   const target = current.value
   close('use')
   emit('use', target)
+}
+
+/** 「查看我的优惠券」：和 onUse 同样先收尾再通知，理由同上 */
+function onMine() {
+  close('mine')
+  emit('mine')
 }
 
 function close(reason) {
@@ -1625,6 +1646,32 @@ onBeforeUnmount(() => {
     opacity: 1;
     transform: none;
     pointer-events: auto;
+  }
+}
+
+/* 「查看我的优惠券」：和按钮同一拍出现，但不进按钮那一行。
+   三个等宽按钮会把「主 / 次 / 去别处」三个层级的差别抹平，
+   所以这里只给一行弱化的白字，悬停才加下划线。 */
+.cf-mine {
+  margin-top: 12px;
+  padding: 4px 6px;
+  border: none;
+  background: none;
+  font-size: 12px;
+  line-height: 18px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 240ms ease-out, color 160ms;
+
+  &.is-on {
+    opacity: 1;
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: #fff;
+    text-decoration: underline;
   }
 }
 

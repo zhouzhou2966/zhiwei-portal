@@ -231,7 +231,7 @@ const getPayStateData = async () => {
     ElMessage.warning(
       data.status === 3 ? '订单已超时关闭，请重新下单' : '订单状态已变更，请返回订单列表查看'
     )
-    router.push('/personal/main/myOrder')
+    router.push('/account/main/myOrder')
   }
 } 
 // 错误面板上的「重新加载」：两个请求都重发一遍（渠道列表和订单状态任一失败都会落到错误态）
@@ -252,7 +252,7 @@ const timeOver = () => {
   clearInterval(timer.value)
   dialogVisible.value = false
   ElMessage.warning('订单已超时，已为你取消')
-  router.push('/personal/main/myOrder')
+  router.push('/account/main/myOrder')
 }
 </script>
 <style lang="scss" src="./index.scss"> </style>

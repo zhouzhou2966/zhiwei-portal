@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>学习中心 · 学习报告（视觉稿）</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; padding: 32px 0 24px; }
+  .page-head h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.4px; }
+  .page-head p { margin-top: 7px; font-size: 13px; color: var(--ink3); }
+  .range { display: flex; align-items: center; gap: 3px; padding: 3px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; }
+  .range span { height: 30px; padding: 0 16px; border-radius: 999px; display: flex; align-items: center; font-size: 12.5px; color: var(--ink2); cursor: pointer; }
+  .range span.on { background: var(--main); color: #fff; }
+
+  /* 4 个数字 */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .kpi { padding: 20px 22px; }
+  .kpi .k-label { font-size: 12.5px; color: var(--ink3); display: flex; align-items: center; gap: 8px; }
+  .kpi .k-label i { font-style: normal; font-size: 11px; color: var(--ink3); }
+  .kpi .k-val { margin-top: 8px; font-family: var(--serif); font-variant-numeric: lining-nums; font-size: 34px; font-weight: 400; line-height: 1.05; letter-spacing: -1px; }
+  .kpi .k-val em { font-style: normal; font-family: var(--sans); font-size: 12.5px; color: var(--ink3); letter-spacing: 0; margin-left: 6px; }
+  .kpi .k-sub { margin-top: 7px; font-size: 11.5px; color: var(--ink3); }
+  .kpi .k-sub b { color: var(--free, #2E7D6F); font-weight: 500; }
+
+  /* 01 热力 */
+  .heat-wrap { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+  .heat { padding: 24px 26px; }
+  .hm { display: grid; grid-template-columns: repeat(13, 30px); grid-template-rows: repeat(7, 30px); gap: 7px; }
+  .hm i { width: 30px; height: 30px; border-radius: 5px; background: #EEF2F5; }
+  .hm i.l1 { background: #CFDDE6; }
+  .hm i.l2 { background: #A3BFD0; }
+  .hm i.l3 { background: #5F8BA7; }
+  .hm i.l4 { background: var(--main); }
+  .hm-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; font-size: 11.5px; color: var(--ink3); }
+  .legend { display: flex; align-items: center; gap: 5px; }
+  .legend i { width: 11px; height: 11px; border-radius: 2px; display: block; background: #EEF2F5; }
+  .legend i.l1 { background: #CFDDE6; } .legend i.l2 { background: #A3BFD0; }
+  .legend i.l3 { background: #5F8BA7; } .legend i.l4 { background: var(--main); }
+  .heat-side { padding: 22px 24px; display: flex; flex-direction: column; }
+  .heat-side .hs-row { display: flex; align-items: baseline; justify-content: space-between; padding: 11px 0; border-bottom: 1px dashed var(--line); }
+  .heat-side .hs-row:last-of-type { border-bottom: none; }
+  .heat-side .hs-row span { font-size: 12.5px; color: var(--ink3); }
+  .heat-side .hs-row b { font-family: var(--serif); font-variant-numeric: lining-nums; font-size: 20px; font-weight: 400; }
+  .heat-side .hs-tip { margin-top: auto; padding-top: 12px; font-size: 11.5px; color: var(--ink3); line-height: 1.7; }
+
+  /* 02 周目标 */
+  .weeks { padding: 10px 26px 18px; }
+  .wk { display: flex; align-items: center; gap: 20px; padding: 13px 0; border-bottom: 1px dashed var(--line); }
+  .wk:last-child { border-bottom: none; }
+  .wk .w-label { width: 116px; flex: none; font-size: 12.5px; color: var(--ink2); }
+  .wk .bar { flex: 1; height: 7px; }
+  .wk .w-num { width: 66px; flex: none; text-align: right; font-family: var(--serif); font-size: 14px; color: var(--ink); }
+  .wk .w-num em { font-style: normal; color: var(--ink3); font-size: 12px; }
+  .wk .w-hit { width: 64px; flex: none; text-align: right; font-size: 12px; color: var(--ink3); }
+  .wk .w-hit.on { color: var(--free, #2E7D6F); font-weight: 500; }
+  .weeks-foot { padding: 12px 0 0; font-size: 12px; color: var(--ink3); }
+
+  /* 03 考试趋势 */
+  .trend { padding: 26px 26px 20px; display: flex; gap: 34px; }
+  .trend-chart { flex: 1; display: flex; align-items: flex-end; gap: 26px; height: 170px; position: relative; }
+  .tc { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .tc .tv { font-family: var(--serif); font-size: 12px; color: var(--ink2); margin-bottom: 7px; }
+  .tc .tb { width: 40px; border-radius: 5px 5px 0 0; background: #C8D8E2; }
+  .tc.last .tb { background: var(--main); }
+  .tc.last .tv { color: var(--main); font-weight: 600; }
+  .tc .td { margin-top: 9px; font-size: 11.5px; color: var(--ink3); }
+  .avg-line { position: absolute; left: 0; right: 0; bottom: 52px; border-top: 1px dashed var(--line-strong); }
+  .avg-line span { position: absolute; right: 0; top: -19px; font-size: 11px; color: var(--ink3); background: #fff; padding-left: 8px; }
+  .trend-side { width: 210px; flex: none; border-left: 1px solid var(--line); padding-left: 28px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+  .trend-side div { display: flex; align-items: baseline; justify-content: space-between; }
+  .trend-side span { font-size: 12.5px; color: var(--ink3); }
+  .trend-side b { font-family: var(--serif); font-variant-numeric: lining-nums; font-size: 20px; font-weight: 400; }
+
+  /* 04 课程投入 */
+  .dist { padding: 12px 26px 20px; }
+  .dr { display: flex; align-items: center; gap: 18px; padding: 13px 0; border-bottom: 1px dashed var(--line); }
+  .dr:last-child { border-bottom: none; }
+  .dr .d-name { width: 300px; flex: none; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dr .bar { flex: 1; height: 8px; }
+  .dr .bar i.ghost { background: var(--line-strong); }
+  .dr .d-num { width: 96px; flex: none; text-align: right; font-size: 12.5px; color: var(--ink3); }
+  .dr .d-num b { font-family: var(--serif); font-size: 15px; font-weight: 400; color: var(--ink); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hd">
+    <div class="logo">知微 <em>ZHIWEI</em></div>
+    <nav class="top">
+      <span>发现</span><span>探索</span><span class="on">学习</span><span>交流</span>
+    </nav>
+    <div class="search"><span>搜索课程、知识卡、话题</span><kbd>⌘K</kbd></div>
+    <div class="acts"><span>消息</span><span>购物车</span><div class="avatar">j</div></div>
+  </div>
+</header>
+
+<div class="subnav">
+  <div class="wrap subnav-in">
+    <div class="tabs">
+      <span>学习概览</span>
+      <span>我的课程</span>
+      <span>我的考试</span>
+      <span class="on">学习报告</span>
+    </div>
+    <div class="subnav-r">
+      <span>本周 <b>3</b>/<b>4</b> 节</span>
+      <i class="sep"></i>
+      <span class="accent">连续 <b>5</b> 天</span>
+      <i class="sep"></i>
+      <span>今日 <b>0</b> 分</span>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <div class="page-head">
+    <div>
+      <h1>学习报告</h1>
+      <p>近 30 天 · 完成小节按天聚合，目标口径按当前周计划</p>
+    </div>
+    <div class="range"><span class="on">近 30 天</span><span>近 90 天</span></div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi card">
+      <div class="k-label">累计学习</div>
+      <div class="k-val">15<em>节</em></div>
+      <div class="k-sub"><b>+6</b> 节 比上个月</div>
+    </div>
+    <div class="kpi card">
+      <div class="k-label">活跃天数</div>
+      <div class="k-val">3<em>天</em></div>
+      <div class="k-sub">连续最长 5 天</div>
+    </div>
+    <div class="kpi card">
+      <div class="k-label">完成课程</div>
+      <div class="k-val">3<em>门</em></div>
+      <div class="k-sub">在学 2 门</div>
+    </div>
+    <div class="kpi card">
+      <div class="k-label">考试均分</div>
+      <div class="k-val">82<em>分</em></div>
+      <div class="k-sub">共 4 次 · 最高 92</div>
+    </div>
+  </div>
+
+  <!-- 01 学习活跃度 -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-l">
+        <span class="idx">01</span>
+        <div>
+          <h3>学习活跃度</h3>
+          <p>近 90 天每天的完成量，一周一列</p>
+        </div>
+      </div>
+      <span class="sec-r">活跃 <b>3</b> 天 · 最长连续 <b>5</b> 天</span>
+    </div>
+    <div class="heat-wrap">
+      <div class="heat card">
+        <div class="hm">
+          <i></i><i></i><i></i><i class="l1"></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="l1"></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i class="l2"></i><i></i><i></i><i></i><i></i><i></i><i class="l1"></i>
+          <i></i><i class="l1"></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="l1"></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i class="l2"></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="l2"></i><i></i>
+          <i></i><i></i><i class="l1"></i><i></i><i></i><i></i><i></i><i class="l4"></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i class="l2"></i><i></i><i></i><i></i><i class="l1"></i><i></i><i></i><i></i>
+          <i class="l1"></i><i></i><i></i><i class="l3"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="l2"></i>
+        </div>
+        <div class="hm-foot">
+          <span>最近 13 周</span>
+          <span class="legend">少 <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> 多</span>
+        </div>
+      </div>
+      <div class="heat-side card">
+        <div class="hs-row"><span>近 90 天完成</span><b>15 节</b></div>
+        <div class="hs-row"><span>日均</span><b>0.17 节</b></div>
+        <div class="hs-row"><span>最长连续</span><b>5 天</b></div>
+        <div class="hs-row"><span>活跃率</span><b>3.3%</b></div>
+        <p class="hs-tip">活跃率 = 有学习记录的天数 / 统计区间天数。区间无记录的日子是空的，不会补成灰色格。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 周目标达成 -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-l">
+        <span class="idx">02</span>
+        <div>
+          <h3>周目标达成</h3>
+          <p>最近 4 周，目标按当前周计划回看</p>
+        </div>
+      </div>
+      <span class="sec-r">达标 <b>1</b> / 4 周</span>
+    </div>
+    <div class="weeks card">
+      <div class="wk">
+        <span class="w-label">10/25 - 10/31</span>
+        <div class="bar"><i style="width:100%"></i></div>
+        <span class="w-num">4 <em>/ 4</em></span>
+        <span class="w-hit on">达成</span>
+      </div>
+      <div class="wk">
+        <span class="w-label">11/01 - 11/07</span>
+        <div class="bar"><i style="width:50%"></i></div>
+        <span class="w-num">2 <em>/ 4</em></span>
+        <span class="w-hit">未达成</span>
+      </div>
+      <div class="wk">
+        <span class="w-label">11/08 - 11/14</span>
+        <div class="bar"><i style="width:25%"></i></div>
+        <span class="w-num">1 <em>/ 4</em></span>
+        <span class="w-hit">未达成</span>
+      </div>
+      <div class="wk">
+        <span class="w-label">11/15 - 11/21</span>
+        <div class="bar"><i style="width:75%"></i></div>
+        <span class="w-num">3 <em>/ 4</em></span>
+        <span class="w-hit">本周</span>
+      </div>
+      <p class="weeks-foot">最近 4 周达标 1 / 4 周 · 目标来自「我的课程」里设定的每周学习计划</p>
+    </div>
+  </section>
+
+  <!-- 03 考试分数趋势 -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-l">
+        <span class="idx">03</span>
+        <div>
+          <h3>考试分数趋势</h3>
+          <p>最近 8 次，虚线是均分</p>
+        </div>
+      </div>
+      <span class="sec-r">共 <b>4</b> 次考试</span>
+    </div>
+    <div class="trend card">
+      <div class="trend-chart">
+        <div class="avg-line"></div>
+        <div class="tc"><span class="tv">62</span><div class="tb" style="height:60%"></div><span class="td">9/12</span></div>
+        <div class="tc"><span class="tv">74</span><div class="tb" style="height:74%"></div><span class="td">9/28</span></div>
+        <div class="tc"><span class="tv">68</span><div class="tb" style="height:68%"></div><span class="td">10/14</span></div>
+        <div class="tc"><span class="tv">85</span><div class="tb" style="height:85%"></div><span class="td">10/29</span></div>
+        <div class="tc"><span class="tv">79</span><div class="tb" style="height:79%"></div><span class="td">11/06</span></div>
+        <div class="tc"><span class="tv">92</span><div class="tb" style="height:92%"></div><span class="td">11/13</span></div>
+        <div class="tc last"><span class="tv">82</span><div class="tb" style="height:82%"></div><span class="td">11/20</span></div>
+      </div>
+      <div class="trend-side">
+        <div><span>均分</span><b>82</b></div>
+        <div><span>最高</span><b>92</b></div>
+        <div><span>最近</span><b>82</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 课程投入 -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-l">
+        <span class="idx">04</span>
+        <div>
+          <h3>课程投入分布</h3>
+          <p>按已学小节数排序，深色是已学、浅色是剩余</p>
+        </div>
+      </div>
+      <span class="more">去我的课程 <i></i></span>
+    </div>
+    <div class="dist card">
+      <div class="dr">
+        <span class="d-name">课程1 · JavaEE 极速就业班</span>
+        <div class="bar"><i style="width:42%"></i></div>
+        <span class="d-num"><b>5</b> / 12 节</span>
+      </div>
+      <div class="dr">
+        <span class="d-name">木老师的吉他入门</span>
+        <div class="bar"><i style="width:25%"></i></div>
+        <span class="d-num"><b>3</b> / 12 节</span>
+      </div>
+      <div class="dr">
+        <span class="d-name">计算机基础 · 操作系统</span>
+        <div class="bar"><i style="width:0"></i></div>
+        <span class="d-num"><b>0</b> / 28 节</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot-gap"></div>
+</main>
+
+</body>
+</html>

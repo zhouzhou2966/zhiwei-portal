@@ -70,34 +70,37 @@ const hasMyRow = computed(() => {
 });
 </script>
 <style lang="scss" scoped>
+// 榜单：去掉 Excel 式全边框表格，改成虚线分隔的轻量行。
+// 我的积分页和天梯榜页共用这个组件，两处一起换装
 .integralRankTab {
-  border-top: solid 1px #eeeeee;
-  border-left: solid 1px #eeeeee;
-  border-right: solid 1px #eeeeee;
-  border-bottom: solid 1px #eeeeee;
-  height: calc(100% - 86.7px);
   .item {
-    padding: 0px 30px;
-    line-height: 40px;
-    height: 41px;
-    font-weight: 400;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: solid 1px #eeeeee;
+    padding: 0 10px;
+    min-height: 44px;
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--color-font1);
+    border-bottom: 1px dashed var(--color-background2);
     img {
-      width: 40px;
-      height: 40px;
+      width: 30px;
+      height: 30px;
     }
     span:first-child {
       display: inline-block;
       text-align: center;
-      width: 40px;
+      width: 44px;
+      font-size: 13px;
+      color: var(--color-font2);
     }
     span:last-child {
       display: inline-block;
       text-align: center;
-      width: 40px;
+      width: 44px;
+      font-size: 13px;
+      color: var(--color-font1);
+      font-weight: 500;
     }
     .ct {
       flex: 1;
@@ -107,27 +110,37 @@ const hasMyRow = computed(() => {
     }
   }
   .item:last-child {
-    border-bottom: solid 1px #eeeeee;
-  }
-  .item:nth-child(10) {
     border-bottom: none;
   }
   .head {
-    height: 60px;
-    line-height: 60px;
-    font-weight: 600;
+    min-height: 40px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--color-font3);
+    border-bottom: 1px solid var(--color-background2);
+    span{
+      color: inherit;
+      font-size: 12px;
+      font-weight: 400;
+    }
   }
   .myItem {
-    line-height: 40px;
     background: var(--color-main-light);
+    border-radius: 8px;
     color: var(--color-main);
+    border-bottom: none;
+    span:first-child,
+    span:last-child{
+      color: var(--color-main);
+      font-weight: 600;
+    }
   }
   .onData{
     display: flex;
     align-items: center;
     justify-content: center;
     color: #999;
-    height: calc(100% - 100px);
+    min-height: 160px;
   }
 }
 .fxTab{

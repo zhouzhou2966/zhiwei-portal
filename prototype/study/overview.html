@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>学习中心 · 学习概览（视觉稿）</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  /* ---------- 问候 ---------- */
+  .greet { display: flex; align-items: flex-end; justify-content: space-between; padding: 30px 0 22px; }
+  .greet h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.4px; }
+  .greet p { margin-top: 7px; font-size: 13px; color: var(--ink3); }
+  .greet p b { color: var(--accent); font-weight: 600; }
+  .greet-date { font-family: var(--serif); font-size: 12px; letter-spacing: 1.6px; color: var(--ink3); }
+  .greet-date em { font-style: normal; font-family: var(--sans); letter-spacing: 0; margin-left: 6px; }
+
+  /* ---------- 第一屏：Hero + 今日 ---------- */
+  .top-grid { display: grid; grid-template-columns: 1fr 372px; gap: 20px; align-items: stretch; }
+
+  .hero {
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #1E5375 0%, #153B57 100%);
+    border-radius: var(--radius);
+    padding: 24px 26px;
+    display: flex; gap: 26px; align-items: center;
+    color: #F3EEE2;
+    box-shadow: 0 10px 26px rgba(21, 59, 87, .14);
+  }
+  .hero:after {
+    content: ""; position: absolute; right: -60px; top: -90px;
+    width: 280px; height: 280px; border-radius: 50%;
+    background: rgba(255, 255, 255, .05);
+  }
+  .hero-info { flex: 1; min-width: 0; position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; }
+  .kicker { font-size: 10.5px; letter-spacing: 2.2px; color: rgba(243, 238, 226, .55); }
+  .hero h2 { margin-top: 9px; font-size: 21px; font-weight: 600; letter-spacing: -0.2px; color: #fff; }
+  .hero .next { margin-top: 7px; font-size: 13px; color: rgba(243, 238, 226, .68); }
+  .hero .next b { color: var(--gold); font-weight: 500; }
+  .hero .bar { margin-top: 18px; max-width: 460px; height: 5px; background: rgba(255, 255, 255, .16); }
+  .hero .bar i { background: var(--gold); }
+  .hero-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .hero-row .meta { font-size: 12px; color: rgba(243, 238, 226, .6); }
+  .hero-row .meta b { font-family: var(--serif); font-size: 15px; font-weight: 400; color: #fff; }
+  .hero-row .pill-main {
+    margin-left: auto; background: #fff; color: var(--main);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+  }
+  .hero-cover { width: 286px; flex: none; position: relative; z-index: 1; align-self: stretch; }
+  .hero-cover img {
+    width: 100%; height: 100%; min-height: 172px; object-fit: cover; border-radius: 10px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .26);
+    filter: saturate(.92) contrast(1.02);
+  }
+
+  /* 今日卡 */
+  .today { padding: 20px 22px; display: flex; flex-direction: column; }
+  .td-head { display: flex; align-items: baseline; justify-content: space-between; }
+  .td-head span { font-size: 14px; font-weight: 600; }
+  .td-head em { font-family: var(--serif); font-style: normal; font-size: 12px; letter-spacing: 1.2px; color: var(--ink3); }
+  .td-nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 14px; }
+  .td-nums div { display: flex; flex-direction: column; gap: 2px; }
+  .td-nums b { font-family: var(--serif); font-variant-numeric: lining-nums; font-size: 24px; font-weight: 400; line-height: 1.15; }
+  .td-nums div:first-child b { color: var(--accent); }
+  .td-nums i { font-style: normal; font-size: 11.5px; color: var(--ink3); }
+  .dots { margin-top: 16px; display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; }
+  .dots i { height: 10px; border-radius: 2px; background: #EFE6D6; }
+  .dots i.on { background: var(--accent); }
+  .td-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: auto; padding-top: 14px; border-top: 1px dashed var(--line);
+  }
+  .td-foot span { font-size: 12px; color: var(--ink3); }
+  .td-foot span b { font-family: var(--serif); font-size: 15px; font-weight: 400; color: var(--accent); }
+
+  /* ---------- 01 本周节奏 ---------- */
+  .rhythm { padding: 22px 24px; display: flex; gap: 34px; }
+  .rhythm-main { flex: 1; min-width: 0; position: relative; }
+  .grid-line { position: absolute; left: 0; right: 0; border-top: 1px solid #F1ECE2; z-index: 0; }
+  .bars { display: flex; align-items: flex-end; gap: 44px; height: 200px; padding-top: 6px; position: relative; z-index: 1; }
+  .bar-col { flex: 1; max-width: 92px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .bar-col .v { font-family: var(--serif); font-size: 13px; color: var(--ink2); margin-bottom: 8px; height: 18px; }
+  .bar-col .b { width: 64px; border-radius: 8px 8px 0 0; background: #D5E2EA; min-height: 3px; }
+  .bar-col.today .b { background: var(--accent); }
+  .bar-col.today .v { color: var(--accent); font-weight: 600; }
+  .bar-col .d { font-size: 12px; color: var(--ink3); margin-top: 9px; }
+  .bar-col.today .d { color: var(--accent); font-weight: 600; }
+  .target-line {
+    position: absolute; left: 0; right: 0; bottom: 46px;
+    border-top: 1px dashed var(--line-strong);
+  }
+  .target-line span {
+    position: absolute; right: 0; top: -20px;
+    font-size: 11px; color: var(--ink3); background: #fff; padding-left: 8px;
+  }
+  .rhythm-side { width: 190px; flex: none; display: flex; flex-direction: column; justify-content: center; gap: 14px; border-left: 1px solid var(--line); padding-left: 26px; }
+  .rhythm-side div { display: flex; align-items: baseline; gap: 9px; }
+  .rhythm-side b { font-family: var(--serif); font-variant-numeric: lining-nums; font-size: 22px; font-weight: 400; min-width: 46px; }
+  .rhythm-side i { font-style: normal; font-size: 12px; color: var(--ink3); }
+  .rhythm-side .warn b { color: var(--accent); }
+
+  /* ---------- 02 在学课程 ---------- */
+  .shelf { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .course { overflow: hidden; display: flex; flex-direction: column; }
+  .course .c-cover { position: relative; }
+  .course .c-cover img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--paper2); }
+  .course .tag {
+    position: absolute; left: 10px; top: 10px;
+    font-size: 10.5px; line-height: 20px; padding: 0 8px; border-radius: 5px;
+    background: rgba(21, 59, 87, .82); color: #F3EEE2; backdrop-filter: blur(4px);
+  }
+  .course .tag.plan { background: rgba(200, 137, 47, .92); }
+  .course .c-body { padding: 13px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .course h4 { font-size: 14.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .course .meta { margin-top: 5px; font-size: 12px; color: var(--ink3); }
+  .course .meta b { font-family: var(--serif); font-size: 14px; font-weight: 400; color: var(--ink); }
+  .course .bar { height: 4px; margin-top: 11px; }
+  .course .c-ops { display: flex; gap: 8px; margin-top: 12px; }
+  .course .c-ops span {
+    flex: 1; height: 32px; border-radius: 999px; display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; cursor: pointer;
+  }
+  .op-main { background: var(--main); color: #fff; }
+  .op-ghost { background: var(--paper); color: var(--ink2); border: 1px solid var(--line); }
+  .pick {
+    border: 1px dashed var(--line-strong); border-radius: var(--radius);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+    color: var(--ink3); min-height: 100%; background: #FDFCFA;
+  }
+  .pick b { font-size: 14px; font-weight: 500; color: var(--main); }
+  .pick em { font-style: normal; font-size: 12px; }
+
+  /* ---------- 03 待办 + 考试 ---------- */
+  .duo { display: grid; grid-template-columns: 1fr 420px; gap: 20px; }
+  .todo { padding: 8px 22px 14px; }
+  .todo-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 15px 0; border-bottom: 1px dashed var(--line);
+  }
+  .todo-row:last-child { border-bottom: none; }
+  .todo-row .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--main); flex: none; }
+  .todo-row .dot.due { background: var(--accent); }
+  .todo-row .txt { flex: 1; font-size: 13.5px; }
+  .todo-row .txt em { font-style: normal; color: var(--ink3); font-size: 12px; margin-left: 6px; }
+  .todo-row .go { font-size: 12.5px; color: var(--main); cursor: pointer; }
+  .exam { padding: 20px 22px; display: flex; flex-direction: column; }
+  .exam-nums { display: flex; align-items: flex-end; gap: 10px; margin-top: 12px; }
+  .exam-nums b { font-family: var(--serif); font-variant-numeric: lining-nums; font-size: 36px; font-weight: 400; line-height: 1; }
+  .exam-nums b i { font-style: normal; font-size: 13px; color: var(--ink3); margin-left: 4px; }
+  .exam-nums span { font-size: 12px; color: var(--ink3); padding-bottom: 4px; }
+  .exam-meta { margin-top: 10px; font-size: 12px; color: var(--ink3); }
+  .exam-trend { display: flex; align-items: flex-end; gap: 7px; height: 44px; margin-top: auto; padding-top: 14px; }
+  .exam-trend i { flex: 1; background: var(--main-soft); border-radius: 3px 3px 0 0; }
+  .exam-trend i.last { background: var(--main); }
+
+  /* ---------- 04 笔记 + 排行 ---------- */
+  .duo2 { display: grid; grid-template-columns: 1fr 400px; gap: 20px; align-items: stretch; }
+  .notes { padding: 4px 22px; }
+  .note-row { display: flex; align-items: center; gap: 16px; padding: 15px 0; border-bottom: 1px dashed var(--line); }
+  .note-row:last-child { border-bottom: none; }
+  .note-row .n-body { flex: 1; min-width: 0; }
+  .note-row .n-txt { font-size: 13.5px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .note-row .n-meta { margin-top: 5px; font-size: 11.5px; color: var(--ink3); display: flex; gap: 10px; }
+  .note-row .n-pos {
+    flex: none; font-family: var(--serif); font-size: 12.5px; color: var(--main);
+    background: var(--main-soft); border-radius: 5px; padding: 2px 8px;
+  }
+  .note-row .n-go { flex: none; font-size: 12.5px; color: var(--main); }
+  .rank { padding: 20px 22px; display: flex; flex-direction: column; }
+  .rk-head { display: flex; align-items: baseline; justify-content: space-between; }
+  .rk-head span { font-size: 14px; font-weight: 600; }
+  .rk-head em { font-style: normal; font-size: 11.5px; color: var(--ink3); }
+  .rk-me { display: flex; align-items: baseline; gap: 10px; margin-top: 14px; }
+  .rk-me b { font-family: var(--serif); font-variant-numeric: lining-nums; font-size: 30px; font-weight: 400; line-height: 1; }
+  .rk-me i { font-style: normal; font-size: 12px; color: var(--ink3); }
+  .rk-me span { margin-left: auto; font-family: var(--serif); font-size: 14px; color: var(--accent); }
+  .rk-list { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 8px; }
+  .rk-list div { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 12.5px; color: var(--ink2); }
+  .rk-list em { font-style: normal; width: 16px; font-family: var(--serif); color: var(--ink3); }
+  .rk-list b { margin-left: auto; font-family: var(--serif); font-size: 13px; font-weight: 400; }
+  .rk-more { margin-top: auto; padding-top: 10px; font-size: 12px; color: var(--ink3); }
+
+  /* ---------- 05 报告 + 接下来学 ---------- */
+  .duo3 { display: grid; grid-template-columns: 1fr 400px; gap: 20px; align-items: stretch; }
+  .reco { padding: 18px 22px; display: flex; flex-direction: column; }
+  .reco .rc-row { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+  .reco .rc-row:last-of-type { border-bottom: none; }
+  .reco img { width: 78px; height: 49px; object-fit: cover; border-radius: 7px; flex: none; }
+  .reco .rc-t { min-width: 0; }
+  .reco h5 { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .reco p { margin-top: 3px; font-size: 11.5px; color: var(--ink3); }
+  .reco p b { color: var(--accent); font-weight: 500; }
+
+  /* ---------- 04 报告摘要 ---------- */
+  .report { display: flex; align-items: center; gap: 34px; padding: 22px 24px; }
+  .rep-nums { display: flex; gap: 40px; flex: none; }
+  .rep-nums div { display: flex; flex-direction: column; gap: 3px; }
+  .rep-nums b { font-family: var(--serif); font-variant-numeric: lining-nums; font-size: 28px; font-weight: 400; line-height: 1.1; }
+  .rep-nums i { font-style: normal; font-size: 12px; color: var(--ink3); }
+  .rep-spark { flex: 1; min-width: 0; }
+  .rep-spark .sp { display: flex; align-items: flex-end; gap: 4px; height: 58px; }
+  .rep-spark .sp i { flex: 1; min-width: 3px; border-radius: 2px 2px 0 0; background: #EDF1F4; min-height: 2px; }
+  .rep-spark .sp i.v { background: #A3BFD0; }
+  .rep-spark .sp i.v2 { background: var(--main); }
+  .rep-spark p { margin-top: 9px; font-size: 11.5px; color: var(--ink3); display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hd">
+    <div class="logo">知微 <em>ZHIWEI</em></div>
+    <nav class="top">
+      <span>发现</span><span>探索</span><span class="on">学习</span><span>交流</span>
+    </nav>
+    <div class="search"><span>搜索课程、知识卡、话题</span><kbd>⌘K</kbd></div>
+    <div class="acts"><span>消息</span><span>购物车</span><div class="avatar">j</div></div>
+  </div>
+</header>
+
+<!-- 学习中心壳：顶部 tab + 右侧本周速览 -->
+<div class="subnav">
+  <div class="wrap subnav-in">
+    <div class="tabs">
+      <span class="on">学习概览</span>
+      <span>我的课程</span>
+      <span>我的考试</span>
+      <span>学习报告</span>
+    </div>
+    <div class="subnav-r">
+      <span>本周 <b>3</b>/<b>4</b> 节</span>
+      <i class="sep"></i>
+      <span class="accent">连续 <b>5</b> 天</span>
+      <i class="sep"></i>
+      <span>今日 <b>0</b> 分</span>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <div class="greet">
+    <div>
+      <h1>下午好，jack</h1>
+      <p>第 47 周 · 本周还差 <b>1 节</b>达标，接着上次的进度继续</p>
+    </div>
+    <div class="greet-date">2026 / 11 / 21<em>周五</em></div>
+  </div>
+
+  <!-- 第一屏 -->
+  <div class="top-grid">
+    <div class="hero">
+      <div class="hero-info">
+        <span class="kicker">继续学习 · 第 1 章 带你玩</span>
+        <h2>课程1 · JavaEE 极速就业班</h2>
+        <p class="next">下一节 <b>第一章 带你玩-第1课</b></p>
+        <div class="bar"><i style="width:42%"></i></div>
+        <div class="hero-row">
+          <span class="meta">已学 <b>5</b> / 12 节 · 还剩 7 节</span>
+          <span class="pill pill-main">继续学习 →</span>
+        </div>
+      </div>
+      <div class="hero-cover"><img src="../img/code.jpg" alt=""></div>
+    </div>
+
+    <aside class="today card">
+      <div class="td-head"><span>今天</span><em>11 / 21</em></div>
+      <div class="td-nums">
+        <div><b>0</b><i>今日积分</i></div>
+        <div><b>5</b><i>连续打卡</i></div>
+        <div><b>3</b><i>在学课程</i></div>
+      </div>
+      <div class="dots">
+        <i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i>
+        <i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i>
+        <i class="on"></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
+      <div class="td-foot">
+        <span>本月打卡 <b>14</b> 天</span>
+        <span class="pill pill-main pill-sm">签到 +5 分</span>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 01 本周节奏 -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-l">
+        <span class="idx">01</span>
+        <div>
+          <h3>本周节奏</h3>
+          <p>最近 7 天每天完成的小节数，虚线是日均目标</p>
+        </div>
+      </div>
+      <span class="sec-r">目标 <b>4</b> 节 · 已完成 <b>3</b> 节</span>
+    </div>
+    <div class="rhythm card">
+      <div class="rhythm-main">
+        <div class="target-line"><span>日均目标 0.6 节</span></div>
+        <div class="bars">
+          <div class="bar-col"><span class="v"></span><div class="b" style="height:3px;opacity:.45"></div><span class="d">周一</span></div>
+          <div class="bar-col"><span class="v">1</span><div class="b" style="height:68px"></div><span class="d">周二</span></div>
+          <div class="bar-col"><span class="v"></span><div class="b" style="height:3px;opacity:.45"></div><span class="d">周三</span></div>
+          <div class="bar-col"><span class="v">2</span><div class="b" style="height:136px"></div><span class="d">周四</span></div>
+          <div class="bar-col"><span class="v"></span><div class="b" style="height:3px;opacity:.45"></div><span class="d">周五</span></div>
+          <div class="bar-col"><span class="v"></span><div class="b" style="height:3px;opacity:.45"></div><span class="d">周六</span></div>
+          <div class="bar-col today"><span class="v">今天</span><div class="b" style="height:3px"></div><span class="d">周日</span></div>
+        </div>
+      </div>
+      <div class="rhythm-side">
+        <div><b>3</b><i>本周完成（节）</i></div>
+        <div><b>0.4</b><i>日均（节）</i></div>
+        <div class="warn"><b>1</b><i>距目标还差（节）</i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 在学课程 -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-l">
+        <span class="idx">02</span>
+        <div>
+          <h3>在学课程</h3>
+          <p>最近在学的 3 门 · 总共 12 门课</p>
+        </div>
+      </div>
+      <span class="more">查看全部课程 <i></i></span>
+    </div>
+    <div class="shelf">
+      <div class="course card">
+        <div class="c-cover">
+          <img src="../img/code.jpg" alt="">
+          <span class="tag">学习中</span>
+        </div>
+        <div class="c-body">
+          <h4>课程1 · JavaEE 极速就业班</h4>
+          <p class="meta">12 节 · 已学 <b>5</b> 节 · 还剩 7 节</p>
+          <div class="bar"><i style="width:42%"></i></div>
+          <div class="c-ops"><span class="op-main">继续学习</span><span class="op-ghost">修改计划</span></div>
+        </div>
+      </div>
+      <div class="course card">
+        <div class="c-cover">
+          <img src="../img/topic2.jpg" alt="">
+          <span class="tag plan">计划中</span>
+        </div>
+        <div class="c-body">
+          <h4>木老师的吉他入门</h4>
+          <p class="meta">12 节 · 已学 <b>3</b> 节 · 还剩 9 节</p>
+          <div class="bar"><i style="width:25%"></i></div>
+          <div class="c-ops"><span class="op-main">继续学习</span><span class="op-ghost">修改计划</span></div>
+        </div>
+      </div>
+      <div class="course card">
+        <div class="c-cover">
+          <img src="../img/laptop.jpg" alt="">
+          <span class="tag">未开始</span>
+        </div>
+        <div class="c-body">
+          <h4>计算机基础 · 操作系统</h4>
+          <p class="meta">28 节 · 已学 <b>0</b> 节 · 还剩 28 节</p>
+          <div class="bar"><i style="width:0"></i></div>
+          <div class="c-ops"><span class="op-main">马上学习</span><span class="op-ghost">创建计划</span></div>
+        </div>
+      </div>
+      <div class="pick">
+        <b>去选一门新课</b>
+        <em>课程首页有 300+ 门课</em>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 待办 + 考试 -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-l">
+        <span class="idx">03</span>
+        <div>
+          <h3>今天要做的</h3>
+          <p>只列真正会影响进度和有效期的</p>
+        </div>
+      </div>
+    </div>
+    <div class="duo">
+      <div class="todo card">
+        <div class="todo-row">
+          <span class="dot"></span>
+          <span class="txt">本周计划还差 <b>1</b> 节 <em>改到「我的课程」里调整周目标</em></span>
+          <span class="go">去学习 →</span>
+        </div>
+        <div class="todo-row">
+          <span class="dot due"></span>
+          <span class="txt">「木老师的吉他入门」<b>6</b> 天后到期 <em>还剩 9 节没学</em></span>
+          <span class="go">查看课程 →</span>
+        </div>
+        <div class="todo-row">
+          <span class="dot"></span>
+          <span class="txt">上次考试「第 2 章 索引」得分 <b>82</b> <em>3 道错题未复盘</em></span>
+          <span class="go">看解析 →</span>
+        </div>
+      </div>
+      <div class="exam card">
+        <span class="sec-sub" style="font-size:12.5px;color:var(--ink3)">最近一次考试</span>
+        <div class="exam-nums">
+          <b>82<i>分</i></b>
+          <span>正确率 76% · 用时 24 分钟</span>
+        </div>
+        <p class="exam-meta">课程1 · 第 2 章 索引与查询优化</p>
+        <div class="exam-trend">
+          <i style="height:26%"></i><i style="height:54%"></i><i style="height:42%"></i>
+          <i style="height:70%"></i><i style="height:62%"></i><i style="height:88%"></i><i class="last" style="height:82%"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 报告摘要 -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="sec-l">
+        <span class="idx">04</span>
+        <div>
+          <h3>学习报告</h3>
+          <p>近 30 天的三个关键数字，详细数据在报告页</p>
+        </div>
+      </div>
+    </div>
+    <div class="report card">
+      <div class="rep-nums">
+        <div><b>15</b><i>累计学习（节）</i></div>
+        <div><b>3</b><i>活跃天数（天）</i></div>
+        <div><b>3</b><i>完成课程（门）</i></div>
+        <div><b>82</b><i>考试均分（分）</i></div>
+      </div>
+      <div class="rep-spark">
+        <div class="sp">
+          <i></i><i></i><i></i><i class="v" style="height:22px"></i><i></i><i></i><i></i><i></i>
+          <i></i><i class="v" style="height:16px"></i><i></i><i></i><i></i><i class="v" style="height:34px"></i>
+          <i></i><i></i><i class="v" style="height:12px"></i><i></i><i></i><i></i>
+          <i class="v" style="height:26px"></i><i></i><i class="v2" style="height:46px"></i><i></i><i></i>
+          <i class="v" style="height:18px"></i><i></i><i></i><i class="v" style="height:30px"></i><i></i><i class="v" style="height:14px"></i>
+        </div>
+        <p><span>近 30 天 · 每天完成的小节</span><span>少 → 多</span></p>
+      </div>
+      <span class="pill pill-ghost">完整报告 →</span>
+    </div>
+  </section>
+
+  <div class="foot-gap"></div>
+</main>
+
+</body>
+</html>

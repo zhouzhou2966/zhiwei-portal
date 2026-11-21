@@ -4,6 +4,21 @@
     .el-table, .el-table thead{
         color: var(--color-font1);
     }
+    // 课程练习入口条：P0 不做精确的「待考 N 个」，先给一个去课程页的入口
+    .examTodoTip{
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: var(--color-background5);
+        font-size: 13px;
+        color: var(--color-font2);
+        .font-bt{
+            cursor: pointer;
+        }
+    }
 }
 // 我的考试 - 详情
 .myExamDetails{

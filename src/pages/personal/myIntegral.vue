@@ -3,13 +3,39 @@
   <div class="myInterralWrapper">
     <div class="personalCards">
       <CardsTitle class="marg-bt-20" title="我的积分" />
-      <div class="title"></div>
+      <!-- 概览条：进这个页面第一个要回答的是「我有多少分、排第几、打卡了没」，
+           原来这三个数字埋在榜单表格和日历的角标里，谁都没被当成主角 -->
+      <div class="statGrid">
+        <div class="stat">
+          <p class="statLabel">赛季积分</p>
+          <p class="statVal">
+            <template v-if="rankStatus === 'ok' && seasonsData.points != null">{{ seasonsData.points }}<em>分</em></template>
+            <template v-else-if="rankStatus === 'ok'">0<em>分</em></template>
+            <template v-else>-</template>
+          </p>
+        </div>
+        <div class="stat">
+          <p class="statLabel">当前排名</p>
+          <p class="statVal">
+            <template v-if="rankStatus === 'ok' && seasonsData.rank">{{ seasonsData.rank }}<em>名</em></template>
+            <template v-else-if="rankStatus === 'ok'"><em class="noRank">未上榜</em></template>
+            <template v-else>-</template>
+          </p>
+        </div>
+        <div class="stat">
+          <p class="statLabel">本月打卡</p>
+          <p class="statVal">
+            <template v-if="monthSigned != null">{{ monthSigned }}<em>天</em></template>
+            <template v-else>-</template>
+          </p>
+        </div>
+      </div>
       <!-- 打卡日历 -->
-      <Calendar @pointsSign="pointsSignHandle"></Calendar>
+      <Calendar @pointsSign="pointsSignHandle" @signed="n => monthSigned = n"></Calendar>
       <!-- 积分获取 -->
       <div class="listCont fx-sb">
         <div class="list">
-          <div class="tit">获取积分</div>
+          <div class="tit">每日积分</div>
           <!-- 拿不到就直说，不要摆一排 0/50 假装今天一分没得。
                加载中数据区留白，占位小字靠 .fadeInDelay 延迟 150ms 才淡入（见 .blkLoad）：
                接口 20~80ms 就返回，画骨架只会让灰条闪一下就消失，比留白更晃眼。 -->
@@ -20,9 +46,11 @@
             <span class="blkTip fadeInDelay">正在加载…</span>
           </div>
           <div class="tab" v-else>
-            <div class="item fx-sb" v-for="item in access" :key="item.type">
-              <span>{{item.type}}</span>
-              <span>{{item.points}}/{{item.maxPoints}}</span>
+            <div class="item" v-for="item in access" :key="item.type">
+              <span class="nm">{{item.type}}</span>
+              <!-- 进度条：完成度一眼可见，不用逐行对数字 -->
+              <div class="bar"><i :style="{width: pct(item)}"></i></div>
+              <span class="pts"><b>{{item.points}}</b>/{{item.maxPoints}}</span>
             </div>
           </div>
         </div>
@@ -64,6 +92,11 @@ import InlineError from "@/components/InlineError.vue"
 
 const route = useRoute()
 const store = dataCacheStore()
+
+// 概览条的「本月打卡」天数，由日历组件 @signed 回传（Calendar 内部从打卡数据里数）
+const monthSigned = ref(null)
+// 任务进度条宽度：上限封顶 100%（课程评价的 maxPoints 是 999，不封顶会出现小数宽度）
+const pct = (item) => Math.min((item.points / item.maxPoints) * 100, 100) + '%'
 
 const value = ref(new Date())
 

@@ -2,20 +2,60 @@
 .myInterralWrapper, .myInterralRankingWrapper{
     // 打卡日历：占位（加载中 / 加载失败共用 .blkLoad）撑到日历「数据区」的真实高度，
     // 让三态高度一致 —— 三态一样高，切换时下面的内容才不会上下跳。
-    // 291 = 表头 41 + 6 周 × 41.7（实测 .calendar 整体 336，其中顶部月份行 + 下边距占 45，
-    // 而占位是挂在月份行下面的，所以要减掉这 45）。5 周的月份会矮 42px，可接受。
-    .calendar > .blkLoad{ min-height: 291px; }
+    // 343 = 表头 ~31 + 6 行 × 52。5 周的月份会矮 52px，可接受。
+    .calendar > .blkLoad{ min-height: 343px; }
+    // 概览条：赛季积分 / 排名 / 本月打卡 —— 页面开头的三个主角数字
+    .statGrid{
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 18px;
+    }
+    .stat{
+        background: var(--color-background5);
+        border-radius: 10px;
+        padding: 14px 20px;
+    }
+    .statLabel{
+        font-size: 13px;
+        color: var(--color-font3);
+    }
+    .statVal{
+        margin-top: 4px;
+        font-size: 26px;
+        font-weight: 600;
+        color: var(--color-font1);
+        em{
+            font-style: normal;
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--color-font3);
+            margin-left: 4px;
+        }
+        .noRank{
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--color-font3);
+        }
+    }
+    // 日历包进自己的卡片：白卡里再摊一片无边框格子，读起来像「一堆内容在一起」，
+    // 边界是靠容器给的
+    .calendar{
+        border: 1px solid var(--color-background2);
+        border-radius: 10px;
+        padding: 18px 24px 20px;
+        background: #fff;
+    }
     .listCont{
-       // 获取积分：5 行固定 × 103 ≈ 516（实测），三态同高，理由同日历。
-       .list > .blkLoad{ min-height: 516px; }
-       // 天梯榜不固定高度：行数跟着榜单人数走（实测 2 人 = 183、满屏 = 514），
-       // 固定一个值反而会在「加载中 → 正常」时缩一截。用 .blkLoad 默认的 132，
-       // 失败卡本身约 140，两者基本等高；数据回来时向下长出来，属于正常的「内容到了」。
+       // 获取积分：5 行 × ~53 ≈ 265，三态同高
+       .list > .blkLoad{ min-height: 265px; }
+       // 天梯榜不固定高度：行数跟着榜单人数走（用 .blkLoad 默认的 132，
+       // 数据回来时向下长出来，属于正常的「内容到了」）。
        .list, .listRt{
          width: calc(50% - 15px);
          .tit{
-            margin: 30px 0 15px 0;
-            line-height: 40px;
+            margin: 26px 0 10px 0;
+            line-height: 32px;
             font-weight: 600;
             .more{
                 font-weight: 400;
@@ -23,25 +63,59 @@
                 color: var(--color-main);
             }
          }
+         // 任务列表 / 榜单各自包卡片，和日历同一套容器语言
          .tab{
-            border-top: solid 1px #eeeeee;
-            border-left: solid 1px #eeeeee;
+            border: 1px solid var(--color-background2);
+            border-radius: 10px;
+            padding: 4px 18px 6px;
+            background: #fff;
             .item{
-                border-right: solid 1px #eeeeee;
-                border-bottom: solid 1px #eeeeee;
-                padding: 35px 30px;
-                font-weight: 600;
-                line-height: 32px;
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 13px 2px;
+                border-bottom: 1px dashed var(--color-background2);
+                .nm{
+                    flex: none;
+                    font-size: 14px;
+                    font-weight: 500;
+                    color: var(--color-font1);
+                }
+                // 完成度进度条：不用逐行对数字
+                .bar{
+                    flex: 1;
+                    height: 4px;
+                    border-radius: 2px;
+                    background: var(--color-background3);
+                    overflow: hidden;
+                    i{
+                        display: block;
+                        height: 100%;
+                        background: var(--color-main);
+                        border-radius: 2px;
+                    }
+                }
+                .pts{
+                    flex: none;
+                    font-size: 13px;
+                    color: var(--color-font3);
+                    b{
+                        font-size: 15px;
+                        font-weight: 600;
+                        color: var(--color-font1);
+                    }
+                }
             }
-            .bt{
-                width: 90px;
-                height: 32px;
-                line-height: 32px;
-                border-radius: 32px;
-                background: var(--color-error);
-                font-size: 14px;
-                font-weight: 400;
+            .item:last-child{
+                border-bottom: none;
             }
+         }
+         // 榜单容器（组件本身无边框，边界由使用处给，天梯榜页不受影响）
+         .integralRankTab{
+            border: 1px solid var(--color-background2);
+            border-radius: 10px;
+            padding: 6px 14px;
+            background: #fff;
          }
        }
     }

@@ -1,80 +1,90 @@
-<!-- 个人中心 - 左侧导航  -->
+<!-- 侧栏导航（学习中心 /personal 与 个人中心 /account 共用组件）
+     学习中心：三段式 —— ① 顶部标识（学习中心 / 第 N 周）② 纯文字导航 ③ 本周目标卡 + 打卡点阵
+     个人中心：头像卡 + 图标导航（无数据卡 —— 学习语义不进个人中心）
+     导航项由「当前路由 matched[1].children」派生（syncNav），两个区零复制 -->
 <template>
   <div class="LeftNav">
-    <!-- 用户区：头像 + 昵称 + 在学门数，替代原来「纯链接列表」的空白头部 -->
-    <div class="meCard">
+    <!-- 个人中心：用户卡。学习中心这侧不要头像 —— 「在学 N 门」是最像个人中心的一行 -->
+    <div class="meCard" v-if="isAccount">
       <img v-if="userIcon" class="meAvatar" :src="userIcon" alt="" @error="iconBroken = true">
       <div v-else class="meAvatar meAvatarTxt">{{ initial }}</div>
       <div class="meInfo">
         <div class="meName">{{ userName }}</div>
-        <!-- 没取到就显示「—」，不要拿默认值 0 冒充「你没有课」 -->
-        <div class="meSub">在学 {{ overview.courseReady ? overview.courseCount + ' 门' : '—' }}</div>
       </div>
     </div>
+    <!-- 学习中心：顶部标识 -->
+    <div class="brandCard" v-else>
+      <p class="brandTitle">学习中心</p>
+      <p class="brandWeek">第 {{ weekNo }} 周</p>
+    </div>
 
-    <!-- 主导航：图标在左、文字在中，选中态用浅主色底，不再用 border-bottom 分隔 -->
+    <!-- 导航：/account 带图标，/personal 纯文字 + 左侧竖条高亮 -->
     <nav class="nav">
       <router-link class="navItem" :class="{'on': activeClass(item)}" v-for="item in personalRoute"
                    :key="item.path" :to="toOf(item)">
-        <svg class="i" viewBox="0 0 24 24" v-html="iconOf(item.name)"></svg>
+        <svg class="i" v-if="isAccount" viewBox="0 0 24 24" v-html="iconOf(item.name)"></svg>
         <span>{{item.meta.title}}</span>
       </router-link>
     </nav>
 
-    <!-- 学习概览：原来占着内容区顶部一整行的三块统计，挪到这里填掉侧边栏下半截空白。
-         这些数字是账号级的（跟当前停在哪个子页无关），所以所有个人中心页都常驻显示；
-         数据没回来之前显示「-」，不先摆一个 0 上去假装是真实值 -->
-    <div class="ovCard">
-      <div class="ovHead">学习概览</div>
-      <div class="ovRow">
-        <span class="ovLabel">在学课程</span>
-        <span class="ovVal hl">
-          <template v-if="overview.courseReady">{{ overview.courseCount }}<em>门</em></template>
-          <template v-else>-</template>
-        </span>
-      </div>
-      <div class="ovRow">
-        <!-- 分子是「本周实际完成的小节数」（跨所有课），分母是「每周目标节数之和」。
-             原来 label 写「本周计划」+ 值「4 / 1」，读起来像「计划 1 个却完成 4 个」的矛盾；
-             改成「已学 + 目标」两个词各就各位（和我的课程页头保持同一口径） -->
-        <span class="ovLabel">本周已学</span>
-        <span class="ovVal">
-          <template v-if="overview.weekReady">{{ overview.weekFinished }}<em>/ 目标 {{ overview.weekPlan }}</em></template>
-          <template v-else>-</template>
-        </span>
-      </div>
-      <div class="ovRow">
-        <span class="ovLabel">本周积分</span>
-        <span class="ovVal">{{ overview.weekReady ? overview.weekPoints : '-' }}</span>
-      </div>
-    </div>
+    <!-- 学习中心数据区：本周目标 + 当月打卡。/account 下不显示 —— 学习语义不进个人中心 -->
+    <SidebarGoal v-if="!isAccount"></SidebarGoal>
+    <StreakDots v-if="!isAccount"></StreakDots>
   </div>
 </template>
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import dayjs from '@/utils/date'
 import { useUserStore } from '@/store'
-import { ensureOverview, useClassOverview } from '../useClassOverview'
+import { ensureOverview } from '../useClassOverview'
+import SidebarGoal from './SidebarGoal.vue'
+import StreakDots from './StreakDots.vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-const overview = useClassOverview()
+
+// 当前是否停在个人中心（/account）：头像卡、图标、数据卡的显示开关都靠它
+const isAccount = computed(() => route.path.startsWith('/account'))
+
+/**
+ * 导航项跟随当前区刷新。
+ *
+ * 学习中心（/personal）和个人中心（/account）共用这一个壳组件实例 ——
+ * 跨区切换时 vue-router 复用组件、不重新挂载，只在 onMounted 里读一次
+ * matched[1].children 的话，从个人中心切回学习中心时侧栏还挂着上一区的页面清单。
+ * 监听 matched[1] 变化重取：同区切子页时引用不变、不重跑，跨区才会刷新。
+ */
+const syncNav = () => {
+  const shell = route.matched[1]
+  personalRoute.value = shell ? shell.children.filter(n => n.meta && !n.meta.hidden) : []
+}
 // 使用路由
 const personalRoute = ref([])
+watch(() => route.matched[1], syncNav, { immediate: true })
 
 /**
  * 当前高亮项取路由上的 meta.active，而不是「路径最后一段」。
  *
- * 原来的写法是 route.path.split('/').at(-1)，再拿它去和每个导航项的 meta.active 做前缀匹配。
- * 对 /personal/main/myClass 这种一级子页面刚好等价，但「全部课程」的路径是
- * /personal/main/myClass/all，最后一段是 all，高亮会直接丢掉。
- * meta.active 是路由自己声明的归属，比从路径反推更准，也支持任意层级。
+ * 「全部课程」的路径是 /personal/main/myClass/all，最后一段是 all，按路径反推高亮会丢；
+ * meta.active 是路由自己声明的归属，支持任意层级。
  */
 const activeKey = computed(() => route.meta.active || route.path.split('/').at(-1))
 const activeClass = computed(() => item => item.meta.active === activeKey.value)
 
-// 概览卡：常驻，不再限定页面 —— 见 useClassOverview.ensureOverview 的说明
+// 概览数据补齐：所有页面统一兜底（课程页不再自己写概览数据，例外判断已删）。
+// 跨区切换 / 跨页切换都要补 —— 同一天 ensureOverview 直接 return，零请求。
+onMounted(() => {
+  if (!isAccount.value) {
+    ensureOverview()
+  }
+})
+watch(() => route.fullPath, () => {
+  if (!isAccount.value) {
+    ensureOverview()
+  }
+})
 
 /**
  * 导航目标一律按 name 解析（绝对定位），不要用 item.path。
@@ -84,23 +94,19 @@ const activeClass = computed(() => item => item.meta.active === activeKey.value)
  *   停在 /personal/main/myExam      → 'myExam' 拼成 /personal/main/myExam      ✅
  *   停在 /personal/main/myClass/all → 'myExam' 拼成 /personal/main/myClass/myExam ❌
  * 后者没有对应路由，会落进 router/index.js 的 `/:w+` 兜底被静默重定向到 /result/404。
- * 「全部课程」是 main 的直接子路由但 path 带斜杠，深度比兄弟节点多一层，所以只有它会踩到。
  */
 const toOf = item => (item.name ? { name: item.name } : item.path)
 
-/** 导航图标 **/
-// 路由 meta.icon 存的是 iconfont 码位，这里换成线性 SVG：30px 的图标字重和 15px 文字不匹配，
-// 而且 iconfont 里没有「课程/订单」这类语义准确的图形。按路由名映射，缺的走默认圆点。
+/** 导航图标（仅 /account 使用） **/
 const ICONS = {
-  myClass: '<path d="M4 5.6A1.6 1.6 0 0 1 5.6 4H10a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H5.6A1.6 1.6 0 0 1 4 15.4z"/><path d="M20 5.6A1.6 1.6 0 0 0 18.4 4H14a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h4.4a1.6 1.6 0 0 0 1.6-1.6z"/>',
-  myExam: '<rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 3.5h6v3H9z"/><path d="M9 13l2 2 4-4.5"/>',
   myOrder: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9.5 8.5h5M9.5 12.5h5"/>',
   myCoupon: '<path d="M3 9.2V7.2A1.2 1.2 0 0 1 4.2 6h15.6A1.2 1.2 0 0 1 21 7.2v2a2.4 2.4 0 0 0 0 5.6v2a1.2 1.2 0 0 1-1.2 1.2H4.2A1.2 1.2 0 0 1 3 16.8v-2a2.4 2.4 0 0 0 0-5.6z"/><path d="M14.5 6.4v11.2" stroke-dasharray="2.4 2.4"/>',
   myIntegral: '<path d="M12 3.6l2.6 5.5 6 .9-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 10l6-.9z"/>',
+  mySet: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.6 5.6l1.9 1.9M16.5 16.5l1.9 1.9M18.4 5.6l-1.9 1.9M7.5 16.5l-1.9 1.9"/>',
 }
 const iconOf = name => ICONS[name] || '<circle cx="12" cy="12" r="7.5"/>'
 
-/** 用户区 **/
+/** 用户区（/account） **/
 const userInfo = computed(() => userStore.getUserInfo || {})
 const userName = computed(() => userInfo.value.name || '未登录')
 // 头像加载失败要退回文字头像，否则会留一个空白圆圈
@@ -108,28 +114,10 @@ const iconBroken = ref(false)
 const userIcon = computed(() => (iconBroken.value ? '' : userInfo.value.icon || ''))
 const initial = computed(() => (userName.value || '?').slice(0, 1))
 
-onMounted(() => {
-  const currentRoute = router.currentRoute.value
-  // 获取个人中心的子路由作为导航
-  personalRoute.value = currentRoute.matched[1].children.filter(n => n.meta && !n.meta.hidden)
-  // 停在「我的课程」时不用补 —— 那个页面本来就会拉全量数据写进概览，再补一次就是重复请求。
-  // 其他页面（我的考试/订单/优惠券/积分）侧边栏要自己把概览和最近学习补齐，否则下半截全空。
-  // ⚠️ 这里判的是路由 name，不是 activeKey：「全部课程」(`myClass/all`) 的 meta.active 也是 myClass，
-  // 用 activeKey 判会把它误当成「我的课程」跳过，而它并不写概览 → 直接进/刷新该页时侧栏全是「-」。
-  if (route.name !== 'myClass') {
-    ensureOverview()
-  }
-})
+// 周数（「学习中心 / 第 N 周」）。isoWeek 插件已在 utils/date 里注册
+const weekNo = dayjs().isoWeek()
 
-// 个人中心内部切页不会重新挂载 LeftNav，onMounted 只跑一次。
-// 这里补一个路由监听：跨天之后再切页会把概览重拉一遍（同一天 ensureOverview 直接 return，零请求）。
-watch(() => route.fullPath, () => {
-  if (route.name !== 'myClass') {
-    ensureOverview()
-  }
-})
-
-// 退出登录已移至顶部头像下拉菜单（components/Header.vue），此处不再保留入口
+// 退出登录已移至「个人设置」页，此处不再保留入口
 </script>
 <style lang="scss" scoped>
 .LeftNav{
@@ -139,14 +127,13 @@ watch(() => route.fullPath, () => {
   // 所以这里不需要 sticky —— 侧栏天然固定不动。
   // align-self 必须留着：父级 align-items:stretch 会把侧栏拉成和内容区等高
   align-self: flex-start;
-  // 用户卡 + 导航 + 概览 + 最近学习加起来接近一屏（1440×900 实测 776px / 内容区 778px），
-  // 窗口再矮就会被裁掉底部（「继续学习」按钮看不见）。给个上限让它自己内部滚。
+  // 用户卡 + 导航 + 数据卡加起来可能超过一屏，窗口矮的时候让它自己内部滚
   max-height: 100%;
   overflow-y: auto;
   scrollbar-width: thin;
 }
 
-/* ① 用户区 */
+/* ① 用户卡（/account） */
 .meCard{
   position: relative;
   overflow: hidden;
@@ -197,29 +184,40 @@ watch(() => route.fullPath, () => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.meSub{
-  margin-top: 2px;
-  font-size: 12px;
-  line-height: 18px;
-  color: rgba(255, 255, 255, .72);
+
+/* ① 顶部标识（学习中心） */
+.brandCard{
+  padding: 14px 4px 2px;
+  .brandTitle{
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--color-font1);
+  }
+  .brandWeek{
+    margin-top: 3px;
+    font-size: 11px;
+    color: var(--color-font3);
+  }
 }
 
 /* ② 主导航 */
 .nav{
-  margin-top: 16px;
+  margin-top: 12px;
   padding: 8px;
   background: #fff;
   border: 1px solid var(--color-background2);
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(26, 29, 33, .04);
 }
+/* 左侧竖条高亮：两个区同一套语言，选中的是「这一项」，不是「这块底色」 */
 .navItem{
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 48px;
-  padding: 0 14px;
-  border-radius: 8px;
+  height: 44px;
+  padding: 0 12px;
+  border-left: 2px solid transparent;
+  border-radius: 0 8px 8px 0;
   font-size: 15px;
   color: var(--color-font2);
   transition: background-color .2s, color .2s;
@@ -232,6 +230,7 @@ watch(() => route.fullPath, () => {
     background: var(--color-main-light);
     color: var(--color-main);
     font-weight: 600;
+    border-left-color: var(--color-main);
     .i{
       stroke: var(--color-main);
     }
@@ -248,48 +247,9 @@ watch(() => route.fullPath, () => {
   stroke-linejoin: round;
 }
 
-/* ③ 学习概览 */
-.ovCard{
-  margin-top: 16px;
-  padding: 4px 18px;
-  background: #fff;
-  border: 1px solid var(--color-background2);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(26, 29, 33, .04);
-}
-.ovHead{
-  padding: 14px 0 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-font2);
-}
-.ovRow{
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-top: 1px dashed var(--color-background2);
-  &:first-of-type{
-    border-top: none;
-  }
-}
-.ovLabel{
-  font-size: 13px;
-  color: var(--color-font2);
-}
-.ovVal{
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--color-font1);
-  em{
-    margin-left: 3px;
-    font-style: normal;
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--color-font2);
-  }
-  &.hl{
-    color: var(--color-main);
-  }
+/* ③ 数据卡（/personal）：与 .nav 同一套卡片语言 */
+.sidebarGoal,
+.streakDots{
+  margin-top: 14px;
 }
 </style>

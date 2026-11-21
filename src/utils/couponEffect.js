@@ -4,6 +4,7 @@
  * 单独抽出来的原因：档位判断（系统偏好、设备能力）和券面数据映射都不该散在模板里，
  * 而且组件里要重复调用，放在 setup 中反复 matchMedia 也会拖慢首次渲染。
  */
+import { parseDate } from './date'
 
 /**
  * 系统是否开启「减少动态效果」。
@@ -53,6 +54,28 @@ export function couponFace(coupon = {}) {
  */
 export function isCouponRenderable(coupon) {
   return !!coupon && (!!coupon.name || Number(coupon.discountValue) > 0)
+}
+
+const DAY_MS = 86400000
+
+/**
+ * 距券到期的天数（向上取整）；没有合法到期时间返回 null。
+ *
+ * 向上取整：今天 23:00 到期 → 0（今天到期）、明天 10:00 到期 → 1（1 天后到期），
+ * 两种口径都能落到正确的整数上。
+ * 卡片上的有效期文案和页面顶部的「即将到期」提示都走这一个函数 ——
+ * 两处各写一遍必然会出现「卡片说 3 天后到期、顶部说 2 天」的分裂。
+ */
+export function couponDaysLeft(termEndTime) {
+  const end = parseDate(termEndTime)
+  if (!end.isValid()) return null
+  return Math.ceil((end.valueOf() - Date.now()) / DAY_MS)
+}
+
+/** 是否落在「即将过期」窗口内（0~days 天）。已经过期的返回 false，不该再提示「快到期」 */
+export function couponExpiringSoon(coupon, days = 7) {
+  const left = couponDaysLeft(coupon && coupon.termEndTime)
+  return left !== null && left >= 0 && left <= days
 }
 
 /** 券名里描述优惠条件的那一段：满199减50 / 满99元打8.5折 / 每满100元减10元，不超过50元 */

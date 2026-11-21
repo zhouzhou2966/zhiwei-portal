@@ -3,27 +3,118 @@
     .personalCards{
         padding-bottom: 0px;
     }
-    .headTop{
-        .fx{
-            span{
-                display: inline-block;
-                width: 140px;
-                text-align: right;
-                line-height: 28px;
-            }
+    // 页头：标题在左，三个入口在右。
+    // 「领券中心」做成描边胶囊 —— 它是页面里唯一的正向获券入口，
+    // 重要性高于「兑换 / 使用说明」两个文字链，不该混在同一排灰字里
+    .couponHead{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+    .cpTitle{
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--color-font1);
+    }
+    .cpActs{
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        white-space: nowrap;
+    }
+    .cpGo{
+        padding: 0 14px;
+        height: 30px;
+        line-height: 28px;
+        border-radius: 15px;
+        border: 1px solid var(--color-main);
+        color: var(--color-main);
+        font-size: 13px;
+        cursor: pointer;
+        transition: background-color .15s, color .15s;
+        &:hover{
+            background: var(--color-main);
+            color: #fff;
+        }
+    }
+    .cpLink{
+        font-size: 13px;
+        color: var(--color-font2);
+        cursor: pointer;
+        transition: color .15s;
+        &:hover{
+            color: var(--color-main);
+        }
+    }
+    .cpTabs{
+        padding-top: 22px;
+    }
+    // 即将到期提示条：券是过期作废的资产，这是列表上方最该出现的一句话。
+    // 暖色底但不抢戏 —— 它是提醒，不是错误
+    .cpWarn{
+        margin-top: 16px;
+        padding: 9px 14px;
+        border-radius: 6px;
+        background: #FCF6E8;
+        border: 1px solid #F0E3C4;
+        font-size: 12px;
+        line-height: 20px;
+        color: #8C6D1F;
+        em{
+            font-style: normal;
+            font-weight: 500;
+        }
+        .dot{
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--color-warning);
+            margin-right: 8px;
+            vertical-align: 2px;
         }
     }
     .myCouponItems{
-        padding-top:40px;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        // 空状态：这块吃掉卡内剩余高度，让「一条数据也没有」在卡里垂直居中，
-        // 而不是贴在上半截、下半截一大片白。有券时不加这个 class，卡片仍从顶部排。
+        // 自动列数：内容区放得下两个 340px 列就是两列，放不下自动并成单列。
+        // 原来 flex + 卡片写死 calc(50% - 18px)，窄屏只会横向溢出；
+        // 而且 minmax 跟着内容区宽度走，比按窗口宽的媒体查询判断得更准
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 18px;
+        padding-top: 24px;
+        // 只有一张券时占满整行：半宽的孤卡 + 半页空白是原来最难看的一幕
+        &.is-one{
+            grid-template-columns: 1fr;
+        }
         &.is-empty{
-            flex: 1;
-            align-content: center;
+            // 空状态只有一个子元素：不能留在 grid 的第一列里靠左站着，要占整行、内容居中
+            display: block;
             padding-top: 0;
+            .nodata{
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+                min-height: 300px;
+                padding-top: 24px;
+                .empty{
+                    // Empty 组件写死 height:100%，在列向 flex 里会撑到底
+                    height: auto;
+                }
+            }
+        }
+        .emptySub{
+            font-size: 13px;
+            color: var(--color-font3);
+        }
+        .couponTruncateTip{
+            grid-column: 1 / -1;
+            text-align: center;
+        }
+        .couponPager{
+            grid-column: 1 / -1;
+            justify-content: center;
+            padding: 6px 0 24px;
         }
     }
     .exchangeCoupon{

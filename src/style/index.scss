@@ -6,6 +6,11 @@
 @use './tokens.scss';
 @use './element/index.scss';
 
+// ⚠️ 这里原来有 `min-width: 1220px`，是定宽时代的遗留。
+// 现在 .container 已经是流式（min(1280px, 100% - 80px)），两者冲突：
+// 窗口 1080 时 body 仍被撑在 1220，整页都会横向滚动，而 .container 明明还能收。
+// 需要最小宽度的页面（首页四列课程卡那些）自己在页面根节点上声明，不要再放这儿 ——
+// 一处全局约束会把所有页面的窄屏能力一起锁死。
 html, body {
     color: var(--color-font1);
     background-color: var(--color-background1);
@@ -13,8 +18,7 @@ html, body {
     font-size: 16px;
     margin: 0;
     padding: 0;
-    min-width: 1220px;
-  }
+}
 ul,
 dl,
 li,

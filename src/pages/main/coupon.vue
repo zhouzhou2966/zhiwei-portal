@@ -1,8 +1,11 @@
 <!-- 首页 - 选择优惠券 -->
 <template>
   <div class="discountChoiceWrapper">
-    <div class="container">
+    <!-- 面包屑和「我的优惠券」反向入口放同一行：
+         领券页原来是条死路 —— 领完只能关掉，想看自己领了什么得自己去顶栏「学习」里翻 -->
+    <div class="container pageHead">
       <Breadcrumb data="优惠券"></Breadcrumb>
+      <span class="mineLink" @click="() => router.push('/account/main/myCoupon')">我的优惠券 ›</span>
     </div>
     <div class="couponItems container bg-wt">
       <template v-if="couponData.length > 0">
@@ -53,6 +56,7 @@
       :origin-rect="flipOrigin"
       @closed="onFlipClosed"
       @use="onFlipUse"
+      @mine="goMine"
     />
   </div>
 </template>
@@ -228,6 +232,12 @@ const onFlipClosed = () => {
 // 「去使用」跳搜索页而不是「我的优惠券」：后者要等 MQ 落库才能查到，刚领完进去会看到空列表
 const onFlipUse = () => router.push('/search/index');
 
+// 「查看我的优惠券」：同样是刚领完，所以页面顶部给一句到账延迟的预期
+const goMine = () => {
+  ElMessage({ message: '券到账可能有几秒延迟，刷新即可看到', type: 'info', duration: 3000 });
+  router.push('/account/main/myCoupon');
+};
+
 onBeforeUnmount(() => {
   window.clearTimeout(refreshTimer);
   window.clearTimeout(failTimer);
@@ -238,6 +248,23 @@ onBeforeUnmount(() => {
 
 <style lang="scss"> 
 .discountChoiceWrapper{
+  /* 面包屑与「我的优惠券」同一行：入口贴右上，是这条链路的另一半 */
+  .pageHead{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  /* 36px 对齐面包屑的文字行（.breadcrumb 的上内边距就是 36） */
+  .mineLink{
+    margin-top: 36px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--color-font2);
+    cursor: pointer;
+    &:hover{
+      color: var(--color-main);
+    }
+  }
   .couponItems{
     display: flex;
     flex-wrap: wrap;
