@@ -1,31 +1,25 @@
 <!-- 学习概览（学习中心默认落地页 · v2）
-     信息层级：先回答「现在学什么、今天做什么」，再给课程资产，最后是数据与推荐。
+     信息层级：先回答「现在学什么、最近考得怎样」，再给课程资产，最后是数据与笔记。
      每个模块自带三态、独立请求 —— 单个接口挂掉只影响自己那一块，父级不做编排。
-     账号级数字（本周/连续/今日）读 useClassOverview 单例，壳层已 ensureOverview。 -->
+     账号级数字（本周/连续/今日）只出现在侧栏目标卡（studyShell），这里不再重复。 -->
 <template>
   <div class="ovWrap">
     <header class="ovGreet">
       <div>
         <h1>{{ greeting }}，{{ userName }}</h1>
-        <p>第 {{ weekNo }} 周 · {{ greetSub }}</p>
+        <p>{{ greetSub }}</p>
       </div>
       <div class="ovDate">{{ dateText }}</div>
     </header>
 
-    <!-- 第一屏：继续学习 + 今日 -->
+    <!-- 第一屏：继续学习 + 最近考试 -->
     <div class="ovTop">
       <ContinueHero />
-      <TodayCard />
+      <ExamCard />
     </div>
 
     <section class="ovSec">
-      <SectionHead index="01" title="本周节奏" subtitle="最近 7 天每天完成的小节，虚线是日均目标">
-        <template #action>
-          <span class="ovNote" v-if="overview.weekReady && overview.weekPlan > 0">
-            目标 {{ overview.weekPlan }} 节 · 已完成 {{ overview.weekFinished }} 节
-          </span>
-        </template>
-      </SectionHead>
+      <SectionHead index="01" title="本周节奏" subtitle="最近 7 天每天完成的小节，虚线是日均目标" />
       <WeekRhythm />
     </section>
 
@@ -36,11 +30,8 @@
     </section>
 
     <section class="ovSec">
-      <SectionHead index="03" title="今天要做的" subtitle="只列真正会影响进度和有效期的" />
-      <div class="ovDuo">
-        <TodoCard />
-        <ExamCard />
-      </div>
+      <SectionHead index="03" title="今天要做的" subtitle="只列会影响课程的：到期提醒" />
+      <TodoCard />
     </section>
 
     <section class="ovSec">
@@ -54,13 +45,7 @@
 
     <section class="ovSec">
       <SectionHead index="05" title="学习报告" subtitle="近 30 天的三个关键数字，详细数据在报告页" />
-      <div class="ovReportRow">
-        <ReportStrip />
-        <div class="ovAside">
-          <p class="ovAsideTitle">接下来学</p>
-          <RecoCard />
-        </div>
-      </div>
+      <ReportStrip />
     </section>
   </div>
 </template>
@@ -71,7 +56,6 @@ import { dayjs } from '@/utils/date'
 import { useClassOverview } from './useClassOverview'
 import SectionHead from '@/components/ui/SectionHead.vue'
 import ContinueHero from './components/ContinueHero.vue'
-import TodayCard from './components/TodayCard.vue'
 import WeekRhythm from './components/WeekRhythm.vue'
 import CourseShelf from './components/CourseShelf.vue'
 import TodoCard from './components/TodoCard.vue'
@@ -79,14 +63,12 @@ import ExamCard from './components/ExamCard.vue'
 import NotesCard from './components/NotesCard.vue'
 import RankCard from './components/RankCard.vue'
 import ReportStrip from './components/ReportStrip.vue'
-import RecoCard from './components/RecoCard.vue'
 
 const userStore = useUserStore()
 const overview = useClassOverview()
 
 const userInfo = computed(() => userStore.getUserInfo || {})
 const userName = computed(() => userInfo.value.name || '同学')
-const weekNo = dayjs().isoWeek()
 const dateText = computed(() => dayjs().format('YYYY / MM / DD'))
 
 const greeting = computed(() => {
@@ -98,13 +80,17 @@ const greeting = computed(() => {
   return '晚上好'
 })
 
-// 副文案：只在这一处讲「差几节」，不重复进待办和卡片
+/**
+ * 副文案：不带任何进度数字。
+ * 周进度只在侧栏目标卡出现一次（改造方案 §6.1），这里一旦写「还差 N 节」
+ * 就变成同屏第二处，和侧栏互相矛盾。
+ */
 const greetSub = computed(() => {
   if (!overview.weekReady) return '正在同步本周进度…'
   const plan = Number(overview.weekPlan) || 0
   if (plan === 0) return '本周还没有学习计划，在「我的课程」里给课程定个每周目标吧'
   const gap = Math.max(0, plan - (Number(overview.weekFinished) || 0))
-  return gap > 0 ? `本周还差 ${gap} 节达标，接着上次的进度继续` : '本周目标已达成，继续保持'
+  return gap > 0 ? '接着上次的进度继续' : '本周目标已达成，继续保持'
 })
 </script>
 <style lang="scss" scoped>
@@ -140,7 +126,7 @@ const greetSub = computed(() => {
 /* 第一屏 */
 .ovTop {
   display: grid;
-  grid-template-columns: 1fr 372px;
+  grid-template-columns: 1fr 330px;
   gap: 20px;
   align-items: stretch;
 }
@@ -149,45 +135,17 @@ const greetSub = computed(() => {
 .ovSec {
   margin-top: 44px;
 }
-.ovNote {
-  font-size: 12.5px;
-  color: var(--ink3);
-}
 .ovDuo {
   display: grid;
   grid-template-columns: 1fr 420px;
   gap: 20px;
   align-items: stretch;
 }
-.ovReportRow {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 20px;
-  align-items: stretch;
-}
-.ovAside {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.ovAsideTitle {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink);
-}
-.ovAside > .recoCard,
-.ovAside > * {
-  flex: 1;
-}
 
 @media (max-width: 1200px) {
   .ovTop,
-  .ovDuo,
-  .ovReportRow {
+  .ovDuo {
     grid-template-columns: 1fr;
-  }
-  .ovAside {
-    display: none;
   }
 }
 </style>

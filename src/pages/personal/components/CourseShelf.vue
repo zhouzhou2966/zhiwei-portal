@@ -28,12 +28,13 @@
     </div>
   </div>
 
-  <!-- 0 门在学课：整行换成选课引导 -->
-  <div class="shelf" v-else-if="status === 'ok'">
+  <!-- 0 门在学课：选课引导 + 推荐（推荐只在这个空态里出现，有课用户不重复给入口） -->
+  <div class="shelfEmpty" v-else-if="status === 'ok'">
     <div class="scPick scPickBig" @click="$router.push('/search/index')">
       <b>还没有课程，去选一门新课</b>
       <em>课程首页有 300+ 门课</em>
     </div>
+    <RecoCard />
   </div>
   <div class="scState" v-else-if="status === 'error'">
     <InlineError title="课程列表加载失败" :msg="errorMsg" @retry="load" />
@@ -48,6 +49,7 @@ import { useRouter } from 'vue-router'
 import { getMylessons } from '@/api/class.js'
 import { errMsg, catchMsg } from '@/utils/request'
 import InlineError from '@/components/InlineError.vue'
+import RecoCard from './RecoCard.vue'
 
 const router = useRouter()
 const items = ref([])
@@ -249,6 +251,15 @@ const goLearn = (c) => router.push({ path: '/learning/index', query: { id: c.cou
 .scPickBig {
   grid-column: 1 / -1;
   min-height: 150px;
+}
+.shelfEmpty {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 18px;
+  align-items: stretch;
+}
+.shelfEmpty .scPickBig {
+  grid-column: auto;
 }
 .scState {
   min-height: 320px;

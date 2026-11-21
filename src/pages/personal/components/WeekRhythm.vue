@@ -17,21 +17,6 @@
         </div>
       </div>
     </div>
-
-    <div class="wrSide">
-      <div>
-        <b>{{ overview.weekReady ? overview.weekFinished : '-' }}</b>
-        <i>本周完成（节）</i>
-      </div>
-      <div>
-        <b>{{ avgText }}</b>
-        <i>日均（节）</i>
-      </div>
-      <div class="warn">
-        <b>{{ gapText }}</b>
-        <i>距目标还差（节）</i>
-      </div>
-    </div>
   </div>
 
   <!-- 7 天全 0：不画空坐标轴 -->
@@ -102,16 +87,6 @@ const targetY = computed(() => {
   return y > BAR_MAX ? 0 : Math.round(y)
 })
 
-const avgText = computed(() => {
-  if (!overview.weekReady) return '-'
-  const v = Number(overview.weekFinished) / 7
-  return (Math.round(v * 10) / 10).toFixed(1)
-})
-const gapText = computed(() => {
-  if (!overview.weekReady || !overview.weekPlan) return '-'
-  return Math.max(0, Number(overview.weekPlan) - Number(overview.weekFinished))
-})
-
 // 标签用真实星期（summary 是「最近 7 天」窗口，不是自然周），最后一天是今天
 const dayLabel = (statDate, i) => {
   if (i === daily.value.length - 1) return '今日'
@@ -124,8 +99,6 @@ const dayLabel = (statDate, i) => {
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 22px 24px;
-  display: flex;
-  gap: 34px;
 }
 .wrChart {
   flex: 1;
@@ -188,37 +161,6 @@ const dayLabel = (statDate, i) => {
     color: var(--ink3);
     background: #fff;
     padding-left: 8px;
-  }
-}
-.wrSide {
-  width: 190px;
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 14px;
-  border-left: 1px solid var(--line);
-  padding-left: 26px;
-  div {
-    display: flex;
-    align-items: baseline;
-    gap: 9px;
-  }
-  b {
-    font-family: var(--font-serif);
-    font-variant-numeric: lining-nums;
-    font-size: 22px;
-    font-weight: 400;
-    min-width: 46px;
-    color: var(--ink);
-  }
-  i {
-    font-style: normal;
-    font-size: 12px;
-    color: var(--ink3);
-  }
-  .warn b {
-    color: var(--accent);
   }
 }
 .wrEmpty {

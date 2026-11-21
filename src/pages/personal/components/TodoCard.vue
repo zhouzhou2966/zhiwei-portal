@@ -1,20 +1,21 @@
-<!-- 概览 · 今天要做的（待办 + 即将到期合并）
-     数据：/ls/lessons/todo（后端整体 try/catch，任何异常都返回空结构）。
-     计划缺口和到期课是同一件事的两种紧迫度，合成一张卡，只占一个位置。 -->
+<!-- 概览 · 今天要做的（只列到期课程）
+     数据：/ls/lessons/todo 的 expiring 字段。
+     planGap（计划缺口）刻意不进待办：它是周进度的第二种说法，
+     周进度只在侧栏目标卡出现一次（改造方案 §6.1）。 -->
 <template>
   <div class="todoCard" v-if="status === 'ok' && items.length > 0">
     <div class="tdRow" v-for="(item, i) in items" :key="i">
-      <span class="tdDot" :class="{ due: item.due }"></span>
+      <span class="tdDot"></span>
       <span class="tdTxt">
-        {{ item.text }}
-        <em v-if="item.sub">{{ item.sub }}</em>
+        「{{ item.courseName || '课程' }}」{{ item.daysLeft === 0 ? '今天到期' : item.daysLeft + ' 天后到期' }}
+        <em>到期后课程不可再学，没学完的节数不再计入进度</em>
       </span>
-      <span class="tdGo" @click="item.go()">{{ item.action }} →</span>
+      <span class="tdGo" @click="goCourse(item)">查看课程 →</span>
     </div>
   </div>
 
   <div class="tdEmpty" v-else-if="status === 'ok'">
-    <p>今天没有待办，保持节奏就好</p>
+    <p>近期没有到期的课程</p>
   </div>
   <div class="tdState" v-else-if="status === 'error'">
     <InlineError title="待办加载失败" :msg="errorMsg" @retry="load" />
@@ -27,7 +28,6 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getLearningTodo } from '@/api/learningStat'
-import { loadNowLesson } from '@/utils/nowLesson'
 import { errMsg, catchMsg } from '@/utils/request'
 import InlineError from '@/components/InlineError.vue'
 
@@ -56,43 +56,11 @@ const load = async () => {
 }
 onMounted(load)
 
-// 待办项组装：计划缺口（gap>0 才有）+ 到期课程（N 天后到期；0 天 = 今天到期）
-const items = computed(() => {
-  const data = raw.value
-  if (!data) return []
-  const list = []
-  const gap = data.planGap
-  if (gap && gap.gap > 0) {
-    list.push({
-      due: false,
-      text: `本周计划还差 ${gap.gap} 节`,
-      sub: '可以通过调整周目标放宽节奏',
-      action: '去学习',
-      go: async () => {
-        // 借 nowLesson 缓存拿最近课程的 courseId（概览页已经拉过，零额外请求）
-        const { data: lesson } = await loadNowLesson()
-        if (lesson && lesson.courseId) {
-          router.push({ path: '/learning/index', query: { id: lesson.courseId } })
-        } else {
-          router.push('/search/index')
-        }
-      },
-    })
-  }
-  ;(data.expiring || []).slice(0, 3).forEach((c) => {
-    list.push({
-      due: true,
-      text: c.daysLeft === 0
-        ? `「${c.courseName || '课程'}」今天到期`
-        : `「${c.courseName || '课程'}」${c.daysLeft} 天后到期`,
-      sub: '到期后课程不可再学',
-      action: '查看课程',
-      go: () => router.push({ path: '/details/index', query: { id: c.courseId } }),
-    })
-  })
-  return list
-})
+// 只有到期课程一类，最多 3 条（后端已按到期时间升序）
+const items = computed(() => ((raw.value && raw.value.expiring) || []).slice(0, 3))
+const goCourse = (c) => router.push({ path: '/details/index', query: { id: c.courseId } })
 </script>
+
 <style lang="scss" scoped>
 .todoCard {
   background: #fff;

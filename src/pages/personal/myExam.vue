@@ -37,7 +37,7 @@
       <div class="exRow" v-for="it in pageRows" :key="it.id" @click="openDetail(it)">
         <div class="cName"><i class="cDot"></i><span>{{ it.courseName || '课程' }}</span></div>
         <div class="cSec">{{ it.sectionName || '-' }}</div>
-        <div class="cScore" :class="scoreClass(it.score)">{{ it.score == null ? '-' : it.score }}</div>
+        <div class="cScore" :class="scoreClass(it.score, it.totalScore)">{{ it.score == null ? '-' : it.score }}</div>
         <div class="cRate">{{ it.correctRate == null ? '--' : it.correctRate + '%' }}</div>
         <div class="cTime">{{ durationText(it.duration) }}</div>
         <div class="cWhen">{{ fmtWhen(it.finishTime || it.commitTime) }}</div>
@@ -125,9 +125,15 @@ const lastWhen = computed(() => {
   return t ? dayjs(t).format('M/D') : '-'
 })
 
-const scoreClass = (s) => {
+/**
+ * 及格线按「得分 ÷ 满分 ≥ 60%」判，不写死 ≥60 分：
+ * 练习卷满分可能是 10 分，按绝对分判会把小分卷全染红。
+ */
+const scoreClass = (s, total) => {
   if (s == null) return ''
-  return Number(s) >= 60 ? 'pass' : 'fail'
+  const t = Number(total) || 0
+  if (t <= 0) return ''
+  return Number(s) / t >= 0.6 ? 'pass' : 'fail'
 }
 const durationText = (d) => {
   const sec = Number(d) || 0
