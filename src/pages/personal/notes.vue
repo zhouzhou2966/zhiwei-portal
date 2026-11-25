@@ -6,7 +6,8 @@
     <header class="npHead">
       <div>
         <h1>学习笔记</h1>
-        <p v-if="status === 'ok'">共 <b>{{ total }}</b> 条{{ onlyMine ? '（我的）' : '（全站公开）' }} · 点开回到对应小节</p>
+        <!-- 不再写「点开回到对应小节」：每条右侧已有「回到这一节 →」明确入口，说明文字是冗余 -->
+        <p v-if="status === 'ok'">共 <b>{{ total }}</b> 条{{ onlyMine ? '（我的）' : '（全站公开）' }}</p>
         <p v-else>把每节课的关键句记下来，复习时不用重看视频</p>
       </div>
       <div class="npTabs">
@@ -15,9 +16,9 @@
       </div>
     </header>
 
-    <div class="npCard">
+    <div class="npCard" :class="{ refreshing }">
       <template v-if="status === 'ok' && items.length > 0">
-        <NoteCard v-for="n in items" :key="n.id" :note="n" @open="openNote" />
+        <NoteCard v-for="n in items" :key="n.id" :note="n" jump @open="openNote" />
         <div class="npPager" v-if="total > pageSize">
           <el-pagination background layout="prev, pager, next" :total="total"
                          :page-size="pageSize" :current-page="pageNo"
@@ -53,9 +54,16 @@ const pageSize = 12
 const onlyMine = ref(true)
 const status = ref('loading')
 const errorMsg = ref('')
+// 切换「我的/全部」或翻页时的刷新态：保持旧列表 + 轻微变淡，
+// 不再把 status 打回 loading（否则会在数据到达前闪一句「正在加载…」，观感很差）
+const refreshing = ref(false)
 
-const load = async () => {
-  status.value = 'loading'
+/**
+ * @param {boolean} silent 静默刷新（切换 tab / 翻页）：不切 loading 态
+ */
+const load = async (silent = false) => {
+  if (silent) refreshing.value = true
+  else status.value = 'loading'
   try {
     const res = await getAllNotes({ pageNo: pageNo.value, pageSize, onlyMine: onlyMine.value })
     if (res.code == 200 && res.data) {
@@ -69,19 +77,21 @@ const load = async () => {
   } catch (err) {
     errorMsg.value = catchMsg(err, '笔记加载失败') || '请先登录后查看笔记'
     status.value = 'error'
+  } finally {
+    refreshing.value = false
   }
 }
-onMounted(load)
+onMounted(() => load())
 
 const switchMine = (mine) => {
   if (onlyMine.value === mine) return
   onlyMine.value = mine
   pageNo.value = 1
-  load()
+  load(true)
 }
 const turnPage = (p) => {
   pageNo.value = p
-  load()
+  load(true)
 }
 
 // 有 courseId 才能回到对应小节；没有就只当一条笔记看
@@ -146,6 +156,12 @@ const openNote = (n) => {
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 6px 26px 20px;
+  transition: opacity .15s;
+  // 静默刷新：旧内容变淡表示「正在换」，比闪一句加载提示稳
+  &.refreshing {
+    opacity: .45;
+    pointer-events: none;
+  }
 }
 .npPager {
   display: flex;

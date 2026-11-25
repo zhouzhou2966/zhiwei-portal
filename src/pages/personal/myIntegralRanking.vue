@@ -108,12 +108,15 @@ const hisStatus = ref('loading')
 const hisError = ref('')
 
 // season == 0 表示「本赛季」，其余是历史榜下拉选中的赛季
-const getSeasonsData = async (season) => {
+/**
+ * @param {boolean} silent 切赛季时传 true：保持旧榜单，不闪「正在加载…」
+ */
+const getSeasonsData = async (season, silent = false) => {
   const isCurrent = season == 0
-  if (isCurrent) {
+  if (isCurrent && !silent) {
     curStatus.value = 'loading'
     hisStatus.value = 'loading'
-  } else {
+  } else if (!isCurrent && !silent) {
     hisStatus.value = 'loading'
   }
   try {
@@ -182,7 +185,7 @@ const retryHistory = () => {
 }
 // 选择赛季
 const selectHandle = (val) => {
-  getSeasonsData(val)
+  getSeasonsData(val, true)
 }
 /**
  * 本赛季是第几赛季。
