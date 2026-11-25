@@ -57,28 +57,13 @@
             </div>
           </div>
 
-          <!-- 本期概况：4 项结论（主数字 + 副行说明），替代原来顶部的 4 张 KPI 卡 -->
+          <!-- 本期概况：4 项结论（统计行标准形态），替代原来顶部的 4 张 KPI 卡 -->
           <div class="rpOverview">
-            <div class="ovItem">
-              <span class="ovLabel">累计学习</span>
-              <p class="ovVal"><b>{{ totalSections }}</b><em>节</em></p>
-              <span class="ovSub">日均 {{ avgPerDay }} 节</span>
-            </div>
-            <div class="ovItem">
-              <span class="ovLabel">活跃天数</span>
-              <p class="ovVal"><b>{{ activeDays }}</b><em>天</em></p>
-              <span class="ovSub">最长连续 {{ longest }} 天</span>
-            </div>
-            <div class="ovItem">
-              <span class="ovLabel">完成课程</span>
-              <p class="ovVal"><b>{{ finishedCourses }}</b><em>门</em></p>
-              <span class="ovSub">在学 {{ learningCourses }} 门</span>
-            </div>
-            <div class="ovItem">
-              <span class="ovLabel">考试均分</span>
-              <p class="ovVal"><b>{{ examAvg == null ? '-' : examAvg }}</b><em>分</em></p>
-              <span class="ovSub">共 {{ examCount }} 次 · 最高 {{ examMax == null ? '-' : examMax }}</span>
-            </div>
+            <StatRow label="累计学习" :value="totalSections" unit="节" :sub="`日均 ${avgPerDay} 节`"/>
+            <StatRow label="活跃天数" :value="activeDays" unit="天" :sub="`最长连续 ${longest} 天`"/>
+            <StatRow label="完成课程" :value="finishedCourses" unit="门" :sub="`在学 ${learningCourses} 门`"/>
+            <StatRow label="考试均分" :value="examAvg == null ? '-' : examAvg" unit="分"
+                     :sub="`共 ${examCount} 次 · 最高 ${examMax == null ? '-' : examMax}`"/>
           </div>
         </div>
       </section>
@@ -161,9 +146,9 @@
             </svg>
           </div>
           <div class="trendSide">
-            <div><span>均分</span><b>{{ examAvg == null ? '-' : examAvg }}</b></div>
-            <div><span>最高</span><b>{{ examMax == null ? '-' : examMax }}</b></div>
-            <div><span>最低</span><b>{{ examMin == null ? '-' : examMin }}</b></div>
+            <StatRow label="均分" :value="examAvg == null ? '-' : examAvg" unit="分"/>
+            <StatRow label="最高" :value="examMax == null ? '-' : examMax" unit="分"/>
+            <StatRow label="最低" :value="examMin == null ? '-' : examMin" unit="分"/>
           </div>
         </div>
         <div class="rpEmptyBlock" v-else>还没有考试记录</div>
@@ -187,6 +172,7 @@ import { dayjs } from '@/utils/date'
 import { errMsg, catchMsg } from '@/utils/request'
 import { useClassOverview } from './useClassOverview'
 import SectionHead from '@/components/ui/SectionHead.vue'
+import StatRow from '@/components/ui/StatRow.vue'
 import InlineError from '@/components/InlineError.vue'
 
 const route = useRoute()
@@ -601,42 +587,6 @@ const dist = computed(() => {
   gap: 0 32px;
   align-content: center;
 }
-.ovItem {
-  padding: 14px 0;
-  border-bottom: 1px dashed var(--line);
-  &:nth-last-of-type(-n + 2) {
-    border-bottom: none;
-  }
-}
-.ovLabel {
-  font-size: 12.5px;
-  color: var(--ink3);
-}
-.ovVal {
-  margin-top: 4px;
-  b {
-    font-family: var(--font-serif);
-    font-variant-numeric: lining-nums;
-    font-size: 30px;
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: -.5px;
-    color: var(--ink);
-  }
-  em {
-    font-style: normal;
-    font-family: var(--font-sans);
-    font-size: 12px;
-    color: var(--ink3);
-    margin-left: 5px;
-  }
-}
-.ovSub {
-  display: block;
-  margin-top: 4px;
-  font-size: 11.5px;
-  color: var(--ink3);
-}
 
 /* 02 周目标 */
 .rpWeeks {
@@ -747,23 +697,6 @@ const dist = computed(() => {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 14px;
-  div {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-  }
-  span {
-    font-size: 12.5px;
-    color: var(--ink3);
-  }
-  b {
-    font-family: var(--font-serif);
-    font-variant-numeric: lining-nums;
-    font-size: 20px;
-    font-weight: 400;
-    color: var(--ink);
-  }
 }
 
 /* 04 投入分布 */

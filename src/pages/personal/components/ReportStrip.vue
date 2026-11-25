@@ -1,25 +1,14 @@
-<!-- 概览 · 学习报告摘要（3 个数字 + 近 30 天迷你柱）
+<!-- 概览 · 学习报告摘要（3 条统计行 + 完整报告入口）
      数据：learning-records/summary?days=30（与报告页同一接口，这里是 30 天窗口）。
-     和学习报告页的分工：概览只给结论数字，明细都在报告页。 -->
+     和学习报告页的分工：概览只给结论数字，明细都在报告页。
+     统计行用全站统一的 StatRow（标签左·数值右），与报告页趋势侧栏/本期概况同一形态 -->
 <template>
   <div class="reportStrip" v-if="status === 'ok'">
     <div class="rsNums">
-      <div>
-        <b>{{ total }}</b>
-        <i>累计学习（节）</i>
-      </div>
-      <div>
-        <b>{{ activeDays }}</b>
-        <i>活跃天数（天）</i>
-      </div>
-      <div>
-        <b>{{ longest }}</b>
-        <i>最长连续（天）</i>
-      </div>
+      <StatRow label="累计学习" :value="total" unit="节"/>
+      <StatRow label="活跃天数" :value="activeDays" unit="天"/>
+      <StatRow label="最长连续" :value="longest" unit="天"/>
     </div>
-    <!-- 迷你柱已移除：概览页同屏已有一张走势图（考试卡），
-         两处迷你图表是「每个统计卡都配一张 sparkline」的 AI 味形态；
-         这里只给结论数字，明细去报告页 -->
     <span class="rsGo" @click="$router.push({ name: 'learningReport' })">完整报告 →</span>
   </div>
 
@@ -35,6 +24,7 @@ import { computed, onMounted, ref } from 'vue'
 import { getLearningSummary } from '@/api/learningStat'
 import { errMsg, catchMsg } from '@/utils/request'
 import InlineError from '@/components/InlineError.vue'
+import StatRow from '@/components/ui/StatRow.vue'
 
 const summary = ref({})
 const status = ref('loading')
@@ -92,27 +82,8 @@ const longest = computed(() => {
   gap: 34px;
 }
 .rsNums {
-  display: flex;
-  gap: 40px;
+  width: 220px;
   flex: none;
-  div {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  b {
-    font-family: var(--font-serif);
-    font-variant-numeric: lining-nums;
-    font-size: 28px;
-    font-weight: 400;
-    line-height: 1.1;
-    color: var(--ink);
-  }
-  i {
-    font-style: normal;
-    font-size: 12px;
-    color: var(--ink3);
-  }
 }
 .rsGo {
   flex: none;
