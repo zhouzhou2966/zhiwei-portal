@@ -125,14 +125,14 @@
 
       <!-- 04 考试分数趋势 -->
       <section class="rpSec">
-        <SectionHead index="04" title="考试分数趋势" subtitle="最近 8 次，虚线是均分">
+        <SectionHead index="04" title="考试分数趋势" :subtitle="trendSubtitle">
           <template #action>
             <span class="rpNote">共 {{ examCount }} 次考试</span>
           </template>
         </SectionHead>
         <div class="rpTrend" v-if="trendBars.length > 0">
           <div class="trendChart">
-            <div class="avgLine" v-if="examAvg != null" :style="{ bottom: avgLineY + 'px' }"></div>
+            <div class="avgLine" v-if="examAvg != null && scoredExams.length > 1" :style="{ bottom: avgLineY + 'px' }"></div>
             <div class="tc" v-for="(b, i) in trendBars" :key="i" :class="{ last: i === trendBars.length - 1 }">
               <span class="tv">{{ b.score }}</span>
               <div class="tb" :style="{ height: b.pct + '%' }"></div>
@@ -350,19 +350,35 @@ const weekBlocks = computed(() => {
 })
 const hitCount = computed(() => weekBlocks.value.filter(w => w.finished >= weekPlan.value).length)
 
-/** 考试趋势：最近 8 次（接口倒序，反转成时间正序），最后一根主色高亮 */
+/** 考试趋势：最近 8 次（接口倒序，反转成时间正序），最后一根主色高亮。
+ *  柱高按本组最高分归一化——考试分数口径不固定（现在是 10 分制），原来按 100 折算，
+ *  10 分的柱只有 10% 高度，整张图趴在地上。归一时封顶 85%（TREND_HEADROOM），
+ *  给柱顶的分数标签留出空间。均分虚线用同一把尺（见 avgLineY），两套口径必然错位。 */
+const TREND_BARS_MAX = 8
+const TREND_HEADROOM = 0.85  // 最高柱占绘图区比例
+const TREND_LABEL_H = 27     // 柱底下方的日期区：日期行 18px + 间距 9px
+const TREND_PLOT_H = 160     // 柱区内容高：.trendChart 190px - 柱顶标签预留 30px
+const trendSubtitle = computed(() => {
+  const n = Math.min(scoredExams.value.length, TREND_BARS_MAX)
+  if (n <= 0) return ''
+  if (n === 1) return '1 次考试，还看不出趋势'
+  return `最近 ${n} 次，虚线是均分`
+})
+const trendMaxScore = computed(() =>
+  Math.max(1, ...scoredExams.value.slice(0, TREND_BARS_MAX).map(e => Number(e.score) || 0))
+)
 const trendBars = computed(() => {
-  const scored = examList.value.filter(e => e.score != null).slice(0, 8).reverse()
+  const scored = scoredExams.value.slice(0, TREND_BARS_MAX).reverse()
   return scored.map(e => ({
     score: e.score,
     date: e.finishTime || e.commitTime ? dayjs(e.finishTime || e.commitTime).format('M/D') : '',
-    pct: Math.max(2, Math.min(100, Number(e.score) || 0)),
+    pct: Math.max(2, Math.round((Number(e.score) || 0) / trendMaxScore.value * TREND_HEADROOM * 100)),
   }))
 })
-// 均分虚线：柱区高 150px，按 100 分折算
+// 均分虚线：与柱子同一归一化口径；+TREND_LABEL_H 是因为柱子的底边从日期区上方算起
 const avgLineY = computed(() => {
   if (examAvg.value == null) return 0
-  return Math.round(Math.max(0, Math.min(100, examAvg.value)) / 100 * 150)
+  return Math.round(TREND_LABEL_H + examAvg.value / trendMaxScore.value * TREND_HEADROOM * TREND_PLOT_H)
 })
 
 /** 课程投入分布：按已学小节降序，取前 6 门 */
@@ -659,6 +675,7 @@ const dist = computed(() => {
   flex: 1;
   display: flex;
   align-items: flex-end;
+  justify-content: center; // 柱子少时聚拢居中——原来 flex:1 + max-width 的组合把柱子挤在左边，右侧一大片空白
   gap: 26px;
   height: 190px;
   position: relative;
@@ -668,7 +685,7 @@ const dist = computed(() => {
   position: absolute;
   left: 0;
   right: 0;
-  border-top: 1px dashed var(--line-strong);
+  border-top: 1px dashed rgba(27, 75, 107, .45); // 原来用 --line-strong 太浅，浅色背景上几乎不可见
 }
 .tc {
   flex: 1;
@@ -678,6 +695,7 @@ const dist = computed(() => {
   align-items: center;
   justify-content: flex-end;
   height: 100%;
+  padding-top: 30px; // 柱顶标签预留：柱高按 .tc 内容区（190-30=160px）折算，见脚本里 TREND_PLOT_H
   .tv {
     font-family: var(--font-serif);
     font-size: 12.5px;
@@ -691,6 +709,8 @@ const dist = computed(() => {
   }
   .td {
     margin-top: 9px;
+    height: 18px;
+    line-height: 18px;
     font-size: 11.5px;
     color: var(--ink3);
   }
