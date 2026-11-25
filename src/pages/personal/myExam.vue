@@ -21,7 +21,7 @@
       </div>
       <div class="exKpi">
         <b>{{ avgScore == null ? '-' : avgScore }}<em>分</em></b>
-        <span>平均分，及格线 60</span>
+        <span>平均分 · 及格线 60%</span>
       </div>
       <div class="exKpi">
         <b>{{ maxScore == null ? '-' : maxScore }}<em>分</em></b>
@@ -29,24 +29,28 @@
       </div>
     </div>
 
-    <div class="exTable" v-if="status === 'ok' && pageRows.length > 0">
+    <!-- 列表走后端分页（一页 10 条）。切页时保留旧内容并变淡，
+         不把整张表打回「正在加载」—— 记录再多翻页也不闪 -->
+    <div class="exTable" :class="{ refreshing }" v-if="status === 'ok' && list.length > 0">
       <div class="exThead">
         <span>课程</span><span>考试小节</span><span>得分</span><span>正确率</span>
         <span>用时</span><span>交卷时间</span><span>操作</span>
       </div>
-      <div class="exRow" v-for="it in pageRows" :key="it.id" @click="openDetail(it)">
+      <div class="exRow" v-for="it in list" :key="it.id" @click="openDetail(it)">
         <div class="cName"><i class="cDot"></i><span>{{ it.courseName || '课程' }}</span></div>
         <div class="cSec">{{ it.sectionName || '-' }}</div>
         <div class="cScore" :class="scoreClass(it.score, it.totalScore)">{{ it.score == null ? '-' : it.score }}</div>
-        <div class="cRate">{{ it.correctRate == null ? '--' : it.correctRate + '%' }}</div>
+        <div class="cRate">{{ rateText(it.correctRate) }}</div>
         <div class="cTime">{{ durationText(it.duration) }}</div>
         <div class="cWhen">{{ fmtWhen(it.finishTime || it.commitTime) }}</div>
         <div class="cOp">{{ it.score != null ? '看解析 →' : '继续答题 →' }}</div>
       </div>
-      <div class="exPager" v-if="pageCount > 1">
-        <el-pagination background layout="prev, pager, next" :total="list.length"
+      <div class="exPager" v-if="total > pageSize">
+        <!-- 分页总数用后端返回的真实 total，不是已加载条数：
+             原来一次拉 100 条再前端切，超过 100 次的记录永远翻不到 -->
+        <el-pagination background layout="total, prev, pager, next" :total="total"
                        :page-size="pageSize" :current-page="pageNo"
-                       @current-change="(p) => (pageNo = p)" />
+                       @current-change="turnPage" />
       </div>
     </div>
 
@@ -66,26 +70,52 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getExamList } from '@/api/class.js'
+import { getExamList, getExamStats } from '@/api/class.js'
 import { errMsg, catchMsg } from '@/utils/request'
 import { dayjs } from '@/utils/date'
 import InlineError from '@/components/InlineError.vue'
 
 const router = useRouter()
+/** 当前页的记录（后端分页，一页 10 条） */
 const list = ref([])
+/** 全部记录数（后端给的真实 total，不是已加载条数） */
 const total = ref(0)
+/** 统计头：次数 / 均分 / 最高分，全部由后端按全量算 */
+const stats = ref({ total: 0, avgScore: null, maxScore: null, maxWhen: '', lastWhen: '' })
 const status = ref('loading')
+/** 切页时保留旧表格并变淡，不打回「正在加载」 */
+const refreshing = ref(false)
 const errorMsg = ref('')
 const pageNo = ref(1)
 const pageSize = 10
 
-const load = async () => {
-  status.value = 'loading'
+/**
+ * 统计头四个数字全部来自 /exams/stats。
+ * 不能拿当前页凑数：列表一分页，均分会随翻页变大变小，用户翻两页就发现了。
+ * 拉不到就显示 '-'，宁可空着也不给假数字。
+ */
+const avgScore = computed(() => stats.value.avgScore)
+const maxScore = computed(() => stats.value.maxScore)
+const maxWhen = computed(() => stats.value.maxWhen || '')
+const lastWhen = computed(() => stats.value.lastWhen || '-')
+
+const loadStats = async () => {
   try {
-    const res = await getExamList({ pageNo: 1, pageSize: 100 })
+    const res = await getExamStats()
+    if (res && res.code == 200 && res.data) stats.value = res.data
+  } catch (e) {
+    // 统计是附属信息，挂了不影响列表，保持 '-'
+  }
+}
+
+const loadPage = async (silent = false) => {
+  if (silent) refreshing.value = true
+  else status.value = 'loading'
+  try {
+    const res = await getExamList({ pageNo: pageNo.value, pageSize })
     if (res.code == 200 && res.data) {
       list.value = res.data.list || []
-      total.value = Number(res.data.total) || list.value.length
+      total.value = Number(res.data.total) || 0
       status.value = 'ok'
       return
     }
@@ -94,36 +124,22 @@ const load = async () => {
   } catch (err) {
     errorMsg.value = catchMsg(err, '考试记录加载失败') || '请稍后重试'
     status.value = 'error'
+  } finally {
+    refreshing.value = false
   }
 }
+
+/** 首次进入 / 失败重试：统计和第一页一起拉 */
+const load = () => {
+  pageNo.value = 1
+  loadStats()
+  loadPage()
+}
+const turnPage = (p) => {
+  pageNo.value = p
+  loadPage(true)
+}
 onMounted(load)
-
-const pageCount = computed(() => Math.max(1, Math.ceil(list.value.length / pageSize)))
-const pageRows = computed(() => {
-  const start = (pageNo.value - 1) * pageSize
-  return list.value.slice(start, start + pageSize)
-})
-
-/** 统计头：均分 / 最高分都从全量算，不拿当页凑数 */
-const scored = computed(() => list.value.filter(e => e.score != null))
-const avgScore = computed(() => {
-  if (!scored.value.length) return null
-  const sum = scored.value.reduce((s, e) => s + (Number(e.score) || 0), 0)
-  return Math.round(sum / scored.value.length * 10) / 10
-})
-const maxItem = computed(() => {
-  if (!scored.value.length) return null
-  return scored.value.reduce((a, b) => (Number(b.score) > Number(a.score) ? b : a))
-})
-const maxScore = computed(() => (maxItem.value ? maxItem.value.score : null))
-const maxWhen = computed(() => {
-  const t = maxItem.value && (maxItem.value.finishTime || maxItem.value.commitTime)
-  return t ? dayjs(t).format('M/D') : ''
-})
-const lastWhen = computed(() => {
-  const t = list.value[0] && (list.value[0].finishTime || list.value[0].commitTime)
-  return t ? dayjs(t).format('M/D') : '-'
-})
 
 /**
  * 及格线按「得分 ÷ 满分 ≥ 60%」判，不写死 ≥60 分：
@@ -139,7 +155,17 @@ const durationText = (d) => {
   const sec = Number(d) || 0
   if (!sec) return '-'
   const m = Math.round(sec / 60)
+  // 不足 1 分钟的显示「<1 分钟」—— 显示「0 分钟」等于说「没花时间」，是假信息
+  if (m < 1) return '<1 分钟'
   return m >= 60 ? `${Math.floor(m / 60)} 小时 ${m % 60} 分` : `${m} 分钟`
+}
+/**
+ * 正确率：后端存的是**基点**（ExamRecordServiceImpl.RATE_SCALE = 10000，76% 存 7600），
+ * 直接拼 % 会显示成 7600%（实测 10000%）。展示除以 100 并封顶 100。
+ */
+const rateText = (r) => {
+  if (r == null) return '--'
+  return Math.min(100, Math.round(Number(r) / 100)) + '%'
 }
 const fmtWhen = (t) => (t ? dayjs(t).format('M/D HH:mm') : '-')
 
@@ -226,6 +252,12 @@ const openDetail = (it) => {
   border: 1px solid var(--line);
   border-radius: 16px;
   overflow: hidden;
+  transition: opacity .18s;
+  /* 切页时整表变淡，等新数据到了再恢复：不插「正在加载」文字，也不会让表格高度跳一下 */
+  &.refreshing {
+    opacity: .45;
+    pointer-events: none;
+  }
 }
 .exThead,
 .exRow {
@@ -356,7 +388,7 @@ const openDetail = (it) => {
   font-size: 13px;
   color: var(--ink3);
 }
-@media (max-width: 1200px) {
+@media (max-width: 860px) {
   .exKpis {
     grid-template-columns: 1fr;
   }
