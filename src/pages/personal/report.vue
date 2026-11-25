@@ -163,7 +163,7 @@
           <div class="trendSide">
             <div><span>均分</span><b>{{ examAvg == null ? '-' : examAvg }}</b></div>
             <div><span>最高</span><b>{{ examMax == null ? '-' : examMax }}</b></div>
-            <div><span>最近</span><b>{{ examLatest == null ? '-' : examLatest }}</b></div>
+            <div><span>最低</span><b>{{ examMin == null ? '-' : examMin }}</b></div>
           </div>
         </div>
         <div class="rpEmptyBlock" v-else>还没有考试记录</div>
@@ -340,7 +340,7 @@ const examMax = computed(() => {
   if (!scoredExams.value.length) return null
   return Math.max(...scoredExams.value.map(e => Number(e.score) || 0))
 })
-const examLatest = computed(() => (scoredExams.value.length ? scoredExams.value[0].score : null))
+const examMin = computed(() => (scoredExams.value.length ? Math.min(...scoredExams.value.map(e => Number(e.score) || 0)) : null))
 
 const weekPlan = computed(() => Number(overview.weekPlan) || 0)
 
