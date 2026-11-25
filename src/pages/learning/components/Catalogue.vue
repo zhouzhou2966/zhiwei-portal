@@ -103,11 +103,20 @@ watch(
   { immediate: true }
 )
 
+// 播放结束自动续播下一节。
+// ⚠️ 必须用 watch 单次触发，不能写成 watchEffect：next() 会改 playId、父级会改
+// currentPlayData.sectionId，都是 effect 的依赖，改完立刻重跑自己；下一节拉流失败时
+// finished 不会复位（只有真正 play 才复位），于是无限换节——每毫秒一次签名请求，
+// 实测 5 秒 837 次，把网关对单用户的限流配额整个抽干，用户点什么都 429。
+watch(
+  () => props.finished,
+  (done) => {
+    if (done) next()
+  }
+)
+// 目录高亮跟随父级播放状态：只做赋值，不派发播放事件
 watchEffect(() => {
   playId.value = currentPlayData.sectionId || props.playId
-  if(props.finished){
-    next();
-  }
 })
 // 展开章、节
 const isPlay = (chapterId, section) => {
@@ -163,7 +172,7 @@ const next = () => {
   let cs = props.data;
   a:for (let i = 0; i < cs.length; i++) {
     let ss = cs[i].sections;
-    for (let j = 0; j < ss.length; i++) {
+    for (let j = 0; j < ss.length; j++) {
         if(findNext){
           item = ss[i];
           break a;

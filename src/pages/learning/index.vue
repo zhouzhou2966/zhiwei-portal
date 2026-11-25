@@ -509,6 +509,10 @@ const initPlay = (fileID, psign) => {
   player.value.on('error', (err) => {
     // 只在看视频时才有意义，练习/考试页不该弹这个
     if (pageType.value !== 1) return
+    // 视频流本身坏掉（fileId 无效、源不可用）时停止「自动续播下一节」：
+    // finished 复位前，目录的 watch(finished) 会一直往下跳——坏一节连环跳完一整门课。
+    // 停在这里让用户手动选，好课不受影响。
+    finished.value = false
     // hls 内部会连续重试几次，别让后面的报错把已经写好的原因冲掉
     if (playFailed.value) return
     const code = err && (err.code || err.errorCode)
