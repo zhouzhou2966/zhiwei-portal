@@ -3,14 +3,23 @@
   <div class="clsGridCard">
     <div class="clsGridCover" @click="goDetail">
       <img :src="data.courseCoverUrl" alt="">
-      <!-- 状态标签：已失效必须标出来，光看按钮容易被误认为还能学 -->
-      <span class="clsGridTag" :class="tagClass">{{ tagText }}</span>
+      <!-- 状态标签：「我的课程」有在学/未开始/已学完/已失效四个 tab，同一 tab 下
+           所有卡的状态都一样，标签只是把 tab 又说一遍 → show-tag=false 关掉。
+           但**已失效例外**：那张卡按钮也变「删除课程」，没有标签容易被当成还能学。 -->
+      <span class="clsGridTag" v-if="showTag || Number(data.status) === 3" :class="tagClass">{{ tagText }}</span>
     </div>
     <div class="clsGridBody">
       <div class="clsGridName" :title="data.courseName" @click="goDetail">{{data.courseName}}</div>
-      <div class="clsGridMeta clsEllipsis">
-        有效日期：{{data.expireTime == null ? '永久有效' :
-          new Date(data.createTime).toLocaleDateString() + ' - ' + new Date(data.expireTime).toLocaleDateString()}}
+      <!-- 有效期：7 天内到期时换成「有效期至 X · N 天后到期」并转暖色。
+           课程过期后不可再学、没学完的节也不计入进度，这条是卡片上最该被看见的坏消息 -->
+      <div class="clsGridMeta clsEllipsis" :class="{ 'is-soon': expiringSoon }">
+        <template v-if="expiringSoon">
+          有效期至 {{ fmtDay(data.expireTime) }} · {{ daysLeft === 0 ? '今天到期' : daysLeft + ' 天后到期' }}
+        </template>
+        <template v-else>
+          有效日期：{{data.expireTime == null ? '永久有效' :
+            new Date(data.createTime).toLocaleDateString() + ' - ' + new Date(data.expireTime).toLocaleDateString()}}
+        </template>
       </div>
       <div class="clsGridMeta">
         已学习：<em>{{learnedShow}}</em> / {{data.sections}}
@@ -45,6 +54,13 @@ const props = defineProps({
   // 是否显示「创建/修改计划」按钮（依赖父级承接 planHandle 事件）。
   // 我的课程/全部课程页 = true；学习概览页没有计划弹窗，传 false
   planOps: {
+    type: Boolean,
+    default: true
+  },
+  // 是否显示封面上的状态标签。
+  // 「我的课程」按状态分了 tab，标签与 tab 重复 → 传 false；
+  // 「全部课程」是混在一起的列表 → 保持 true
+  showTag: {
     type: Boolean,
     default: true
   }
@@ -94,6 +110,24 @@ const learnedShow = computed(() => {
 
 // 「还剩 N 节」：学习中心所有课程卡都讲这个口径，不再让用户自己减
 const rest = computed(() => Math.max(0, (Number(props.data.sections) || 0) - learnedShow.value))
+
+/** 距到期天数（向上取整）；没到期时间 / 时间非法返回 null（永久有效） */
+const daysLeft = computed(() => {
+  const t = props.data.expireTime
+  if (!t) return null
+  const end = new Date(t).getTime()
+  if (Number.isNaN(end)) return null
+  return Math.ceil((end - Date.now()) / 86400000)
+})
+/** 7 天内到期才提示。已失效（status 3）不提示 —— 它已经过期了，不是「将要」 */
+const expiringSoon = computed(() => {
+  const d = daysLeft.value
+  return Number(props.data.status) !== 3 && d !== null && d >= 0 && d <= 7
+})
+const fmtDay = (t) => {
+  const d = new Date(t)
+  return Number.isNaN(d.getTime()) ? '' : `${d.getMonth() + 1}/${d.getDate()}`
+}
 
 const goDetail = () => router.push({path: '/details/index', query: {id: props.data.courseId}})
 const goLearning = () => router.push({path: '/learning/index', query: {id: props.data.courseId}})
@@ -173,6 +207,11 @@ const planActive = (type) => emit('planHandle', {data: props.data, type})
   line-height: 20px;
   color: var(--ink3);
   margin-top: 4px;
+  /* 即将到期：只把这一行转暖，不动整张卡 —— 卡片还要能正常读、正常点 */
+  &.is-soon{
+    color: #B07C22;
+    font-weight: 500;
+  }
   em{
     font-style: normal;
     font-family: var(--font-serif);
@@ -204,7 +243,8 @@ const planActive = (type) => emit('planHandle', {data: props.data, type})
     text-align: center;
     font-size: 13px;
     line-height: 34px;
-    border-radius: 999px;
+    // 卡内操作按钮 8px 圆角（全 pill 会变成「每个元素都是胶囊」）
+    border-radius: 8px;
     cursor: pointer;
     transition: background-color .18s, color .18s, border-color .18s;
   }

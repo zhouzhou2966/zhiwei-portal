@@ -4,8 +4,12 @@
 <template>
   <div class="continueHero" v-if="status === 'ok' && lesson && lesson.status != 3">
     <div class="chInfo">
-      <span class="chKicker">继续学习</span>
-      <h2 class="chName" :title="lesson.courseName" @click="goLearn">{{ lesson.courseName }}</h2>
+      <!-- 左上角原来有个「继续学习」小标签，删掉了：右下角按钮已经承担了这个语义
+           （未开始=马上学习 / 学习中=继续学习 / 已学完=重新学习），
+           同一张卡上说两遍反而让人以为卡片和按钮是两件事。 -->
+      <!-- 不挂原生 title：这张卡是整个页面的主角，课程名用 21px 大字号完整显示，
+           hover 再弹一个同名的黑提示框只是重复。真要截断也是字号自适应，不是靠 tooltip -->
+      <h2 class="chName" @click="goLearn">{{ lesson.courseName }}</h2>
       <p class="chNext" v-if="lesson.latestSectionName">
         上次学到 · 第 {{ lesson.latestSectionIndex }} 节 {{ lesson.latestSectionName }}
       </p>
@@ -110,14 +114,12 @@ const goLearn = () => {
   display: flex;
   flex-direction: column;
 }
-.chKicker {
-  font-size: 10.5px;
-  letter-spacing: 2.2px;
-  color: rgba(243, 238, 226, .55);
-}
 .chName {
-  margin-top: 9px;
-  font-size: 21px;
+  /* 上面原来还压着一行 kicker，删掉之后标题就是卡片第一行，
+     不再需要给它让位的 margin */
+  margin-top: 0;
+  // 卡片宽度会随着分栏变化，标题字号跟着收
+  font-size: clamp(17px, 1.9vw, 21px);
   font-weight: 600;
   letter-spacing: -.2px;
   color: #fff;
@@ -186,14 +188,18 @@ const goLearn = () => {
   }
 }
 .chCover {
-  width: 286px;
+  // 宽度跟容器走：概览首屏 8:4 分栏时这张卡只有 ~530px，
+  // 固定 286px 会把文字区挤到 175px（课程名截断、进度条竖向换行）
+  width: clamp(120px, 28%, 286px);
   flex: none;
   cursor: pointer;
+  // 让盒子贴合图片自身比例：align-self:center 取消拉伸，img 高度交给图片原生比例。
+  // 只要 img 有固定高度（哪怕 contain），宽高比不合就会露出上下蓝边（用户已否过）
+  align-self: center;
   img {
+    display: block;
     width: 100%;
-    height: 100%;
-    min-height: 168px;
-    object-fit: cover;
+    height: auto;
     border-radius: 10px;
     background: rgba(255, 255, 255, .08);
     box-shadow: 0 10px 24px rgba(0, 0, 0, .26);

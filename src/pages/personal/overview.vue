@@ -6,8 +6,10 @@
   <div class="ovWrap">
     <header class="ovGreet">
       <div>
-        <h1>{{ greeting }}，{{ userName }}</h1>
-        <p>{{ greetSub }}</p>
+        <!-- 标题用页面名（signs：不要把问候语当标题——「晚上好，xxx」是 AI 味典型形态）；
+             问候保留，降为副行 -->
+        <h1>学习概览</h1>
+        <p>{{ greeting }}，{{ userName }} · {{ greetSub }}</p>
       </div>
       <div class="ovDate">{{ dateText }}</div>
     </header>
@@ -19,23 +21,23 @@
     </div>
 
     <section class="ovSec">
-      <SectionHead index="01" title="本周节奏" subtitle="最近 7 天每天完成的小节，虚线是日均目标" />
+      <SectionHead index="01" title="本周节奏" subtitle="最近 7 天每天完成的小节" />
       <WeekRhythm />
     </section>
 
     <section class="ovSec">
-      <SectionHead index="02" title="在学课程" subtitle="最近在学的 3 门，点击卡片直接继续"
+      <SectionHead index="02" title="在学课程" subtitle="点击卡片直接继续"
                    action="查看全部课程" @action="$router.push({ name: 'myClass' })" />
       <CourseShelf />
     </section>
 
-    <section class="ovSec">
-      <SectionHead index="03" title="今天要做的" subtitle="只列会影响课程的：到期提醒" />
-      <TodoCard />
-    </section>
+    <!-- 原来的「03 今天要做的 / 到期提醒」已下线：课程到期本来就是低频事件，
+         这一节 99% 的时间是一张空卡占位，把概览的节奏拉散。
+         到期提醒挪去了「我的课程」—— 那里才是用户管理课程、看得见每门课有效期的地方
+         （卡片有效期行会变琥珀并标「N 天后到期」，页头也有一条汇总）。 -->
 
     <section class="ovSec">
-      <SectionHead index="04" title="我的笔记" subtitle="最近写下的 3 条，点开回到那一节"
+      <SectionHead index="03" title="我的笔记" subtitle="最近写下的 3 条，点开回到那一节"
                    action="全部笔记" @action="$router.push({ name: 'learningNotes' })" />
       <div class="ovDuo">
         <NotesCard />
@@ -44,7 +46,7 @@
     </section>
 
     <section class="ovSec">
-      <SectionHead index="05" title="学习报告" subtitle="近 30 天的三个关键数字，详细数据在报告页" />
+      <SectionHead index="04" title="学习报告" subtitle="近 30 天的三个关键数字，详细数据在报告页" />
       <ReportStrip />
     </section>
   </div>
@@ -58,7 +60,6 @@ import SectionHead from '@/components/ui/SectionHead.vue'
 import ContinueHero from './components/ContinueHero.vue'
 import WeekRhythm from './components/WeekRhythm.vue'
 import CourseShelf from './components/CourseShelf.vue'
-import TodoCard from './components/TodoCard.vue'
 import ExamCard from './components/ExamCard.vue'
 import NotesCard from './components/NotesCard.vue'
 import RankCard from './components/RankCard.vue'
@@ -142,7 +143,7 @@ const greetSub = computed(() => {
   align-items: stretch;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 900px) {
   .ovTop,
   .ovDuo {
     grid-template-columns: 1fr;

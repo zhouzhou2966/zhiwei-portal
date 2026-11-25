@@ -15,7 +15,12 @@
         <span class="at" v-if="note.noteMoment">视频 {{ moment }}</span>
       </div>
       <p>{{ note.content }}</p>
-      <div class="from" v-if="note.courseName">《{{ note.courseName }}》</div>
+      <div class="fromRow">
+        <div class="from" v-if="note.courseName">《{{ note.courseName }}》</div>
+        <!-- 学习笔记页传 jump=true：有 courseId 才显示「回到这一节」，
+             整卡可点之外再给一个明确入口（纯靠盲点用户不知道能跳） -->
+        <span class="jump" v-if="jump && note.courseId">回到这一节 →</span>
+      </div>
     </div>
   </div>
 </template>
@@ -23,7 +28,9 @@
 import { computed, ref } from 'vue'
 
 const props = defineProps({
-  note: { type: Object, required: true }
+  note: { type: Object, required: true },
+  // 是否显示「回到这一节」入口（默认关：探索页/首页的笔记卡没有跳转语义）
+  jump: { type: Boolean, default: false }
 })
 defineEmits(['open'])
 
@@ -74,6 +81,8 @@ const moment = computed(() => {
 
   .body {
     min-width: 0;
+    // 必须 flex:1 —— 否则正文宽度由内容决定，「回到这一节」的 margin-left:auto 无处可推
+    flex: 1;
   }
 
   .who {
@@ -113,13 +122,31 @@ const moment = computed(() => {
     overflow: hidden;
   }
 
-  .from {
+  .fromRow {
     margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .from {
     font-size: 11.5px;
     color: var(--ink3);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .jump {
+    margin-left: auto;
+    flex: none;
+    font-size: 11.5px;
+    color: var(--main);
+  }
+
+  &:hover .jump {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 }
 </style>

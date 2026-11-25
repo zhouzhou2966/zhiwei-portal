@@ -21,7 +21,8 @@
           <router-link v-for="item in g.items" :key="item.name" :to="{ name: item.name }"
                        class="ssNav" :class="{ on: isActive(item) }">
             <span>{{ item.meta.title }}</span>
-            <em v-if="item.name === 'myClass' && overview.courseReady">{{ overview.courseCount }}</em>
+            <!-- 原来这里挂了「我的课程」的课程数角标：数字和页头副标题、tab 计数重复，
+                 用户拍板去掉 -->
           </router-link>
         </div>
 
@@ -126,9 +127,16 @@ watch(() => route.fullPath, ensureOverview)
   display: flex;
   min-height: 0;
   height: 100%;
-  /* 学习中心整块白底：外层 layoutsWrapper.personalBg 的雾蓝渐变只留给登录页等场景，
-     这里铺白才能和设计稿一致（侧栏与内容区同底，靠一条竖线分区） */
-  background: #fff;
+  /* 页面底色 = 侧栏色。灰底交给 .ssContent 自己铺，原因在 1440 这种宽屏：
+     .ssWrap 最大宽 1280 居中，左右各留一段外边距 —— 如果 .ss 本身是灰，
+     左侧那 80px 会露出「灰边 → 浅侧栏 → 灰内容」的三段色带。
+     现在页面底与侧栏同色，只剩内容区一块灰，左右留白都融进同一层。 */
+  background: #FAFBFC;
+  /* 描边统一转冷调：侧栏、内容区、窄屏 tab 条都吃这一层。
+     放 .ss 上而不是各区块各写一份 —— 否则漏掉的那块（比如 tab 条）
+     会继续用全局暖米 #e6e0d3，压在冷灰底上就是一截发黄的线 */
+  --line: rgba(27, 75, 107, .10);
+  --line-strong: rgba(27, 75, 107, .18);
 }
 .ssWrap {
   display: flex;
@@ -145,7 +153,29 @@ watch(() => route.fullPath, ensureOverview)
   display: flex;
   flex-direction: column;
   padding: 24px 34px 26px 0;
-  border-right: 1px solid var(--line);
+  /* 侧栏不再是刺眼纯白：取比内容区浅一档、比白柔一点的蓝灰，
+     三级层次变成「白卡片 > 侧栏 > 内容区」。纯白贴着 #F7F9FB 时，
+     那条竖线像两个色块硬拼在一起；同族浅一档之后分区靠色阶自然过渡 */
+  background-color: #FAFBFC;
+  /* 顶部从白渐入：Header 是纯白，侧栏如果从第一像素就是 #FAFBFC，
+     Header 底边会切出一条硬邦邦的水平色差（用户反馈「页面衔接处不自然」）。
+     前 140px 由白过渡到侧栏底色，接缝就消失了。 */
+  background-image: linear-gradient(180deg, #fff 0, rgba(255, 255, 255, 0) 140px);
+  background-attachment: local;
+  /* 分隔线改伪元素：顶部 140px 内从透明渐显，和两区的白→底色过渡同步。
+     原来是整条实线 border，两区顶部都渐白之后，它反而成了接缝处唯一
+     一条从头到尾都实心的线，比色差还扎眼 */
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(27, 75, 107, 0) 0, rgba(27, 75, 107, .10) 140px);
+    pointer-events: none;
+  }
   overflow-y: auto;
   &::-webkit-scrollbar {
     width: 6px;
@@ -225,10 +255,6 @@ watch(() => route.fullPath, ensureOverview)
       width: 3px;
       border-radius: 0 3px 3px 0;
       background: var(--main);
-    }
-    em {
-      color: var(--main);
-      opacity: .7;
     }
   }
   span {
@@ -326,13 +352,32 @@ watch(() => route.fullPath, ensureOverview)
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-left: 34px;
+  /* 左侧内边距不能留在这里：.ssMain 的背景是页面底色（浅），
+     34px 的 padding 会在侧栏分界线与灰内容区之间夹出一条浅色竖带 ——
+     用户看到的就是「背景没渲染到分界线」。内边距挪到 .ssContent 的 padding-left，
+     灰底才铺得满，左边距也就不再是两种颜色的拼接。 */
 }
 .ssContent {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 24px 0 56px;
+  // 溢出的横向滚动条：某些宽度下内容区会多出 1px（四舍五入），
+  // 触发一条贴底的横向滚动条（米褐色 thumb，看着像「黄条」）—— 直接禁掉
+  overflow-x: hidden;
+  /* 顶部从白渐入 + 一层极淡的品牌色晕染。
+     第一层（白 → 透明，前 140px）负责和 Header 的纯白无缝衔接 ——
+     少了它，Header 底边会切出一条水平硬边，看着像两块纸拼在一起。
+     第二层（雾蓝，300px 后消失）是页头的空气感。
+     都用 local 跟着内容滚走：fixed 的话长列表滚到一半顶上还挂着白+蓝雾，会显脏。 */
+  background-color: #F7F9FB;
+  background-image:
+    linear-gradient(180deg, #fff 0, rgba(255, 255, 255, 0) 140px),
+    linear-gradient(180deg, rgba(27, 75, 107, .045) 0, rgba(27, 75, 107, 0) 300px);
+  background-attachment: local;
+  // 右侧留白：滚动条别贴着卡片（用户反馈「滑动条太贴近内容区」）
+  /* 左右对称 32：左侧是灰底内的留白，右侧 26 + 6px 滚动条占位 ≈ 32，
+     内容离侧栏分界线不贴边，和右边看起来是一套边距 */
+  padding: 24px 26px 56px 32px;
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -349,9 +394,14 @@ watch(() => route.fullPath, ensureOverview)
 .ssTabs {
   display: none;
   gap: 30px;
-  padding: 0 0 0 2px;
+  /* 左内边距顶替原来 .ssMain 上的 34px：窄屏只剩这条 tab 条，
+     不补的话第一项会贴着屏幕左边缘 */
+  padding: 0 0 0 32px;
   border-bottom: 1px solid var(--line);
   flex: none;
+  /* 窄屏时 Header 下方直接是这条 tab 条：给它白底，和 Header、内容区顶部的白
+     连成一段，否则 #FAFBFC 的条会从白色 Header 里切出来 */
+  background: #fff;
 }
 .ssTab {
   display: flex;
@@ -369,7 +419,10 @@ watch(() => route.fullPath, ensureOverview)
   }
 }
 
-@media (max-width: 1200px) {
+/* 断点 1000：侧栏 240 + 内容 min-width 720 = 960，1000 视口放得下。
+   原来 1200 的断点太保守 —— 用户常见的 1080 窗口会直接掉进 tab 降级档，
+   看到的永远是老样子（「页面没变化」就是这个原因）。 */
+@media (max-width: 999px) {
   .ssSide {
     display: none;
   }

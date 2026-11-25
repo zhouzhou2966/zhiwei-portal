@@ -219,6 +219,13 @@ request({
 	method: 'get',
 	params
 })
+// 我的考试 · 全量统计（次数 / 均分 / 最高分）。
+// 列表改后端分页后，统计头不能拿当前页凑数 —— 那会随翻页变化
+export const getExamStats = () =>
+request({
+	url: `${EXAM_API_PREFIX}/exams/stats`,
+	method: 'get'
+})
 // 查询我的考试记录详情
 export const getExamDetails = (id) =>
 request({

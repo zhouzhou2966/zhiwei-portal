@@ -17,13 +17,9 @@
         <i>最长连续（天）</i>
       </div>
     </div>
-    <div class="rsSpark" v-if="daily.length">
-      <div class="rsBars">
-        <i v-for="(d, i) in daily" :key="i" :class="lvClass(d)"
-           :style="{ height: barH(d) + 'px' }" :title="`${d.statDate} · ${d.finished || 0} 节`"></i>
-      </div>
-      <p><span>近 30 天 · 每天完成的小节</span><span>少 → 多</span></p>
-    </div>
+    <!-- 迷你柱已移除：概览页同屏已有一张走势图（考试卡），
+         两处迷你图表是「每个统计卡都配一张 sparkline」的 AI 味形态；
+         这里只给结论数字，明细去报告页 -->
     <span class="rsGo" @click="$router.push({ name: 'learningReport' })">完整报告 →</span>
   </div>
 
@@ -83,18 +79,7 @@ const longest = computed(() => {
   return best
 })
 
-const maxFinished = computed(() => Math.max(1, ...daily.value.map(d => Number(d.finished) || 0)))
-const barH = (d) => {
-  const v = Number(d.finished) || 0
-  if (v <= 0) return 2
-  return Math.max(6, Math.round(v / maxFinished.value * 46))
-}
-const lvClass = (d) => {
-  const v = Number(d.finished) || 0
-  if (v <= 0) return ''
-  if (v >= maxFinished.value) return 'v2'
-  return 'v'
-}
+// 迷你柱已移除（概览页只留一张走势图），这里不再需要柱子高度换算
 </script>
 <style lang="scss" scoped>
 .reportStrip {
@@ -129,41 +114,13 @@ const lvClass = (d) => {
     color: var(--ink3);
   }
 }
-.rsSpark {
-  flex: 1;
-  min-width: 0;
-}
-.rsBars {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 48px;
-  i {
-    flex: 1;
-    min-width: 3px;
-    border-radius: 2px 2px 0 0;
-    background: #EDF1F4;
-    min-height: 2px;
-    &.v {
-      background: #A3BFD0;
-    }
-    &.v2 {
-      background: var(--main);
-    }
-  }
-}
-.rsSpark p {
-  margin-top: 9px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 11.5px;
-  color: var(--ink3);
-}
 .rsGo {
   flex: none;
-  height: 30px;
-  padding: 0 14px;
-  border-radius: 999px;
+  margin-left: auto;
+  height: 32px;
+  padding: 0 16px;
+  // 次要按钮 8px 圆角（主 CTA 才用 pill）
+  border-radius: 8px;
   border: 1px solid var(--line);
   background: var(--paper);
   color: var(--ink2);

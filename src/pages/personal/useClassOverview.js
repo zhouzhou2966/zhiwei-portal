@@ -9,16 +9,8 @@
  */
 import { reactive } from 'vue'
 import { getMyPlan, getSignRecords, getTodayPoints } from '@/api/class.js'
-// 在学课程数改从「最近学习课程」拿：那个接口本来就要拉（Header / 我的课程页都在用），
-// 而 /ls/lessons/page 的 total 含已失效课程，口径和 Header 的「N 门课程」对不上
-import { loadNowLesson } from '@/utils/nowLesson'
 
 const state = reactive({
-  // 在学课程数（不含已失效）：侧边栏用户卡的「在学 N 门」和概览卡的第一行都用它
-  courseCount: 0,
-  // 课程数是否真的取到了。没取到时要显示「—」而不是 0 ——
-  // 服务挂掉时给个 0 等于告诉用户「你没有课」，是编数据。
-  courseReady: false,
   weekFinished: 0,
   weekPlan: 0,
   weekPoints: 0,
@@ -42,36 +34,7 @@ const todayKey = () => {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 }
 
-let countPending = null
 let overviewPending = null
-
-/**
- * 兜底拉一次课程数。
- *
- * 用户可能直接进「我的考试」等页面，那时「我的课程」页没跑过，
- * 用户卡上会显示 0 门。这里补一次。
- *
- * 走 nowLesson 模块而不是再打 `/ls/lessons/page?pageSize=1`：
- * ① 那个接口的 total 含已失效课程，和 Header「N 门课程」用的 courseAmount 口径不同；
- * ② nowLesson 有 5 秒 TTL + 并发合并，Header 刚拉过的数据这里直接复用，零额外请求。
- */
-export function ensureCourseCount() {
-  if (state.courseCount > 0 || countPending) return countPending
-  countPending = loadNowLesson()
-    .then(({ data }) => {
-      if (data) {
-        state.courseCount = Number(data.courseAmount) || 0
-        state.courseReady = true
-      }
-    })
-    .catch(() => {
-      // 概览是装饰性信息，拉不到就留 0，不打扰用户
-    })
-    .finally(() => {
-      countPending = null
-    })
-  return countPending
-}
 
 /**
  * 本月连续打卡天数：从月末往前数连续的 1，遇到 0 停。
@@ -119,8 +82,6 @@ export function ensureOverview() {
     loadSignAndPoints(),
   ]).finally(() => {
     overviewPending = null
-    // 课程数兜底：概览页的「在学 N 门」用得到；nowLesson 有 TTL + 并发合并，不会多打请求
-    if (!state.courseCount) ensureCourseCount()
   })
   return overviewPending
 }
@@ -160,11 +121,7 @@ export function loadSignAndPoints() {
 }
 
 // 「我的课程」页拉到完整数据后写入
-export function setClassOverview({ courseCount, weekFinished, weekPlan, weekPoints }) {
-  if (courseCount != null) {
-    state.courseCount = courseCount
-    state.courseReady = true
-  }
+export function setClassOverview({ weekFinished, weekPlan, weekPoints }) {
   if (weekFinished != null) state.weekFinished = weekFinished
   if (weekPlan != null) state.weekPlan = weekPlan
   if (weekPoints != null) state.weekPoints = weekPoints

@@ -4,9 +4,11 @@
 <template>
   <div class="weekRhythm" v-if="status === 'ok' && hasData">
     <div class="wrChart">
-      <!-- 日均目标线：按「周目标 ÷ 7」折算到柱高比例；折算不了（目标 0 / 超轴）就不画 -->
-      <div class="wrTarget" v-if="targetY > 0" :style="{ bottom: targetY + 'px' }">
-        <span>日均目标 {{ perDay }} 节</span>
+      <!-- 日均目标线：按「周目标 ÷ 7」折算到柱高比例。
+           周目标不足 7 节时日均不到 1 节，这条线「日均目标 0.1 节」既看不懂也没有行动意义，
+           对着空柱画一条 0.1 的虚线纯属噪音 —— 只在 perDay ≥ 1 时才显示 -->
+      <div class="wrTarget" v-if="targetY > 0 && perDay >= 1" :style="{ bottom: targetY + 'px' }">
+        <span>日均 {{ perDay }} 节</span>
       </div>
       <div class="wrCols">
         <div class="wrCol" v-for="(d, i) in daily" :key="d.statDate">

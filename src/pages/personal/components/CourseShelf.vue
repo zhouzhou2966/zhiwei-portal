@@ -1,12 +1,14 @@
-<!-- 概览 · 在学课程书架（3 门 + 选课引导格）
-     数据：/ls/lessons/page（pageSize=9 取一批，过滤已失效后取前 3 —— 失效课多了
-     只取 3 条会凑不满一行）。自带三态。 -->
+<!-- 概览 · 在学课程书架（只显示「学习中」的课，最多 3 门 + 选课引导格）
+     数据：/ls/lessons/page（按最近学习排序，pageSize=9 取一批后过滤 status===1）。
+     已学完 / 未开始 / 已失效的不进这个书架 —— 「在学课程」标签下出现「已学完」
+     是口径错位（用户反馈）。0 门在学时的空态分两种：完全没课 / 有课但没在学的。 -->
 <template>
   <div class="shelf" v-if="status === 'ok' && items.length > 0">
     <div class="sCard" v-for="c in items" :key="c.id || c.courseId">
-      <div class="scCover" @click="goDetail(c)">
+      <div class="scCover" @click="goLearn(c)">
         <img :src="c.courseCoverUrl" alt="" @error="onCoverError($event)">
-        <span class="scTag">{{ tagOf(c) }}</span>
+        <!-- 不再放状态标签：这个书架只筛 status===1（学习中的课），
+             每张卡都盖一个「学习中」，等于把书架的筛选条件重复一遍 -->
       </div>
       <div class="scBody">
         <h4 class="scName" :title="c.courseName" @click="goDetail(c)">{{ c.courseName }}</h4>
@@ -24,17 +26,20 @@
 
     <div class="scPick" @click="$router.push('/search/index')">
       <b>去选一门新课</b>
-      <em>课程首页有 300+ 门课</em>
+      <em>按方向挑一门</em>
     </div>
   </div>
 
-  <!-- 0 门在学课：选课引导 + 推荐（推荐只在这个空态里出现，有课用户不重复给入口） -->
+  <!-- 0 门在学：区分两种情况 —— 完全没课（选课引导 + 推荐）/ 有课但都不在学（去我的课程看） -->
   <div class="shelfEmpty" v-else-if="status === 'ok'">
     <div class="scPick scPickBig" @click="$router.push('/search/index')">
-      <b>还没有课程，去选一门新课</b>
-      <em>课程首页有 300+ 门课</em>
+      <b>{{ rawList.length > 0 ? '目前没有正在学的课程' : '还没有课程，去选一门新课' }}</b>
+      <em>按方向挑一门</em>
     </div>
-    <RecoCard />
+    <RecoCard v-if="rawList.length === 0" />
+    <div class="scAllHint" v-else>
+      已学完 / 未开始的课在 <span class="scLink" @click="$router.push({ name: 'myClass' })">我的课程</span> 里
+    </div>
   </div>
   <div class="scState" v-else-if="status === 'error'">
     <InlineError title="课程列表加载失败" :msg="errorMsg" @retry="load" />
@@ -53,6 +58,7 @@ import RecoCard from './RecoCard.vue'
 
 const router = useRouter()
 const items = ref([])
+const rawList = ref([])
 const status = ref('loading')
 const errorMsg = ref('')
 
@@ -61,7 +67,10 @@ const load = async () => {
   try {
     const res = await getMylessons({ pageNo: 1, pageSize: 9 })
     if (res && res.code == 200 && res.data) {
-      items.value = (res.data.list || []).filter(d => d.status != 3).slice(0, 3)
+      rawList.value = res.data.list || []
+      // 只放「学习中」的课：书架的语义就是「点开直接继续」，
+      // 已学完 / 未开始的课出现在这里是口径错位
+      items.value = rawList.value.filter(d => Number(d.status) === 1).slice(0, 3)
       status.value = 'ok'
       return
     }
@@ -75,12 +84,7 @@ const load = async () => {
 onMounted(load)
 
 // 0-未学习 1-学习中 2-已学完 3-已失效
-const tagOf = (c) => {
-  const s = Number(c.status)
-  if (s === 0) return '未开始'
-  if (s === 2) return '已学完'
-  return '学习中'
-}
+// （原来的 tagOf 已随状态标签一起删除：书架只筛 status===1，标签恒为「学习中」）
 const learnText = (c) => {
   const s = Number(c.status)
   if (s === 0) return '马上学习'
@@ -119,11 +123,11 @@ const goLearn = (c) => router.push({ path: '/learning/index', query: { id: c.cou
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color .2s, box-shadow .2s, transform .2s;
+  // hover 只做表面层级（边框加深），不抬升、不加大投影 ——
+  // 卡片悬浮位移是 AI 味清单里点名的形态
+  transition: border-color .2s;
   &:hover {
     border-color: var(--line-strong);
-    box-shadow: 0 14px 30px rgba(26, 29, 33, .08);
-    transform: translateY(-2px);
   }
 }
 .scCover {
@@ -136,17 +140,6 @@ const goLearn = (c) => router.push({ path: '/learning/index', query: { id: c.cou
     object-fit: cover;
     display: block;
   }
-}
-.scTag {
-  position: absolute;
-  left: 10px;
-  top: 10px;
-  font-size: 10.5px;
-  line-height: 20px;
-  padding: 0 8px;
-  border-radius: 5px;
-  background: rgba(21, 59, 87, .82);
-  color: #F3EEE2;
 }
 .scBody {
   padding: 13px 14px 14px;
@@ -197,7 +190,8 @@ const goLearn = (c) => router.push({ path: '/learning/index', query: { id: c.cou
   span {
     flex: 1;
     height: 32px;
-    border-radius: 999px;
+    // 卡内操作按钮 8px 圆角；全 pill 是「每个元素都是胶囊」的 AI 味信号
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -257,6 +251,18 @@ const goLearn = (c) => router.push({ path: '/learning/index', query: { id: c.cou
   grid-template-columns: 1fr 400px;
   gap: 18px;
   align-items: stretch;
+}
+.scAllHint{
+  font-size: 12.5px;
+  color: var(--ink3);
+  .scLink{
+    color: var(--main);
+    cursor: pointer;
+    &:hover{
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
 }
 .shelfEmpty .scPickBig {
   grid-column: auto;
