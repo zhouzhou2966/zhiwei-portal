@@ -10,8 +10,7 @@
     <div class="nodata" v-if="status === 'error'">
       <div class="errBox">
         <p class="errTitle">订单加载失败</p>
-        <p class="errMsg">（{{ errorMsg }}）</p>
-        <el-button type="primary" plain size="small" @click="getOrderListesData">重新加载</el-button>
+        <RetryButton @retry="getOrderListesData" />
       </div>
     </div>
     <!-- 加载中：这一块原来是 `<div class="table" v-else>`，也就是把 loading 也归到了
@@ -21,7 +20,7 @@
     <div class="nodata" v-else-if="status === 'loading'">
       <span class="tipText fadeInDelay">正在加载订单…</span>
     </div>
-    <div class="table" v-else-if="status === 'ok'">
+    <div class="table" v-else-if="status === 'ok'" :class="{ refreshing }">
       <div class="tabHead">
         <span class="fx-1 alignLeft">课程信息</span><span>订单金额</span><span>实付金额</span><span>交易状态</span><span>操作</span>
       </div>
@@ -74,6 +73,7 @@ import { ElMessage } from "element-plus";
 // errMsg 取业务失败文案（禁止写 res.data.msg）；catchMsg 取网络层失败文案，
 // 且能识别「401 已被拦截器处理」，避免再叠一条假报错
 import { errMsg, catchMsg } from "@/utils/request";
+import RetryButton from "@/components/RetryButton.vue";
 import { getOrderListes, cancelOrder, delOrder } from "@/api/order.js";
 import { useRoute } from "vue-router";
 import { dataCacheStore } from "@/store"
@@ -123,12 +123,12 @@ const params = reactive({
 
 const handleSizeChange = (val) => {
   params.pageSize = val
-  getOrderListesData()
+  getOrderListesData(true)
 }
 
 const handleCurrentChange = (val) => {
   params.pageNo = val
-  getOrderListesData()
+  getOrderListesData(true)
 }
 
 // mounted生命周期
@@ -146,9 +146,15 @@ const orderListData = ref([])
  */
 const status = ref('loading')
 const errorMsg = ref('')
+// 翻页/改每页条数时静默刷新：保留旧列表 + 变淡，不闪「正在加载订单…」
+const refreshing = ref(false)
 const hasData = computed(() => Array.isArray(orderListData.value) && orderListData.value.length > 0)
-const getOrderListesData =  async () => {
-  status.value = 'loading'
+/**
+ * @param {boolean} silent 翻页时传 true：不把 status 打回 loading
+ */
+const getOrderListesData =  async (silent = false) => {
+  if (silent) refreshing.value = true
+  else status.value = 'loading'
   try {
     const res = await getOrderListes(params)
     if (res && res.code === 200 && res.data) {
@@ -169,6 +175,8 @@ const getOrderListesData =  async () => {
     count.value = 0
     errorMsg.value = catchMsg(err, '订单加载失败，请稍后重试') || '请先登录后查看订单'
     status.value = 'error'
+  } finally {
+    refreshing.value = false
   }
 }
 function isOrderPay(item){

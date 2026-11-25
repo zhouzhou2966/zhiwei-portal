@@ -3,7 +3,7 @@
      宽度交给父级 grid 决定 —— 原来写死 calc(50% - 18px) + margin-right 35px，
      等于把「两列」这件事焊在卡片上，父级想改成单列或三列都得反过来改卡片。 -->
 <template>
- <div class="couponCards" :class="{ 'is-soon': isSoon(item) }" v-for="(item, index) in data" :key="index">
+ <div class="couponCards" :class="{ 'is-soon': isSoon(item), 'is-dead': type !== 1 }" v-for="(item, index) in data" :key="index">
    <div class="price ft-cl-wt" v-if="item.discountType == 4 || item.discountType == 1 || item.discountType == 3">
      <div>￥<em>{{item.discountValue / 100}}</em></div>
      <div class="desc" v-if="item.displayRule || item.rule">{{ item.displayRule || item.rule }}</div>
@@ -19,6 +19,9 @@
         <div class="tit">
           <span class="name">{{ item.displayTitle || item.name }}</span>
           <span class="multiCount" v-if="item.count > 1" :aria-label="`共 ${item.count} 张`">×{{ item.count }}</span>
+          <!-- 已使用 / 已过期：票根灰掉之后，还需要一个文字结论。
+               只靠颜色区分，用户得自己推断「这红卡为什么点不了」 -->
+          <span class="stateTag" v-if="type !== 1">{{ type === 2 ? '已使用' : '已过期' }}</span>
         </div>
         <p class="meta"><em>适用</em>{{ couponScopeText(item, categoryMap) }}</p>
         <!-- 有效期：未使用页签下换成「N 天后到期」。券是过期作废的东西，
@@ -98,6 +101,30 @@ const fullTerm = (item) => {
   &.is-soon{
     border-color: #F2DFBC;
   }
+  /* 已使用 / 已过期：票根去饱和、文字降一级。
+     之前这两个页签的券和「未使用」长得一模一样（同样的高饱和红票根），
+     用户得读到有效期才发现这券早没了 —— 那张红卡在传达「可以用」的错误信号 */
+  &.is-dead{
+    .price{
+      filter: grayscale(1);
+      opacity: .72;
+    }
+    .name{
+      color: var(--color-font2);
+    }
+    .meta{
+      color: var(--color-font3);
+    }
+    .multiCount{
+      background: var(--color-background3);
+      color: var(--color-font3);
+    }
+    /* 不能用的券没有 hover 反馈，否则又暗示「可以点」 */
+    &:hover{
+      border-color: var(--color-background2);
+      box-shadow: none;
+    }
+  }
   .price{
     flex: none;
     width: 118px;
@@ -161,6 +188,18 @@ const fullTerm = (item) => {
        color: #B07C22;
        font-size: 11px;
        font-weight: 500;
+     }
+     /* 状态角标推到行尾：它是「这张券的下场」，和信息列靠左的主语分开 */
+     .stateTag{
+       flex: none;
+       margin-left: auto;
+       padding: 0 7px;
+       height: 20px;
+       line-height: 20px;
+       border-radius: 4px;
+       background: var(--color-background3);
+       color: var(--color-font3);
+       font-size: 11px;
      }
      .meta{
        color: var(--color-font2);

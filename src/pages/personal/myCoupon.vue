@@ -29,11 +29,11 @@
       <div class="nodata" v-if="status === 'error'">
         <div class="errBox">
           <p class="errTitle">优惠券加载失败</p>
-          <p class="errMsg">（{{ errorMsg }}）</p>
-          <el-button type="primary" plain size="small" @click="getMyCouponData">重新加载</el-button>
+          <RetryButton @retry="getMyCouponData" />
         </div>
       </div>
-      <div class="myCouponItems" v-else :class="{ 'is-empty': myCoupon.length === 0, 'is-one': myCoupon.length === 1 }">
+      <div class="myCouponItems" v-else
+           :class="{ 'is-empty': myCoupon.length === 0, 'is-one': myCoupon.length === 1, refreshing }">
         <!-- 用 <template v-if> 包起来，不要再用 v-else 直接配 list：
              中间只要多插一个 v-if 的元素（比如下面那条「已加载上限」提示），
              v-else 就会被它截走，结果是「有券」和「空状态」同时显示。 -->
@@ -139,6 +139,7 @@ import {computed, onMounted, ref} from "vue";
 import {ElMessage} from "element-plus";
 // errMsg 取业务失败文案（禁止写 res.data.msg）；catchMsg 取网络层失败文案
 import {errMsg, catchMsg} from "@/utils/request";
+import RetryButton from "@/components/RetryButton.vue";
 import {getMyCoupon, exchangeCoupon, previewExchangeCoupon, formatRule} from "@/api/class.js";
 import {couponCopy, couponFace, isCouponRenderable, couponExpiringSoon} from "@/utils/couponEffect";
 import {useRoute, useRouter} from "vue-router";
@@ -169,7 +170,7 @@ const tableBar = ref([
 const actId = ref(1)
 const changeTable = id => {
   actId.value = id
-  getMyCouponData()
+  getMyCouponData(true)
 }
 
 // mounted生命周期
@@ -282,8 +283,15 @@ const expiringSoonNames = computed(() => {
   return names.length > 3 ? `${names.slice(0, 3).join('、')} 等` : names.join('、')
 })
 
-const getMyCouponData = async () => {
-  status.value = 'loading'
+// 切换页签时静默刷新：保留旧列表 + 变淡，不闪「正在加载优惠券…」
+const refreshing = ref(false)
+
+/**
+ * @param {boolean} silent 切页签时传 true：不把 status 打回 loading
+ */
+const getMyCouponData = async (silent = false) => {
+  if (silent) refreshing.value = true
+  else status.value = 'loading'
   try {
     const r = await fetchMyCouponList(actId.value)
     if (r.ok) {
@@ -299,6 +307,8 @@ const getMyCouponData = async () => {
     errorMsg.value = catchMsg(err, '优惠券加载失败，请稍后重试') || '请先登录后查看优惠券'
     status.value = 'error'
     syncTabCount()
+  } finally {
+    refreshing.value = false
   }
 }
 
@@ -352,7 +362,16 @@ const queryPreview = async (code) => {
     // 网关对不存在的路由也回 HTTP 200 + {code:0,msg:"请求路径不存在"}，
     // 如果把它当成「不能兑换」，预检一挂按钮就被禁用，用户连试都试不了。
     // 预检只是提前告知，最终判定必须由兑换接口做。
-    preview.value = (res && res.code === 200 && res.data && res.data.valid !== false) ? res.data : null
+    if (res && res.code === 200 && res.data && res.data.valid !== false) {
+      preview.value = res.data
+    } else if (res && res.code === 400 && res.msg) {
+      // 400 是后端**主动判定的业务结论**（如码格式不合法 →「无效兑换码」），
+      // 属于可靠信号，必须告诉用户；静默吞掉的话，输错一个字符就是「输入完没任何反应」。
+      // 只有 code:0（网关路由不存在）这类不可靠信号才静默。
+      preview.value = { valid: false, canExchange: false, reason: res.msg }
+    } else {
+      preview.value = null
+    }
   } catch (e) {
     if (seq !== previewSeq) return
     // 预检查不了不等于不能兑，清空即可，按钮保持可点

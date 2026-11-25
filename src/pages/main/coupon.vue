@@ -329,11 +329,18 @@ onBeforeUnmount(() => {
       justify-content: center;
       font-size: 14px;
       flex: 1;
+      min-width: 0;
       line-height: 28px;
       .tit{
         font-weight: 500;
         font-size: 20px;  
         margin-bottom: 15px;
+        /* 券名可能很长（「新人尝鲜券 无门槛10元」）：允许两行后省略。
+           不设上限时，一旦所在列变窄就会退化成「一字一行」把卡片撑到 280px 高 */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
       em{
         font-style: normal;
@@ -377,6 +384,16 @@ onBeforeUnmount(() => {
         animation: coupon-bt-shake 420ms cubic-bezier(.36,.07,.19,.97) both;
       }
     }
+  }
+}
+
+/* 窄容器（1080 档）：两列时每张卡只有 ~423px —— 价签 167 + 按钮 144 之后券名只剩 80px，
+   长名字会「一字一行」把卡撑到 280px 高。降到单列（885px 一张），信息全部一行放得下。
+   1440 档仍是两列，不受影响。 */
+@media (max-width: 1140px){
+  .discountChoiceWrapper .couponItems .mainCouponCards{
+    width: 100%;
+    margin-right: 0;
   }
 }
 

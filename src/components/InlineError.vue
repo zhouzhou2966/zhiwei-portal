@@ -14,15 +14,18 @@
 <template>
   <div class="inlineErr">
     <p class="title">{{ title }}</p>
-    <p class="msg" v-if="msg">（{{ msg }}）</p>
-    <el-button v-if="retry" type="primary" plain size="small" @click="$emit('retry')">重新加载</el-button>
+    <!-- 不再显示后端原因（「（服务不存在）」这类网关文案是噪音，用户既看不懂也没法处理，
+         标题已经说清「加载失败」；真正的排查信息看网络面板） -->
+    <RetryButton v-if="retry" class="retry" @retry="$emit('retry')" />
   </div>
 </template>
 <script setup>
+import RetryButton from './RetryButton.vue'
 defineProps({
   // 出错的区块名，例如「学习计划加载失败」
   title: { type: String, default: '加载失败' },
-  // 后端给的原始原因（如「服务不存在」），没有就不显示这一行
+  // 后端原始原因（如「服务不存在」）。2026-11-25 起不再渲染：
+  // 网关文案对用户是噪音，标题已说明失败；保留 prop 是为了不破坏调用方
   msg: { type: String, default: '' },
   retry: { type: Boolean, default: true },
 })
@@ -30,28 +33,22 @@ defineEmits(['retry'])
 </script>
 <style lang="scss" scoped>
 .inlineErr{
+  // 竖向：标题在上、刷新图标在下（用户指定），整体居中
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 28px 16px;
+  gap: 14px;
+  padding: 26px 16px;
   text-align: center;
   background: var(--color-background5);
-  border-radius: 8px;
+  border-radius: 10px;
   .title{
     margin: 0;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     line-height: 22px;
     color: var(--color-font1);
-  }
-  .msg{
-    margin: 0 0 6px;
-    font-size: 13px;
-    line-height: 20px;
-    color: var(--color-font2);
-    word-break: break-all;
   }
 }
 </style>

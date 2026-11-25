@@ -10,8 +10,7 @@
     <div class="payStateTip fadeInDelay" v-if="status === 'loading'">正在加载结算信息…</div>
     <div class="payStateTip payStateTipError" v-else-if="status === 'error'">
       <p class="tit">结算信息加载失败</p>
-      <p class="sub">{{ errorMsg }}</p>
-      <el-button type="primary" plain size="small" @click="comfirePageInfoHandle">重新加载</el-button>
+      <RetryButton @retry="comfirePageInfoHandle" />
     </div>
     <template v-else>
       <div class="tab">
@@ -56,6 +55,7 @@
 // errMsg：统一取后端错误提示（禁止写 res.data.msg —— 业务失败时响应体里没有 data 字段，见 utils/request.js）
 // catchMsg：网络层失败文案，能识别「401 已被拦截器处理」，避免再叠一条假报错
 import { errMsg, catchMsg } from '@/utils/request'
+import RetryButton from '@/components/RetryButton.vue'
 /** 数据导入 **/
 import { onMounted, ref, computed } from "vue";
 import { ElMessage } from "element-plus";

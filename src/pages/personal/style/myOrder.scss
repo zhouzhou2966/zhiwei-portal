@@ -2,6 +2,12 @@
 .myOrderWrapper{
     .table{
         margin-top: 37px;
+        // 翻页静默刷新：旧列表变淡表示「正在换」，不闪加载提示
+        &.refreshing{
+            opacity: .45;
+            pointer-events: none;
+            transition: opacity .15s;
+        }
         .tabHead, .tabInfo,.tabCont > .orderList{
             display: flex;
             background: var(--color-background1);

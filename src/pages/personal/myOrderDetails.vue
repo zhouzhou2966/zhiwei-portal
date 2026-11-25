@@ -10,8 +10,7 @@
       <div class="nodata">
         <div class="errBox">
           <p class="errTitle">订单详情加载失败</p>
-          <p class="errMsg">（{{ errorMsg }}）</p>
-          <el-button type="primary" plain size="small" @click="getOrderDetailsData">重新加载</el-button>
+          <RetryButton @retry="getOrderDetailsData" />
         </div>
       </div>
     </div>
@@ -167,6 +166,7 @@ import {onMounted, ref} from "vue";
 import {ElMessage} from "element-plus";
 // errMsg 取业务失败文案（禁止写 res.data.msg）；catchMsg 取网络层失败文案
 import {errMsg, catchMsg} from "@/utils/request";
+import RetryButton from "@/components/RetryButton.vue";
 import {getOrderDetails, refundsApply, refundsDetails} from "@/api/order.js";
 import {useRoute} from "vue-router";
 import {dataCacheStore} from "@/store"

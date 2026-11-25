@@ -26,6 +26,19 @@
   background: var(--color-main) !important;
   border-radius: 6px;
 }
+// plain 变体：底色被上面的 !important 强制成主色，而 plain 的文字色也是主色 ——
+// 文字和底色同色，按钮就变成一块没有字的蓝色色块（用户截图反馈过）。
+// 统一补白字，让它呈现为实心主色按钮，和全局其它按钮一致。
+// 错误面板的「重新加载」已改用原生图标按钮（components/RetryButton.vue），不再依赖这条规则。
+.el-button.is-plain{
+  color: #fff !important;
+  border-color: var(--color-main) !important;
+  &:hover,
+  &:focus{
+    background: var(--color-hover) !important;
+    color: #fff !important;
+  }
+}
 
 // 表单 相关
 .el-form-item{
