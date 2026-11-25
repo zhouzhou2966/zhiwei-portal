@@ -9,7 +9,7 @@
     </div>
     <div class="exScore">
       <b>{{ latest.score != null ? latest.score : '-' }}<i>分</i></b>
-      <span>正确率 {{ latest.correctRate == null ? '--' : latest.correctRate }}%</span>
+      <span>正确率 {{ rateOf(latest) }}</span>
     </div>
     <p class="exName" :title="`${latest.courseName || ''} · ${latest.sectionName || ''}`">
       {{ latest.courseName || '考试' }}<template v-if="latest.sectionName"> · {{ latest.sectionName }}</template>
@@ -65,6 +65,15 @@ const load = async () => {
 onMounted(load)
 
 const latest = computed(() => raw.value[0] || null)
+
+/**
+ * 正确率：后端存的是**基点**（ExamRecordServiceImpl.RATE_SCALE = 10000，
+ * 即 76% 存成 7600），直接拼「%」会显示成 7600% —— 展示层除以 100 并封顶 100。
+ */
+const rateOf = (row) => {
+  if (!row || row.correctRate == null) return '--'
+  return Math.min(100, Math.round(Number(row.correctRate) / 100)) + '%'
+}
 const whenText = computed(() => {
   const t = latest.value && (latest.value.finishTime || latest.value.commitTime)
   return t ? dayjs(t).format('M/D HH:mm') : ''

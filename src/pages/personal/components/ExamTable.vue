@@ -23,10 +23,11 @@
           <span>{{scope.row.score || 0}}</span>
         </template>
       </el-table-column>
-      <!-- 正确率由后端判卷时算好存库（ExamRecord.correctRate），前端不要自己除 -->
+      <!-- 正确率后端存的是**基点**（RATE_SCALE = 10000，76% 存 7600），
+           展示层除以 100 再拼 % —— 不除会显示「7600%」（用户截图见过 10000%） -->
       <el-table-column prop="correctRate" align="center" label="正确率" width="80" >
         <template #default="scope">
-          <span>{{ scope.row.correctRate == null ? '--' : scope.row.correctRate + '%' }}</span>
+          <span>{{ rateOf(scope.row) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="100">
@@ -38,6 +39,12 @@
   </div>
 </template>
 <script setup>
+
+// 正确率：后端存基点（×10000），展示除以 100，封顶 100
+const rateOf = (row) => {
+  if (!row || row.correctRate == null) return '--'
+  return Math.min(100, Math.round(Number(row.correctRate) / 100)) + '%'
+}
 
 // 介绍父组件传来的标题
 defineProps({

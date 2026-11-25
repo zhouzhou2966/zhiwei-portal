@@ -21,39 +21,33 @@
       <span>学完一节再来看，活跃度和趋势就有内容了</span>
     </div>
 
-    <template v-else-if="status === 'ok'">
-      <!-- KPI -->
-      <div class="rpKpis">
-        <div class="rpKpi">
-          <span class="kLabel">累计学习</span>
-          <b>{{ totalSections }}<em>节</em></b>
-          <span class="kSub">{{ days }} 天内完成</span>
-        </div>
-        <div class="rpKpi">
-          <span class="kLabel">活跃天数</span>
-          <b>{{ activeDays }}<em>天</em></b>
-          <span class="kSub">最长连续 {{ longest }} 天</span>
-        </div>
-        <div class="rpKpi">
-          <span class="kLabel">完成课程</span>
-          <b>{{ finishedCourses }}<em>门</em></b>
-          <span class="kSub">在学 {{ learningCourses }} 门</span>
-        </div>
-        <div class="rpKpi">
-          <span class="kLabel">考试均分</span>
-          <b>{{ examAvg == null ? '-' : examAvg }}<em>分</em></b>
-          <span class="kSub">共 {{ examCount }} 次 · 最高 {{ examMax == null ? '-' : examMax }}</span>
-        </div>
-      </div>
-
-      <!-- 01 活跃度 -->
+    <div class="rpBody" v-else-if="status === 'ok'" :class="{ refreshing }">
+      <!-- 01 学习活跃度：热力图是主视觉，右侧「本期概况」承接结论数字。
+           顶部原来另有一排 4 张 KPI 卡，与这里的指标完全重复（累计/活跃/完成/均分），
+           已删除 —— 同一屏不放两套同样的数字 -->
       <section class="rpSec">
-        <SectionHead index="01" title="学习活跃度" subtitle="每天完成的小节，一周一列" />
+        <SectionHead index="01" title="学习活跃度" subtitle="每天完成的小节，一周一列">
+          <template #action>
+            <span class="rpNote">活跃率 {{ activeRate }}% · {{ activeDays }} / {{ days }} 天有记录</span>
+          </template>
+        </SectionHead>
         <div class="rpHeatWrap">
-          <div class="rpHeat">
-            <div class="hm" :style="{ gridTemplateColumns: `repeat(${cols}, 26px)` }">
-              <span class="hmCell" v-for="(c, i) in cells" :key="i"
-                    :class="'lv' + c.level" :title="`${c.date} · 完成 ${c.finished} 节`"></span>
+          <div class="rpHeat" :style="{ '--hm-cell': cellSize + 'px' }">
+            <!-- 月份行：列宽与下面格子严格对齐（12px 是星期标签列） -->
+            <div class="heatMonths" :style="{ gridTemplateColumns: `12px repeat(${cols}, ${cellSize}px)` }">
+              <span></span>
+              <span v-for="(m, i) in monthCols" :key="'m' + i">{{ m }}</span>
+            </div>
+            <div class="heatBody">
+              <div class="heatDows">
+                <span v-for="(d, i) in dowLabels" :key="i">{{ d }}</span>
+              </div>
+              <div class="hm" :style="{ gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`, gridTemplateRows: `repeat(7, ${cellSize}px)` }">
+                <!-- 首列前面按星期补空位，让每一行固定是同一个星期（周一在最上） -->
+                <span class="hmBlank" v-for="(b, i) in leadingBlanks" :key="'b' + i"></span>
+                <span class="hmCell" v-for="(c, i) in cells" :key="i"
+                      :class="'lv' + c.level" :title="`${c.date} · 完成 ${c.finished} 节`"></span>
+              </div>
             </div>
             <div class="hmFoot">
               <span>最近 {{ cols }} 周</span>
@@ -62,19 +56,55 @@
               </span>
             </div>
           </div>
-          <div class="rpSide">
-            <div><span>区间完成</span><b>{{ totalSections }} 节</b></div>
-            <div><span>日均</span><b>{{ avgPerDay }} 节</b></div>
-            <div><span>最长连续</span><b>{{ longest }} 天</b></div>
-            <div><span>活跃率</span><b>{{ activeRate }}%</b></div>
-            <p class="rpTip">活跃率 = 有学习记录的天数 / 统计区间天数。没记录的日子是空格，不补成灰色。</p>
+
+          <!-- 本期概况：4 项结论（主数字 + 副行说明），替代原来顶部的 4 张 KPI 卡 -->
+          <div class="rpOverview">
+            <div class="ovItem">
+              <span class="ovLabel">累计学习</span>
+              <p class="ovVal"><b>{{ totalSections }}</b><em>节</em></p>
+              <span class="ovSub">日均 {{ avgPerDay }} 节</span>
+            </div>
+            <div class="ovItem">
+              <span class="ovLabel">活跃天数</span>
+              <p class="ovVal"><b>{{ activeDays }}</b><em>天</em></p>
+              <span class="ovSub">最长连续 {{ longest }} 天</span>
+            </div>
+            <div class="ovItem">
+              <span class="ovLabel">完成课程</span>
+              <p class="ovVal"><b>{{ finishedCourses }}</b><em>门</em></p>
+              <span class="ovSub">在学 {{ learningCourses }} 门</span>
+            </div>
+            <div class="ovItem">
+              <span class="ovLabel">考试均分</span>
+              <p class="ovVal"><b>{{ examAvg == null ? '-' : examAvg }}</b><em>分</em></p>
+              <span class="ovSub">共 {{ examCount }} 次 · 最高 {{ examMax == null ? '-' : examMax }}</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- 02 周目标 -->
+      <!-- 02 课程投入分布：先回答「时间花在哪门课上」，再谈目标和考试 -->
       <section class="rpSec">
-        <SectionHead index="02" title="周目标达成" subtitle="最近 4 周，目标按当前周计划回看">
+        <SectionHead index="02" title="课程投入分布" subtitle="按已学小节排序，浅色是还没学的部分">
+          <template #action>
+            <span class="rpNote" @click="$router.push({ name: 'myClass' })">去我的课程 →</span>
+          </template>
+        </SectionHead>
+        <div class="rpDist" v-if="dist.length > 0">
+          <div class="dr" v-for="c in dist" :key="c.id">
+            <!-- 不再挂原生 title：鼠标停在课程名上弹一个小黑提示框，只是把已经写在左边的名字重复一遍，
+                 还挡着下面的进度条。名字真超长时靠 ellipsis 截断，点「去我的课程」能看全 -->
+            <span class="dName">{{ c.name }}</span>
+            <div class="dBar"><i :style="{ width: c.pct + '%' }"></i></div>
+            <span class="dNum"><b>{{ c.learned }}</b> / {{ c.sections }} 节</span>
+          </div>
+        </div>
+        <div class="rpEmptyBlock" v-else>还没有在学的课程</div>
+      </section>
+
+      <!-- 03 周目标 -->
+      <section class="rpSec">
+        <SectionHead index="03" title="周目标达成" subtitle="最近 4 周，目标按当前周计划回看">
           <template #action>
             <span class="rpNote">达标 {{ hitCount }} / 4 周</span>
           </template>
@@ -93,9 +123,9 @@
         <div class="rpEmptyBlock" v-else>还没有设定每周目标，在「我的课程」里给课程定个每周目标吧</div>
       </section>
 
-      <!-- 03 考试趋势 -->
+      <!-- 04 考试分数趋势 -->
       <section class="rpSec">
-        <SectionHead index="03" title="考试分数趋势" subtitle="最近 8 次，虚线是均分">
+        <SectionHead index="04" title="考试分数趋势" subtitle="最近 8 次，虚线是均分">
           <template #action>
             <span class="rpNote">共 {{ examCount }} 次考试</span>
           </template>
@@ -117,24 +147,7 @@
         </div>
         <div class="rpEmptyBlock" v-else>还没有考试记录</div>
       </section>
-
-      <!-- 04 课程投入分布 -->
-      <section class="rpSec">
-        <SectionHead index="04" title="课程投入分布" subtitle="按已学小节排序，浅色是还没学的部分">
-          <template #action>
-            <span class="rpNote" @click="$router.push({ name: 'myClass' })">去我的课程 →</span>
-          </template>
-        </SectionHead>
-        <div class="rpDist" v-if="dist.length > 0">
-          <div class="dr" v-for="c in dist" :key="c.id">
-            <span class="dName" :title="c.name">{{ c.name }}</span>
-            <div class="dBar"><i :style="{ width: c.pct + '%' }"></i></div>
-            <span class="dNum"><b>{{ c.learned }}</b> / {{ c.sections }} 节</span>
-          </div>
-        </div>
-        <div class="rpEmptyBlock" v-else>还没有在学的课程</div>
-      </section>
-    </template>
+    </div>
 
     <div class="rpState" v-else-if="status === 'error'">
       <InlineError title="学习报告加载失败" :msg="errorMsg" @retry="load" />
@@ -162,15 +175,20 @@ const overview = useClassOverview()
 
 const days = ref(Number(route.query.days) === 90 ? 90 : 30)
 const setDays = (d) => {
+  if (days.value === d) return
   days.value = d
   // 落 URL query：分享/刷新不丢。用 replace 不产生多余历史记录
   router.replace({ query: { ...route.query, days: d === 30 ? undefined : d } })
+  // 必须在这里主动取数：watcher 靠「days 变了」判断，
+  // 而 days 上面已经改了，watcher 会认为没变化直接跳过 —— 只改 URL 不换数据
+  load(true)
 }
 watch(() => route.query.days, (v) => {
   const d = Number(v) === 90 ? 90 : 30
   if (d !== days.value) {
+    // 外部变更（前进/后退、手改 URL）：同步状态并重取
     days.value = d
-    load()
+    load(true)
   }
 })
 
@@ -179,9 +197,15 @@ const examList = ref([])
 const lessons = ref([])
 const status = ref('loading')
 const errorMsg = ref('')
+// 切换 30/90 天时保持旧内容 + 轻微变淡，不再闪一句「正在加载…」
+const refreshing = ref(false)
 
-const load = async () => {
-  status.value = 'loading'
+/**
+ * @param {boolean} silent 静默刷新（切范围）：不切 loading 态
+ */
+const load = async (silent = false) => {
+  if (silent) refreshing.value = true
+  else status.value = 'loading'
   try {
     // 三个数据源并发、互不依赖；单个挂了用兜底值，不让整页变错误卡
     const [sumRes, examRes, lessonRes] = await Promise.all([
@@ -196,9 +220,11 @@ const load = async () => {
   } catch (err) {
     errorMsg.value = catchMsg(err, '学习报告加载失败') || '请稍后重试'
     status.value = 'error'
+  } finally {
+    refreshing.value = false
   }
 }
-onMounted(load)
+onMounted(() => load())
 
 const isEmpty = computed(() =>
   (Number(summary.value.totalSections) || 0) === 0 && examList.value.length === 0)
@@ -226,7 +252,41 @@ const cells = computed(() => (summary.value.daily || []).map((d) => {
   else if (n >= 5) level = 4
   return { date: d.statDate, finished: n, level }
 }))
-const cols = computed(() => Math.max(1, Math.ceil(cells.value.length / 7)))
+const cols = computed(() => Math.max(1, Math.ceil((cells.value.length + leadingBlanks.value) / 7)))
+
+/**
+ * 日历对齐：首日之前的空位数（周一在最上，dayjs.day() 周日=0 → 转成周一=0）
+ * 不对齐的话第一列的行位置跟着起始日的星期走，「一/三/五」的行标签就是错的。
+ */
+const leadingBlanks = computed(() => {
+  const first = (summary.value.daily || [])[0]
+  if (!first) return 0
+  return (dayjs(first.statDate).day() + 6) % 7
+})
+// 行标签只标一/三/五/日，全标太吵
+const dowLabels = ['一', '', '三', '', '五', '', '日']
+
+/**
+ * 格子边长随列数自适应：≤8 列（30 天）用 26px，90 天（13~14 列）缩到 20px。
+ * 不缩的话 14 列 × 32px ≈ 450px 会把右侧「本期概况」挤到 230px 以下，
+ * 副行文字换行、数字挤成一团。
+ */
+const cellSize = computed(() => (cols.value > 8 ? 20 : 26))
+
+/** 月份行：取每列首日所在月，只有月份变化的那列显示文字（与格子逐列对齐） */
+const monthCols = computed(() => {
+  const daily = summary.value.daily || []
+  const out = []
+  let prev = ''
+  for (let c = 0; c < cols.value; c += 1) {
+    const idx = c * 7 - leadingBlanks.value
+    const d = idx >= 0 ? daily[idx] : daily[0]
+    const m = d ? dayjs(d.statDate).format('M月') : ''
+    out.push(m && m !== prev ? m : '')
+    if (m) prev = m
+  }
+  return out
+})
 
 /** 最长连续：数连续有记录（finished>0）的最长段 */
 const longest = computed(() => {
@@ -368,46 +428,7 @@ const dist = computed(() => {
   }
 }
 
-/* KPI */
-.rpKpis {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-}
-.rpKpi {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 20px 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  .kLabel {
-    font-size: 12.5px;
-    color: var(--ink3);
-  }
-  b {
-    font-family: var(--font-serif);
-    font-variant-numeric: lining-nums;
-    font-size: 34px;
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: -1px;
-    color: var(--ink);
-    em {
-      font-style: normal;
-      font-family: var(--font-sans);
-      font-size: 12.5px;
-      color: var(--ink3);
-      margin-left: 6px;
-      letter-spacing: 0;
-    }
-  }
-  .kSub {
-    font-size: 11.5px;
-    color: var(--ink3);
-  }
-}
+/* 顶部 KPI 卡片已删除：4 个数字并入「01 本期概况」面板，避免同屏两套同样数字 */
 
 .rpSec {
   margin-top: 44px;
@@ -418,11 +439,10 @@ const dist = computed(() => {
   cursor: pointer;
 }
 
-/* 01 热力 */
+/* 01 热力：主视觉。热力图卡片跟格子走（fit-content），右侧「本期概况」吃掉剩余宽度 */
 .rpHeatWrap {
   display: grid;
-  /* 卡宽跟格子走：30 天只有 5 列，把热力图拉满整行会变成一堆大色块 */
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(280px, 1fr);
   gap: 20px;
   align-items: stretch;
 }
@@ -430,30 +450,68 @@ const dist = computed(() => {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 16px;
-  padding: 24px 26px;
+  padding: 20px 24px 18px;
   width: fit-content;
+}
+/* 月份行：与格子逐列对齐（12px 星期列 + 每列 26px + 6px 间隔） */
+.heatMonths {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+  span {
+    font-size: 10.5px;
+    color: var(--ink3);
+    line-height: 1;
+    padding-left: 1px;
+    white-space: nowrap;
+  }
+}
+.heatBody {
+  display: flex;
+  gap: 10px;
+}
+.heatDows {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0 0 0 1px;
+  span {
+    height: var(--hm-cell, 26px);
+    line-height: var(--hm-cell, 26px);
+    font-size: 10.5px;
+    color: var(--ink3);
+    text-align: right;
+  }
 }
 .hm {
   display: grid;
   grid-auto-flow: column;
-  grid-template-rows: repeat(7, 26px);
   gap: 6px;
 }
+.hmBlank {
+  width: 100%;
+  height: 100%;
+}
 .hmCell {
-  width: 26px;
-  height: 26px;
+  // 尺寸由模板按列数下发（grid-template-*），这里只保证填满单元格
+  width: 100%;
+  height: 100%;
   border-radius: 5px;
   background: #EEF2F5;
   &.lv1 { background: #CFDDE6; }
   &.lv2 { background: #A3BFD0; }
   &.lv3 { background: #5F8BA7; }
   &.lv4 { background: var(--main); }
+  &:hover {
+    outline: 2px solid var(--main-soft);
+    outline-offset: 1px;
+  }
 }
 .hmFoot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 16px;
+  margin-top: 14px;
   font-size: 11.5px;
   color: var(--ink3);
 }
@@ -473,42 +531,52 @@ const dist = computed(() => {
     &.lv4 { background: var(--main); }
   }
 }
-.rpSide {
+
+/* 本期概况：4 项结论，2×2 排布（替代原来顶部的 4 张 KPI 卡） */
+.rpOverview {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 16px;
-  padding: 22px 26px;
+  padding: 18px 26px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px 40px;
-  align-content: start;
-  div {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 10px 0;
-    border-bottom: 1px dashed var(--line);
-    span {
-      font-size: 12.5px;
-      color: var(--ink3);
-    }
-    b {
-      font-family: var(--font-serif);
-      font-variant-numeric: lining-nums;
-      font-size: 22px;
-      font-weight: 400;
-      color: var(--ink);
-    }
-    &:nth-last-of-type(-n + 2) {
-      border-bottom: none;
-    }
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 32px;
+  align-content: center;
+}
+.ovItem {
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--line);
+  &:nth-last-of-type(-n + 2) {
+    border-bottom: none;
   }
 }
-.rpTip {
-  grid-column: 1 / -1;
-  margin-top: 8px;
+.ovLabel {
+  font-size: 12.5px;
+  color: var(--ink3);
+}
+.ovVal {
+  margin-top: 4px;
+  b {
+    font-family: var(--font-serif);
+    font-variant-numeric: lining-nums;
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -.5px;
+    color: var(--ink);
+  }
+  em {
+    font-style: normal;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: var(--ink3);
+    margin-left: 5px;
+  }
+}
+.ovSub {
+  display: block;
+  margin-top: 4px;
   font-size: 11.5px;
-  line-height: 1.7;
   color: var(--ink3);
 }
 
@@ -758,14 +826,26 @@ const dist = computed(() => {
   font-size: 13px;
   color: var(--ink3);
 }
-@media (max-width: 1200px) {
-  .rpKpis {
-    grid-template-columns: repeat(2, 1fr);
+/* 静默刷新：切范围时旧内容变淡，避免闪「正在加载…」 */
+.rpBody {
+  transition: opacity .15s;
+  &.refreshing {
+    opacity: .45;
+    pointer-events: none;
   }
+}
+
+/* 窄屏：只有真正的窄屏才塌成单列。
+   原来断点写 1200，而内容区在 1080 窗口下还有 ~800px ——
+   热力图 + 概况（约 300 + 320）完全放得下，塌单列只会让热力图独自靠左、右边一片空 */
+@media (max-width: 900px) {
   .rpHeatWrap,
   .rpTrend {
     grid-template-columns: 1fr;
     flex-direction: column;
+  }
+  .rpOverview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .trendSide {
     border-left: none;
@@ -774,6 +854,16 @@ const dist = computed(() => {
     padding-top: 16px;
     flex-direction: row;
     justify-content: space-between;
+  }
+}
+/* 超窄（<560）：概况也只放一列，热力图卡可横向滚动 */
+@media (max-width: 560px) {
+  .rpOverview {
+    grid-template-columns: 1fr;
+  }
+  .rpHeat {
+    max-width: 100%;
+    overflow-x: auto;
   }
 }
 </style>
