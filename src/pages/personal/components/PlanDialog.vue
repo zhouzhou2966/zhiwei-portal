@@ -18,10 +18,12 @@
     </div>
     <p class="delTip" v-else>将从课表中移除这门已失效的课程（不影响订单和已学记录），确定删除吗？</p>
     <template #footer>
-      <span class="dialogFooter">
-        <div @click="$emit('update:modelValue', false)"><span class="bt bt-grey">取消</span></div>
-        <div @click="confirm"><span class="bt">{{ mode == 'del' ? '删除' : '确定' }}</span></div>
-      </span>
+      <div class="planFooter">
+        <button class="pfBtn pfGhost" @click="$emit('update:modelValue', false)">取消</button>
+        <button class="pfBtn pfPrimary" :class="{ danger: mode == 'del' }" @click="confirm">
+          {{ mode == 'del' ? '删除' : '确定' }}
+        </button>
+      </div>
     </template>
   </el-dialog>
 </template>
@@ -123,5 +125,46 @@ const confirm = async () => {
   font-size: 14px;
   line-height: 24px;
   color: var(--color-font2);
+}
+// 弹窗底部按钮：左右并排、右对齐（原 .bt 原子类是全宽堆叠的两条大横条，太笨重）。
+// 用原生 button，不走 el-button——全局 .el-button{background:var(--color-main)!important} 会吃掉样式。
+.planFooter{
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.pfBtn{
+  min-width: 92px;
+  height: 36px;
+  padding: 0 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 34px;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s, color .15s;
+}
+.pfGhost{
+  background: #fff;
+  border: 1px solid var(--color-main-light2);
+  color: var(--color-font1);
+  &:hover{
+    border-color: var(--color-main);
+    color: var(--color-main);
+    background: var(--color-main-light);
+  }
+  &:active{ background: var(--color-main-light2); }
+}
+.pfPrimary{
+  background: var(--color-main);
+  border: 1px solid var(--color-main);
+  color: #fff;
+  &:hover{ background: var(--color-hover); border-color: var(--color-hover); }
+  &:active{ background: var(--color-active); }
+  &.danger{
+    background: var(--color-error);
+    border-color: var(--color-error);
+    &:hover{ background: var(--color-error1); border-color: var(--color-error1); }
+    &:active{ background: var(--color-error2); }
+  }
 }
 </style>
