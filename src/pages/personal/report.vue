@@ -130,14 +130,35 @@
             <span class="rpNote">共 {{ examCount }} 次考试</span>
           </template>
         </SectionHead>
-        <div class="rpTrend" v-if="trendBars.length > 0">
+        <div class="rpTrend" v-if="trendGeom">
           <div class="trendChart">
-            <div class="avgLine" v-if="examAvg != null && scoredExams.length > 1" :style="{ bottom: avgLineY + 'px' }"></div>
-            <div class="tc" v-for="(b, i) in trendBars" :key="i" :class="{ last: i === trendBars.length - 1 }">
-              <span class="tv">{{ b.score }}</span>
-              <div class="tb" :style="{ height: b.pct + '%' }"></div>
-              <span class="td">{{ b.date }}</span>
-            </div>
+            <svg class="trendSvg" :viewBox="`0 0 ${TREND_W} ${TREND_H}`" role="img" aria-label="考试分数趋势图">
+              <defs>
+                <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#1B4B6B" stop-opacity=".1"/>
+                  <stop offset="1" stop-color="#1B4B6B" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- y 轴刻度在左（右对齐），右侧留白给最后一个数据点 -->
+              <g class="grid">
+                <line v-for="g in trendGeom.grid" :key="'gl' + g.y" :x1="TREND_PAD.l" :x2="TREND_W - TREND_PAD.r" :y1="g.y" :y2="g.y"/>
+                <text v-for="g in trendGeom.grid" :key="'gt' + g.y" :x="TREND_PAD.l - 10" :y="g.y + 4" text-anchor="end">{{ g.label }}</text>
+              </g>
+              <path v-if="trendGeom.areaPath" :d="trendGeom.areaPath" fill="url(#trendFill)"/>
+              <path :d="trendGeom.linePath" class="trendLine"/>
+              <!-- 均分虚线：数字在右侧概况里已有，这里不再重复标注 -->
+              <line v-if="trendGeom.avgY != null" :x1="TREND_PAD.l" :x2="TREND_W - TREND_PAD.r" :y1="trendGeom.avgY" :y2="trendGeom.avgY" class="avgLine"/>
+              <g v-for="(p, i) in trendGeom.pts" :key="'p' + i">
+                <!-- 最后一次考试：外圈光环强调 -->
+                <circle v-if="i === trendGeom.pts.length - 1" :cx="p.x" :cy="p.y" r="9" class="dotHalo"/>
+                <circle :cx="p.x" :cy="p.y" :r="i === trendGeom.pts.length - 1 ? 4.5 : 4"
+                        :class="['dot', { last: i === trendGeom.pts.length - 1 }]">
+                  <title>{{ p.date }} · 得 {{ p.score }} 分</title>
+                </circle>
+                <text :x="p.x" :y="p.y - 12" class="ptScore" :class="{ last: i === trendGeom.pts.length - 1 }">{{ p.score }}</text>
+                <text :x="p.x" :y="TREND_H - 8" class="ptDate">{{ p.date }}</text>
+              </g>
+            </svg>
           </div>
           <div class="trendSide">
             <div><span>均分</span><b>{{ examAvg == null ? '-' : examAvg }}</b></div>
@@ -350,35 +371,56 @@ const weekBlocks = computed(() => {
 })
 const hitCount = computed(() => weekBlocks.value.filter(w => w.finished >= weekPlan.value).length)
 
-/** 考试趋势：最近 8 次（接口倒序，反转成时间正序），最后一根主色高亮。
- *  柱高按本组最高分归一化——考试分数口径不固定（现在是 10 分制），原来按 100 折算，
- *  10 分的柱只有 10% 高度，整张图趴在地上。归一时封顶 85%（TREND_HEADROOM），
- *  给柱顶的分数标签留出空间。均分虚线用同一把尺（见 avgLineY），两套口径必然错位。 */
+/** 考试趋势：最近 8 次（接口倒序，反转成时间正序），SVG 折线 + 面积图。
+ *  坐标全部解析计算：y 轴按本组最高分归一（分数口径不固定，现在是 10 分制），
+ *  顶部留 12% 呼吸空间；均分虚线与数据点同一把尺，不存在 CSS 百分比换算错位。 */
 const TREND_BARS_MAX = 8
-const TREND_HEADROOM = 0.85  // 最高柱占绘图区比例
-const TREND_LABEL_H = 27     // 柱底下方的日期区：日期行 18px + 间距 9px
-const TREND_PLOT_H = 160     // 柱区内容高：.trendChart 190px - 柱顶标签预留 30px
+const TREND_W = 720
+const TREND_H = 230
+const TREND_PAD = { l: 44, r: 30, t: 30, b: 30 }
 const trendSubtitle = computed(() => {
   const n = Math.min(scoredExams.value.length, TREND_BARS_MAX)
   if (n <= 0) return ''
   if (n === 1) return '1 次考试，还看不出趋势'
   return `最近 ${n} 次，虚线是均分`
 })
-const trendMaxScore = computed(() =>
-  Math.max(1, ...scoredExams.value.slice(0, TREND_BARS_MAX).map(e => Number(e.score) || 0))
-)
-const trendBars = computed(() => {
-  const scored = scoredExams.value.slice(0, TREND_BARS_MAX).reverse()
-  return scored.map(e => ({
+// Catmull-Rom 转三次贝塞尔：折线平滑但严格经过每个数据点
+const smoothPath = (pts) => {
+  let d = `M${pts[0].x},${pts[0].y}`
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)]
+    const p1 = pts[i]
+    const p2 = pts[i + 1]
+    const p3 = pts[Math.min(pts.length - 1, i + 2)]
+    d += ` C${(p1.x + (p2.x - p0.x) / 6).toFixed(1)},${(p1.y + (p2.y - p0.y) / 6).toFixed(1)} ${(p2.x - (p3.x - p1.x) / 6).toFixed(1)},${(p2.y - (p3.y - p1.y) / 6).toFixed(1)} ${p2.x},${p2.y}`
+  }
+  return d
+}
+const trendGeom = computed(() => {
+  const arr = scoredExams.value.slice(0, TREND_BARS_MAX).reverse()
+  if (!arr.length) return null
+  const maxS = Math.max(1, ...arr.map(e => Number(e.score) || 0))
+  const yMax = maxS * 1.12
+  const plotW = TREND_W - TREND_PAD.l - TREND_PAD.r
+  const plotH = TREND_H - TREND_PAD.t - TREND_PAD.b
+  const x = (i) => arr.length > 1 ? TREND_PAD.l + plotW * i / (arr.length - 1) : TREND_PAD.l + plotW / 2
+  const y = (v) => TREND_PAD.t + plotH * (1 - (Number(v) || 0) / yMax)
+  const pts = arr.map((e, i) => ({
+    x: Math.round(x(i) * 10) / 10,
+    y: Math.round(y(Number(e.score) || 0) * 10) / 10,
     score: e.score,
     date: e.finishTime || e.commitTime ? dayjs(e.finishTime || e.commitTime).format('M/D') : '',
-    pct: Math.max(2, Math.round((Number(e.score) || 0) / trendMaxScore.value * TREND_HEADROOM * 100)),
   }))
-})
-// 均分虚线：与柱子同一归一化口径；+TREND_LABEL_H 是因为柱子的底边从日期区上方算起
-const avgLineY = computed(() => {
-  if (examAvg.value == null) return 0
-  return Math.round(TREND_LABEL_H + examAvg.value / trendMaxScore.value * TREND_HEADROOM * TREND_PLOT_H)
+  const linePath = smoothPath(pts)
+  const base = TREND_H - TREND_PAD.b
+  const areaPath = pts.length > 1
+    ? `${linePath} L${pts[pts.length - 1].x},${base} L${pts[0].x},${base} Z`
+    : ''
+  return {
+    pts, linePath, areaPath,
+    avgY: examAvg.value == null ? null : Math.round(y(examAvg.value) * 10) / 10,
+    grid: [0, maxS / 2, maxS].map(v => ({ y: Math.round(y(v)), label: String(Math.round(v * 10) / 10) })),
+  }
 })
 
 /** 课程投入分布：按已学小节降序，取前 6 门 */
@@ -671,56 +713,31 @@ const dist = computed(() => {
   display: flex;
   gap: 34px;
 }
-.trendChart {
+.trendChart{
   flex: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center; // 柱子少时聚拢居中——原来 flex:1 + max-width 的组合把柱子挤在左边，右侧一大片空白
-  gap: 26px;
-  height: 190px;
-  position: relative;
-  padding-top: 14px;
+  min-width: 0; // svg 宽度跟随容器（viewBox 等比缩放），窄屏不溢出
 }
-.avgLine {
-  position: absolute;
-  left: 0;
-  right: 0;
-  border-top: 1px dashed rgba(27, 75, 107, .45); // 原来用 --line-strong 太浅，浅色背景上几乎不可见
-}
-.tc {
-  flex: 1;
-  max-width: 90px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  height: 100%;
-  padding-top: 30px; // 柱顶标签预留：柱高按 .tc 内容区（190-30=160px）折算，见脚本里 TREND_PLOT_H
-  .tv {
-    font-family: var(--font-serif);
-    font-size: 12.5px;
-    color: var(--ink2);
-    margin-bottom: 7px;
+.trendSvg{
+  width: 100%;
+  height: auto;
+  display: block;
+  .grid line{ stroke: var(--color-main-light); }
+  .grid text{ font-size: 11px; fill: var(--color-font3); }
+  .trendLine{
+    fill: none;
+    stroke: var(--color-hover);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
   }
-  .tb {
-    width: 40px;
-    border-radius: 5px 5px 0 0;
-    background: #C8D8E2;
-  }
-  .td {
-    margin-top: 9px;
-    height: 18px;
-    line-height: 18px;
-    font-size: 11.5px;
-    color: var(--ink3);
-  }
-  &.last .tb {
-    background: var(--main);
-  }
-  &.last .tv {
-    color: var(--main);
-    font-weight: 600;
-  }
+  .dot{ fill: #fff; stroke: var(--color-hover); stroke-width: 2; }
+  .dot.last{ fill: var(--main); stroke: var(--main); }
+  .dotHalo{ fill: var(--main); opacity: .14; }
+  .ptScore{ font-family: var(--font-serif); font-size: 13px; fill: var(--ink2); text-anchor: middle; }
+  .ptScore.last{ fill: var(--main); font-weight: 600; }
+  .ptDate{ font-size: 11.5px; fill: var(--ink3); text-anchor: middle; }
+  .avgLine{ stroke: rgba(27, 75, 107, .55); stroke-dasharray: 5 4; }
+  .avgText{ font-size: 12px; fill: var(--color-main); }
 }
 .trendSide {
   width: 200px;
